@@ -6,6 +6,8 @@ import s from './Footer.module.css';
 const TELEGRAM = 'https://t.me/pufixluv';
 const X = 'https://x.com/pufixluv';
 const VERSION = 'v0.1';
+/** Статическая страница public/privacy.html (её же указываем в Google Auth Platform). */
+export const PRIVACY_URL = `${import.meta.env.BASE_URL}privacy.html`;
 
 function Author() {
   return (
@@ -66,6 +68,7 @@ export function Footer() {
             <a href={TELEGRAM} target="_blank" rel="noreferrer">
               Предложить идею или сообщить о баге
             </a>
+            <a href={PRIVACY_URL}>Политика конфиденциальности</a>
           </div>
         </nav>
       </div>
@@ -93,6 +96,7 @@ export function MiniFooter({ center = false }: { center?: boolean }) {
         <span>
           Сделано <b style={{ color: '#b4b4bc', fontWeight: 600 }}>pufixluv</b> · {VERSION}
         </span>
+        <a href={PRIVACY_URL}>Конфиденциальность</a>
         <a href={TELEGRAM} target="_blank" rel="noreferrer">
           Сообщить о баге
         </a>

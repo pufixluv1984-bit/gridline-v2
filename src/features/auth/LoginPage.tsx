@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { takeAuthError } from '@/lib/api/auth';
+import { PRIVACY_URL } from '@/ui/Footer';
 import { AuthLayout } from './AuthLayout';
 import { ErrorAlert, SocialButtons } from './fields';
 import s from './Auth.module.css';
@@ -23,7 +24,13 @@ export default function LoginPage() {
       </div>
       {error && <ErrorAlert title="Не получилось войти">{error}</ErrorAlert>}
       <SocialButtons onError={setError} />
-      <div className={s.foot}>Пароль не нужен: мы не храним пароли и не присылаем писем.</div>
+      <div className={s.foot}>
+        Пароль не нужен. Входя, ты соглашаешься с{' '}
+        <a className={s.lnk} href={PRIVACY_URL}>
+          политикой конфиденциальности
+        </a>
+        .
+      </div>
     </AuthLayout>
   );
 }
