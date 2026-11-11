@@ -1,0 +1,24 @@
+# Бесплатный проект Supabase засыпает после недели без запросов (docs/ARCHITECTURE.md, п. 11).
+# Раз в 2 дня — лёгкий публичный запрос к расписанию с anon-ключом.
+name: Keep-alive
+
+on:
+  schedule:
+    - cron: '17 6 */2 * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Запрос к базе
+        env:
+          URL: ${{ secrets.VITE_SUPABASE_URL }}
+          KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+        run: |
+          if [ -z "$URL" ]; then echo "Секрет VITE_SUPABASE_URL не задан — пропускаю"; exit 0; fi
+          curl -fsS "$URL/rest/v1/seasons?select=id&limit=1" -H "apikey: $KEY" -H "Authorization: Bearer $KEY" > /dev/null
+          echo "Supabase ответил"

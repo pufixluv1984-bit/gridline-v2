@@ -1,0 +1,17 @@
+node_modules
+dist
+.env
+.env.*
+!.env.example
+.DS_Store
+supabase/.branches
+supabase/.temp
+
+# Локальные копии экранов из артефакта Claude Design (источник истины — сам артефакт)
+design/project/
+
+# Локальные настройки Claude Code
+.claude/settings.local.json
+
+# Сборка TypeScript
+*.tsbuildinfo

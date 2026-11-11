@@ -1,0 +1,135 @@
+/* Заголовок, панель кнопок и контент внутренней области (макет Main.dc.html). */
+.top {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 26px 32px 20px;
+  font-size: 30px;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  color: var(--text-head);
+  margin: 0;
+}
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #3a3a42;
+}
+.sub {
+  color: var(--mute);
+}
+
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 32px;
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+}
+.vr {
+  width: 1px;
+  height: 28px;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+/* Главная светлая кнопка. Пульс свечения в макете анимирует box-shadow;
+   здесь свечение на псевдоэлементе, а анимируется только его opacity (правило 11). */
+.btn {
+  position: relative;
+  height: 48px;
+  padding: 0 24px 0 18px;
+  border-radius: var(--r-pill);
+  background: var(--text);
+  color: #0a0a0d;
+  font-size: 16px;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  border: 0;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.25), 0 8px 32px var(--glowc);
+  transition: transform 0.2s;
+}
+.btn::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.35), 0 8px 60px var(--glowc);
+  opacity: 0;
+  animation: cta 3.2s ease-in-out infinite;
+  pointer-events: none;
+}
+.btn:hover {
+  transform: translateY(-1px);
+}
+@keyframes cta {
+  50% {
+    opacity: 1;
+  }
+}
+
+.pill {
+  height: 44px;
+  padding: 0 18px;
+  border-radius: var(--r-pill);
+  background: var(--bg-pill);
+  border: 1px solid var(--line);
+  color: var(--text-soft);
+  font-size: 15px;
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: background 0.2s, color 0.2s;
+}
+.pill:hover {
+  background: var(--bg-pill-hover);
+  color: #fff;
+}
+.pillOn {
+  background: var(--bg-pill-on);
+  color: #fff;
+  border-color: rgba(255, 255, 255, 0.14);
+}
+
+.content {
+  flex: 1;
+  padding: 24px 32px 36px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  background: var(--bg-content);
+}
+
+.card {
+  position: relative;
+  border-radius: var(--r-card);
+  background: var(--card-grad);
+  border: 1px solid var(--line);
+  padding: 24px;
+  box-shadow: var(--shadow-card);
+}
+.h {
+  font-size: 19px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: #f1f1f4;
+  margin: 0;
+}
+
+@media (max-width: 1100px) {
+  .content {
+    padding: 18px;
+  }
+  .top {
+    padding: 20px 20px 16px;
+    font-size: 26px;
+  }
+  .toolbar {
+    padding: 12px 18px;
+  }
+}

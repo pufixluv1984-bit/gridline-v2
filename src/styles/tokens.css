@@ -1,0 +1,56 @@
+/* Токены дизайна Gridline (источник: макеты Main / Auth-* в Claude Design, docs/DESIGN.md).
+   Значения не раскидываем по компонентам — только через эти переменные. */
+:root {
+  /* Фоны */
+  --bg-page: #07070a;
+  --bg-inner: #0a0a0d;
+  --bg-content: #0b0b0e;
+  --bg-field: #0f0f12;
+  --bg-pill: #131317;
+  --bg-pill-hover: #1a1a1f;
+  --bg-pill-on: #202026;
+  --bg-nav-on: #1d1d23;
+  --frame-grad: linear-gradient(180deg, #141418, #0e0e11);
+  --card-grad: linear-gradient(180deg, #121216, #0d0d10);
+
+  /* Линии */
+  --line: rgba(255, 255, 255, 0.07);
+  --line-strong: rgba(255, 255, 255, 0.12);
+  --frame-border: rgba(255, 255, 255, 0.08);
+
+  /* Текст */
+  --text: #f3f3f5;
+  --text-head: #e6e6ea;
+  --text-soft: #c4c4cb;
+  --mute: #9a9aa4;
+  --mute-2: #7c7c86;
+  --mute-3: #6c6c76;
+  --placeholder: #6d6d77;
+
+  /* Акцент и состояния */
+  --accent: #e8211a;
+  --glowc: #e8211a55; /* accent + 55 (альфа) */
+  --gold: #ffd400;
+  --pos: #7fe0a0;
+  --neg: #ff7a70;
+  --neg-soft: #ffb3ac;
+  --warn: #ffb800;
+
+  /* Радиусы */
+  --r-frame: 34px;
+  --r-inner: 26px;
+  --r-card: 24px;
+  --r-field: 16px;
+  --r-pill: 999px;
+
+  /* Шрифты */
+  --font-text: 'Inter', system-ui, sans-serif;
+  /* У Space Grotesk нет кириллицы: русские буквы в заголовках берутся из Inter. */
+  --font-num: 'Space Grotesk', 'Inter', system-ui, sans-serif;
+
+  /* Тени (статичные, не анимируем) */
+  --shadow-frame: 0 40px 120px rgba(0, 0, 0, 0.65), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  --shadow-card: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+
+  --ease-out: cubic-bezier(0.2, 0.7, 0.2, 1);
+}
