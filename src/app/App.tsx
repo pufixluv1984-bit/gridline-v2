@@ -1,6 +1,6 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { lazy, Suspense, type ReactNode } from 'react';
-import { HashRouter, Route, Routes } from 'react-router-dom';
+import { HashRouter, Navigate, Route, Routes } from 'react-router-dom';
 import { AuthProvider } from '@/features/auth/AuthProvider';
 import { RedirectIfSignedIn, RequireAuth } from '@/features/auth/RequireAuth';
 import { SoonPage } from '@/features/home/SoonPage';
@@ -9,9 +9,6 @@ import { AppLayout } from './AppLayout';
 // Разбивка по маршрутам (правило 11): каждый экран — отдельный чанк.
 const HomePage = lazy(() => import('@/features/home/HomePage'));
 const LoginPage = lazy(() => import('@/features/auth/LoginPage'));
-const RegisterPage = lazy(() => import('@/features/auth/RegisterPage'));
-const ResetPage = lazy(() => import('@/features/auth/ResetPage'));
-const UpdatePasswordPage = lazy(() => import('@/features/auth/UpdatePasswordPage'));
 const NotFoundPage = lazy(() => import('@/features/errors/NotFoundPage'));
 
 const queryClient = new QueryClient({
@@ -45,9 +42,8 @@ export function App() {
             <Routes>
               <Route path="auth">
                 <Route path="login" element={guest(<LoginPage />)} />
-                <Route path="register" element={guest(<RegisterPage />)} />
-                <Route path="reset" element={guest(<ResetPage />)} />
-                <Route path="update-password" element={<UpdatePasswordPage />} />
+                {/* Регистрации и сброса пароля нет: вход только через Google/Discord. */}
+                <Route path="*" element={<Navigate to="/auth/login" replace />} />
               </Route>
               <Route
                 element={
