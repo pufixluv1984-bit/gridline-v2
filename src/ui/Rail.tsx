@@ -25,7 +25,7 @@ export function Rail({ initials }: { initials: string }) {
   return (
     <aside className={s.rail} aria-label="Навигация">
       <NavLink
-        to="/profile"
+        to="/settings"
         aria-label="Профиль"
         title="Профиль"
         className={({ isActive }) => `${s.me} ${isActive ? s.meOn : ''}`}

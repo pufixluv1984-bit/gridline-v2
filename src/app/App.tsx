@@ -10,6 +10,7 @@ import { AppLayout } from './AppLayout';
 const HomePage = lazy(() => import('@/features/home/HomePage'));
 const LoginPage = lazy(() => import('@/features/auth/LoginPage'));
 const NotFoundPage = lazy(() => import('@/features/errors/NotFoundPage'));
+const SettingsPage = lazy(() => import('@/features/settings/SettingsPage'));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -28,8 +29,6 @@ const SOON: { path: string; title: string; phase: number }[] = [
   { path: 'lobby/*', title: 'Лобби', phase: 1 },
   { path: 'tracks', title: 'Трассы', phase: 1 },
   { path: 'rules', title: 'Правила', phase: 2 },
-  { path: 'profile', title: 'Профиль', phase: 3 },
-  { path: 'settings', title: 'Настройки', phase: 3 },
   { path: 'fantasy/*', title: 'Фэнтези-лига', phase: 4 },
 ];
 
@@ -53,6 +52,9 @@ export function App() {
                 }
               >
                 <Route index element={<HomePage />} />
+                <Route path="settings" element={<SettingsPage />} />
+                {/* Экран профиля со статистикой — фаза 3; пока аватар в панели ведёт в настройки. */}
+                <Route path="profile" element={<Navigate to="/settings" replace />} />
                 {SOON.map((r) => (
                   <Route key={r.path} path={r.path} element={<SoonPage title={r.title} phase={r.phase} />} />
                 ))}

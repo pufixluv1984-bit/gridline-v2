@@ -1,0 +1,38 @@
+/* Кнопки-таблетки из макетов (.cta, .cta.sm, .cta.ghost, .cta.dng). */
+.cta {
+  height: 52px;
+  border-radius: var(--r-pill);
+  background: var(--accent);
+  color: #fff;
+  font: 600 16px var(--font-text);
+  border: 0;
+  box-shadow: 0 0 28px var(--glowc);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 0 24px;
+  transition: transform 0.2s, opacity 0.2s;
+}
+.cta:hover:not(:disabled) {
+  transform: translateY(-1px);
+}
+.cta:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.sm {
+  height: 44px;
+  padding: 0 22px;
+  font-size: 15px;
+}
+.ghost {
+  background: var(--bg-pill);
+  border: 1px solid var(--line);
+  color: var(--text-head);
+  box-shadow: none;
+}
+.dng {
+  background: #d8332b;
+  box-shadow: 0 0 24px rgba(216, 51, 43, 0.4);
+}

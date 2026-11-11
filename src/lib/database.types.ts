@@ -79,6 +79,7 @@ export type Database = {
     Functions: {
       server_now: { Args: Record<string, never>; Returns: string };
       shares_league: { Args: { other: string }; Returns: boolean };
+      delete_my_account: { Args: Record<string, never>; Returns: undefined };
     };
     Enums: {
       league_role: 'owner' | 'member';

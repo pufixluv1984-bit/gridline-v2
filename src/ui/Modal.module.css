@@ -1,0 +1,67 @@
+/* Окна подтверждения из макета Overlays (.scrim + .mdl). Появление — только opacity/transform. */
+.scrim {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: rgba(0, 0, 0, 0.6);
+  animation: fade 0.2s ease-out both;
+}
+.mdl {
+  width: 100%;
+  max-width: 440px;
+  padding: 26px;
+  border-radius: 26px;
+  background: #101014;
+  border: 1px solid var(--line);
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.55);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  animation: pop 0.25s var(--ease-out) both;
+}
+.mdl h3 {
+  margin: 0;
+  font: 600 22px var(--font-num);
+  letter-spacing: -0.01em;
+}
+.text {
+  color: var(--mute);
+  font-size: 14.5px;
+  line-height: 1.5;
+  margin: 0;
+}
+.ico {
+  width: 52px;
+  height: 52px;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(232, 33, 26, 0.14);
+  border: 1px solid rgba(232, 33, 26, 0.4);
+  color: var(--neg);
+  box-shadow: 0 0 40px rgba(232, 33, 26, 0.25);
+}
+.bt {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.bt > * {
+  flex: 1 1 140px;
+}
+@keyframes fade {
+  from {
+    opacity: 0;
+  }
+}
+@keyframes pop {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.98);
+  }
+}
