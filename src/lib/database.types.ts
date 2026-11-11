@@ -30,8 +30,14 @@ export type Database = {
           bonus_config: Json;
           created_at: string;
         };
-        Insert: never;
+        Insert: { name: string; season_id: number; start_event_id?: number | null; max_members?: number; mode?: string; bonus_config?: Json };
         Update: { name?: string; max_members?: number; bonus_config?: Json };
+        Relationships: [];
+      };
+      predictions: {
+        Row: { user_id: string; event_id: number; qualy: string[]; race: string[]; fastest_lap: string | null; submitted_at: string; updated_at: string };
+        Insert: { event_id: number; qualy: string[]; race: string[]; fastest_lap?: string | null };
+        Update: { event_id?: number; qualy?: string[]; race?: string[]; fastest_lap?: string | null };
         Relationships: [];
       };
       league_members: {
@@ -80,6 +86,19 @@ export type Database = {
       server_now: { Args: Record<string, never>; Returns: string };
       shares_league: { Args: { other: string }; Returns: boolean };
       delete_my_account: { Args: Record<string, never>; Returns: undefined };
+      predict_screen: { Args: { ev?: number; league?: string }; Returns: Json };
+      home_screen: { Args: { league?: string }; Returns: Json };
+      league_screen: { Args: { league: string }; Returns: Json };
+      results_screen: { Args: { ev?: number }; Returns: Json };
+      schedule_screen: { Args: Record<string, never>; Returns: Json };
+      league_preview: { Args: { code: string }; Returns: Json };
+      join_league: { Args: { code: string }; Returns: string | null };
+      leave_league: { Args: { league: string }; Returns: undefined };
+      kick_member: { Args: { league: string; member: string }; Returns: undefined };
+      transfer_league: { Args: { league: string; new_owner: string }; Returns: undefined };
+      reset_invite_code: { Args: { league: string }; Returns: string };
+      data_updated_at: { Args: Record<string, never>; Returns: string | null };
+      admin_set_result: { Args: { ev: number; session: string; driver_ids: string[]; fastest_lap?: string }; Returns: number };
     };
     Enums: {
       league_role: 'owner' | 'member';

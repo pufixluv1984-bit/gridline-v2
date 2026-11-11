@@ -1,0 +1,139 @@
+import { getSupabase } from '../supabase';
+
+// Типы ответов RPC экранов (миграция 0008). Один запрос на экран (правило 11).
+
+export type SessionKind = 'fp1' | 'fp2' | 'fp3' | 'sprint_qualy' | 'sprint' | 'qualy' | 'race';
+
+export type EventInfo = {
+  id: number;
+  round: number;
+  name: string;
+  slug: string;
+  country: string;
+  circuit: string;
+  is_sprint: boolean;
+  status: 'scheduled' | 'cancelled' | 'void';
+  deadline: string | null;
+  season_rounds: number;
+  sessions: { kind: SessionKind; starts_at: string }[];
+};
+
+export type Driver = {
+  id: string;
+  code: string;
+  name: string;
+  number: number | null;
+  active: boolean;
+  team_id: string;
+  team_code: string;
+  team_name: string;
+  color: string;
+};
+
+export type LeagueRow = {
+  user_id: string;
+  nickname: string;
+  avatar_color: string;
+  role: 'owner' | 'member';
+  points: number;
+  exact_hits: number;
+  events_won: number;
+  last_points: number;
+  provisional: boolean;
+  rank: number;
+};
+
+export type Submission = { user_id: string; nickname: string; avatar_color: string; submitted: boolean };
+
+export type PredictScreen = {
+  event: EventInfo | null;
+  drivers: Driver[];
+  prediction: { qualy: string[]; race: string[]; fastest_lap: string | null; updated_at: string } | null;
+  last: { name: string; total: number; qualy: number | null; race: number | null; bonus: number | null } | null;
+  league: { id: string; name: string } | null;
+  submissions: Submission[];
+};
+
+export type HomeScreen = {
+  event: EventInfo | null;
+  submitted: boolean;
+  season_done: number;
+  last_race: {
+    event: string;
+    round: number;
+    podium: { position: number; code: string; name: string; team_name: string; team_code: string; color: string }[] | null;
+  } | null;
+  next_events: { round: number; name: string; race_at: string }[];
+  leagues: { id: string; name: string; member_count: number }[];
+  league_id: string | null;
+  table: LeagueRow[];
+  submissions: Submission[];
+};
+
+export type LeagueScreen = {
+  league: {
+    id: string;
+    name: string;
+    invite_code: string;
+    max_members: number;
+    mode: 'predict' | 'fantasy' | 'both';
+    owner_id: string;
+    bonus_config: Record<string, boolean>;
+    start_event: { round: number; name: string } | null;
+    member_count: number;
+  };
+  table: LeagueRow[];
+  per_event: { user_id: string; round: number; points: number }[];
+  members: { user_id: string; nickname: string; avatar_color: string; role: 'owner' | 'member'; joined_at: string }[];
+  event: EventInfo | null;
+  submissions: Submission[];
+};
+
+export type ResultRow = {
+  kind: 'qualy' | 'race' | 'sprint' | 'sprint_qualy';
+  position: number;
+  position_text: string | null;
+  grid: number | null;
+  laps: number | null;
+  status: string | null;
+  fastest_lap_rank: number | null;
+  is_final: boolean;
+  source: 'api' | 'manual';
+  code: string;
+  name: string;
+  team_name: string | null;
+  team_code: string | null;
+  color: string | null;
+};
+
+export type ResultsScreen = {
+  event: EventInfo | null;
+  events: { id: number; round: number; name: string }[];
+  results: ResultRow[];
+};
+
+export type ScheduleScreen = { current_event_id: number | null; events: EventInfo[] };
+
+export const screenKeys = {
+  predict: (ev?: number, league?: string | null) => ['screen', 'predict', ev ?? 'current', league ?? 'default'] as const,
+  home: (league?: string | null) => ['screen', 'home', league ?? 'default'] as const,
+  league: (id: string) => ['screen', 'league', id] as const,
+  results: (ev?: number) => ['screen', 'results', ev ?? 'last'] as const,
+  schedule: () => ['screen', 'schedule'] as const,
+};
+
+async function call<T>(fn: Parameters<ReturnType<typeof getSupabase>['rpc']>[0], args?: object): Promise<T> {
+  const { data, error } = await getSupabase().rpc(fn, args as never);
+  if (error) throw error;
+  return data as T;
+}
+
+export const predictScreen = (ev?: number, league?: string | null) =>
+  call<PredictScreen>('predict_screen', { ...(ev ? { ev } : {}), ...(league ? { league } : {}) });
+export const homeScreen = (league?: string | null) => call<HomeScreen>('home_screen', league ? { league } : {});
+export const leagueScreen = (league: string) => call<LeagueScreen>('league_screen', { league });
+export const resultsScreen = (ev?: number) => call<ResultsScreen>('results_screen', ev ? { ev } : {});
+export const scheduleScreen = () => call<ScheduleScreen>('schedule_screen');
+
+/** Когда синхронизация с Jolpica последний раз прошла успешно (для подвала). */
+export const dataUpdatedAt = () => call<string | null>('data_updated_at');

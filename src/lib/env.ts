@@ -10,6 +10,15 @@ export const env = {
   supabaseAnonKey: anonKey ?? '',
   /** Supabase настроен: есть адрес и ключ, не заглушки из .env.example. */
   supabaseConfigured: !looksPlaceholder(url) && !looksPlaceholder(anonKey),
-  /** Адрес сайта для редиректов (вход через Google/Discord, письма). */
-  siteUrl: new URL(import.meta.env.BASE_URL, window.location.origin).toString(),
+  /**
+   * Адрес сайта для редиректов (вход через Google/Discord). Должен совпадать с записью
+   * в Supabase → Redirect URLs буква в букву: для корня — без слэша (`http://localhost:5173`),
+   * на Pages — с ним (`https://…/gridline-v2/`). Иначе Supabase вернёт на Site URL.
+   */
+  siteUrl: siteUrlFor(import.meta.env.BASE_URL, window.location.origin),
 } as const;
+
+export function siteUrlFor(base: string, origin: string): string {
+  const url = new URL(base, origin).toString();
+  return base === '/' ? url.replace(/\/$/, '') : url;
+}

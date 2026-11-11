@@ -1,0 +1,58 @@
+/* Макет Lobby-Join: экран без боковой панели, карточка приглашения по центру. */
+.stage {
+  min-height: 880px;
+  display: grid;
+}
+.center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 22px;
+  padding: 64px 32px;
+  background: radial-gradient(60% 55% at 50% 0%, rgba(232, 33, 26, 0.2), transparent 70%);
+}
+.card {
+  width: 100%;
+  max-width: 520px;
+  padding: 26px;
+  border-radius: 26px;
+  background: linear-gradient(180deg, #131318, #0d0d10);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  text-align: left;
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.5);
+}
+.mark {
+  width: 60px;
+  height: 60px;
+  border-radius: 18px;
+  background: var(--gold);
+  color: #0a0a0d;
+  font: 700 20px var(--font-num);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+}
+.players {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 16px;
+  border-radius: 18px;
+  background: var(--bg-field);
+  border: 1px solid var(--line);
+}
+.link {
+  background: none;
+  border: 0;
+  padding: 0;
+  color: #fff;
+  font: inherit;
+  font-weight: 600;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+}

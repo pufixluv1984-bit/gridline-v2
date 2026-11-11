@@ -1,0 +1,95 @@
+import { getSupabase } from '../supabase';
+
+export type LeaguePreview =
+  | { error: 'not_found' }
+  | {
+      error?: undefined;
+      id: string;
+      name: string;
+      mode: string;
+      max_members: number;
+      owner_nickname: string;
+      start_event: { round: number; name: string } | null;
+      member_count: number;
+      already_member: boolean;
+      members: { nickname: string; avatar_color: string }[];
+    };
+
+/** Ошибки RPC лиг → понятный текст (hint задаёт база). */
+function friendly(error: { hint?: string | null; code?: string; message?: string }): Error {
+  switch (error.hint) {
+    case 'rate_limited':
+      return new Error('Слишком много неверных кодов. Попробуй через час.');
+    case 'league_full':
+      return new Error('В лиге нет свободных мест.');
+    case 'owner_must_transfer':
+      return new Error('Ты владелец: сначала передай лигу другому игроку.');
+    case 'not_member':
+      return new Error('Новый владелец должен быть участником лиги.');
+  }
+  if (error.code === '23514') return new Error('Проверь название: от 2 до 40 символов, без < и >.');
+  if (error.code === '42501') return new Error('Нет прав на это действие.');
+  return new Error('Не получилось. Попробуй ещё раз.');
+}
+
+export async function createLeague(input: { name: string; maxMembers: number; startEventId: number | null; seasonId: number }) {
+  const { data, error } = await getSupabase()
+    .from('leagues')
+    .insert({
+      name: input.name.trim(),
+      season_id: input.seasonId,
+      max_members: input.maxMembers,
+      start_event_id: input.startEventId,
+      mode: 'predict',
+      bonus_config: { fastest_lap: true },
+    })
+    .select('id')
+    .single();
+  if (error) throw friendly(error);
+  return data.id;
+}
+
+export async function currentSeasonId(): Promise<number> {
+  const { data, error } = await getSupabase().from('seasons').select('id').eq('is_current', true).single();
+  if (error) throw friendly(error);
+  return data.id;
+}
+
+export async function leaguePreview(code: string): Promise<LeaguePreview> {
+  const { data, error } = await getSupabase().rpc('league_preview', { code });
+  if (error) throw friendly(error);
+  return data as LeaguePreview;
+}
+
+/** Возвращает id лиги или null, если кода нет. */
+export async function joinLeague(code: string): Promise<string | null> {
+  const { data, error } = await getSupabase().rpc('join_league', { code });
+  if (error) throw friendly(error);
+  return data;
+}
+
+export async function leaveLeague(league: string) {
+  const { error } = await getSupabase().rpc('leave_league', { league });
+  if (error) throw friendly(error);
+}
+
+export async function kickMember(league: string, member: string) {
+  const { error } = await getSupabase().rpc('kick_member', { league, member });
+  if (error) throw friendly(error);
+}
+
+export async function transferLeague(league: string, newOwner: string) {
+  const { error } = await getSupabase().rpc('transfer_league', { league, new_owner: newOwner });
+  if (error) throw friendly(error);
+}
+
+export async function resetInviteCode(league: string): Promise<string> {
+  const { data, error } = await getSupabase().rpc('reset_invite_code', { league });
+  if (error) throw friendly(error);
+  return data;
+}
+
+export async function deleteLeague(league: string) {
+  const { error } = await getSupabase().from('leagues').delete().eq('id', league);
+  if (error) throw friendly(error);
+}
