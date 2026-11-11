@@ -1,0 +1,132 @@
+[
+ {
+  "id": "baku",
+  "name": "Баку",
+  "country": "Азербайджан"
+ },
+ {
+  "id": "barcelona",
+  "name": "Барселона",
+  "country": "Испания"
+ },
+ {
+  "id": "budapest",
+  "name": "Будапешт",
+  "country": "Венгрия"
+ },
+ {
+  "id": "zandvoort",
+  "name": "Зандфорт",
+  "country": "Нидерланды"
+ },
+ {
+  "id": "las-vegas",
+  "name": "Лас-Вегас",
+  "country": "США"
+ },
+ {
+  "id": "mexico-city",
+  "name": "Мехико",
+  "country": "Мексика"
+ },
+ {
+  "id": "montreal",
+  "name": "Монреаль",
+  "country": "Канада"
+ },
+ {
+  "id": "monte-carlo",
+  "name": "Монте-Карло",
+  "country": "Монако"
+ },
+ {
+  "id": "monza",
+  "name": "Монца",
+  "country": "Италия"
+ },
+ {
+  "id": "austin",
+  "name": "Остин",
+  "country": "США"
+ },
+ {
+  "id": "sao-paulo",
+  "name": "Сан-Паулу",
+  "country": "Бразилия"
+ },
+ {
+  "id": "silverstone",
+  "name": "Сильверстоун",
+  "country": "Великобритания"
+ },
+ {
+  "id": "singapore",
+  "name": "Сингапур",
+  "country": "Сингапур"
+ },
+ {
+  "id": "spa-francorchamps",
+  "name": "Спа-Франкоршам",
+  "country": "Бельгия"
+ },
+ {
+  "id": "spielberg",
+  "name": "Шпильберг",
+  "country": "Австрия"
+ },
+ {
+  "id": "bahrain",
+  "name": "Сахир",
+  "country": "Бахрейн"
+ },
+ {
+  "id": "jeddah",
+  "name": "Джидда",
+  "country": "Саудовская Аравия"
+ },
+ {
+  "id": "melbourne",
+  "name": "Мельбурн",
+  "country": "Австралия"
+ },
+ {
+  "id": "suzuka",
+  "name": "Сузука",
+  "country": "Япония"
+ },
+ {
+  "id": "shanghai",
+  "name": "Шанхай",
+  "country": "Китай"
+ },
+ {
+  "id": "portimao",
+  "name": "Портиман",
+  "country": "Португалия"
+ },
+ {
+  "id": "madrid",
+  "name": "Мадрид",
+  "country": "Испания"
+ },
+ {
+  "id": "istanbul",
+  "name": "Стамбул",
+  "country": "Турция"
+ },
+ {
+  "id": "lusail",
+  "name": "Лусаил",
+  "country": "Катар"
+ },
+ {
+  "id": "yas-marina",
+  "name": "Яс-Марина",
+  "country": "ОАЭ"
+ },
+ {
+  "id": "miami",
+  "name": "Майами",
+  "country": "США"
+ }
+]

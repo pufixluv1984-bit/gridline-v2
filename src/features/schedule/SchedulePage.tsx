@@ -30,6 +30,7 @@ export default function SchedulePage() {
       <PageTitle title="Календарь" sub="Расписание" />
       <Toolbar>
         <PillLink to="/schedule">Расписание</PillLink>
+        <PillLink to="/tracks">Трассы</PillLink>
         <PillLink to="/results">Результаты</PillLink>
       </Toolbar>
       <Content>

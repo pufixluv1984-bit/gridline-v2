@@ -98,6 +98,7 @@ export type Database = {
       transfer_league: { Args: { league: string; new_owner: string }; Returns: undefined };
       reset_invite_code: { Args: { league: string }; Returns: string };
       data_updated_at: { Args: Record<string, never>; Returns: string | null };
+      is_site_admin: { Args: Record<string, never>; Returns: boolean };
       admin_set_result: { Args: { ev: number; session: string; driver_ids: string[]; fastest_lap?: string }; Returns: number };
     };
     Enums: {

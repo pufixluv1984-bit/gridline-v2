@@ -127,3 +127,24 @@
 .mini a:hover {
   color: #fff;
 }
+
+/* Плашка свежести данных (макет Main, .gpill) */
+.pill {
+  display: inline-flex;
+  align-self: flex-start;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: #16161b;
+  border: 1px solid var(--line);
+  color: #a0a0aa;
+  font-size: 12px;
+}
+.pill i {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--pos);
+  box-shadow: 0 0 8px rgba(127, 224, 160, 0.7);
+}

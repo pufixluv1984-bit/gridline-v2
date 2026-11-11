@@ -1,4 +1,9 @@
+import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
+import { dataUpdatedAt } from '@/lib/api/screens';
+import { env } from '@/lib/env';
+import { ago } from '@/lib/time/format';
+import { useServerNow } from '@/lib/time/useServerNow';
 import { IconFlagBold } from './icons';
 import s from './Footer.module.css';
 
@@ -40,6 +45,7 @@ export function Footer() {
           <div className={s.tag}>
             Игра прогнозов и фэнтези-лига по Формуле-1 для друзей и компаний. Играем на выходных, без рекламы и денег.
           </div>
+          <DataFreshness />
         </div>
         <nav className={s.cols} aria-label="Ссылки в подвале">
           <div className={s.col}>
@@ -84,6 +90,19 @@ export function Footer() {
         </p>
       </div>
     </footer>
+  );
+}
+
+/** Макет Main: «Данные F1 обновлены N минут назад» — время последней успешной синхронизации. */
+function DataFreshness() {
+  const q = useQuery({ queryKey: ['data-updated-at'], queryFn: dataUpdatedAt, enabled: env.supabaseConfigured, staleTime: 5 * 60_000 });
+  const now = useServerNow();
+  if (!q.data) return null;
+  return (
+    <span className={s.pill}>
+      <i aria-hidden="true" />
+      Данные F1 обновлены {ago(q.data, now)}
+    </span>
   );
 }
 

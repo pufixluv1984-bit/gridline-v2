@@ -1,0 +1,36 @@
+/* Контур трассы и «бегущая точка» — как в макете Tracks (docs/DESIGN.md, «Анимации»). */
+.svg {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 360 / 230;
+  overflow: visible;
+}
+.trk {
+  fill: none;
+  stroke: var(--accent);
+  stroke-width: 3.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  filter: drop-shadow(0 0 6px var(--glowc));
+  opacity: 0.9;
+}
+.flow {
+  stroke: #fff;
+  stroke-width: 2.2;
+  stroke-dasharray: 14 986;
+  animation: flow 7s linear infinite;
+  animation-delay: calc(var(--i, 0) * -420ms);
+  filter: none;
+  opacity: 0.95;
+}
+@keyframes flow {
+  to {
+    stroke-dashoffset: -1000;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .flow {
+    animation: none;
+    opacity: 0;
+  }
+}

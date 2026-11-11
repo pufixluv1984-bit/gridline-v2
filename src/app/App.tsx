@@ -19,6 +19,9 @@ const LeaguePage = lazy(() => import('@/features/league/LeaguePage'));
 const LeagueIndexPage = lazy(() => import('@/features/league/LeaguePage').then((m) => ({ default: m.LeagueIndexPage })));
 const SchedulePage = lazy(() => import('@/features/schedule/SchedulePage'));
 const ResultsPage = lazy(() => import('@/features/results/ResultsPage'));
+const TracksPage = lazy(() => import('@/features/schedule/TracksPage'));
+const WaitingPage = lazy(() => import('@/features/lobby/WaitingPage'));
+const AdminResultsPage = lazy(() => import('@/features/admin/AdminResultsPage'));
 const JoinByCodePage = lazy(() => import('@/features/lobby/JoinPage').then((m) => ({ default: m.JoinByCodePage })));
 
 const queryClient = new QueryClient({
@@ -31,7 +34,6 @@ const guest = (el: ReactNode) => <RedirectIfSignedIn>{el}</RedirectIfSignedIn>;
 
 // Разделы следующих фаз — пока заглушки внутри каркаса.
 const SOON: { path: string; title: string; phase: number }[] = [
-  { path: 'tracks', title: 'Трассы', phase: 1 },
   { path: 'rules', title: 'Правила', phase: 2 },
   { path: 'fantasy/*', title: 'Фэнтези-лига', phase: 4 },
 ];
@@ -68,6 +70,9 @@ export function App() {
                 <Route path="lobby/create" element={<CreateLeaguePage />} />
                 <Route path="lobby/join" element={<JoinByCodePage />} />
                 <Route path="lobby/:id/invite" element={<InvitePage />} />
+                <Route path="lobby/:id/waiting" element={<WaitingPage />} />
+                <Route path="tracks" element={<TracksPage />} />
+                <Route path="admin/results" element={<AdminResultsPage />} />
                 {SOON.map((r) => (
                   <Route key={r.path} path={r.path} element={<SoonPage title={r.title} phase={r.phase} />} />
                 ))}

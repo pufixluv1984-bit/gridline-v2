@@ -2,6 +2,8 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useCallback, useState } from 'react';
 import { useAuth } from '@/features/auth/authContext';
 import { deleteMyAccount } from '@/lib/api/account';
+import { isSiteAdmin } from '@/lib/api/admin';
+import { Link } from 'react-router-dom';
 import { signOut } from '@/lib/api/auth';
 import { getMyProfile, profileKeys } from '@/lib/api/profile';
 import { initialsOf } from '@/lib/initials';
@@ -36,6 +38,7 @@ export default function SettingsPage() {
     enabled: !!user,
   });
 
+  const admin = useQuery({ queryKey: ['is-admin'], queryFn: isSiteAdmin, staleTime: Infinity, enabled: !!user });
   const [dialog, setDialog] = useState<'logout' | 'delete' | null>(null);
   const [confirm, setConfirm] = useState('');
   const [busy, setBusy] = useState(false);
@@ -95,7 +98,19 @@ export default function SettingsPage() {
             </div>
           </Card>
 
-          <Card i={1} className={`${s.col} ${s.danger}`}>
+          {admin.data && (
+            <Card i={1} className={s.col}>
+              <h2 className={p.h}>Админ сайта</h2>
+              <div className={s.kvr}>
+                <div>
+                  <div className={s.t}>Ввести результат вручную</div>
+                  <div className={s.s}>Если Jolpica не отдала квалификацию или гонку</div>
+                </div>
+                <Link className={`${b.cta} ${b.sm} ${b.ghost}`} to="/admin/results">Открыть</Link>
+              </div>
+            </Card>
+          )}
+          <Card i={2} className={`${s.col} ${s.danger}`}>
             <h2 className={p.h}>Опасная зона</h2>
             <div className={s.kvr}>
               <div>

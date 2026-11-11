@@ -69,7 +69,7 @@ export default function InvitePage() {
               </div>
             )}
           </div>
-          <Link className={b.cta} to={`/league/${id}`} style={{ padding: '0 28px' }}>Перейти в лобби</Link>
+          <Link className={b.cta} to={`/lobby/${id}/waiting`} style={{ padding: '0 28px' }}>Перейти в лобби</Link>
         </section>
 
         <div className="row">

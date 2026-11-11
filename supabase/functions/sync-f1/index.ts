@@ -5,7 +5,9 @@
 // Что делает за запуск:
 //   • расписание сезона и заявку (кто за кого едет) — раз в 6 часов;
 //   • результаты квалификации и гонки — после сессии каждые 10 минут, пока их нет;
-//     потом раз в час до 50 часов после старта гонки (штрафы), затем фиксирует (is_final).
+//     потом раз в час до 50 часов после старта гонки (штрафы), затем фиксирует (is_final);
+//   • таблицу чемпионата (пилоты и команды) — раз в 3 часа;
+//   • погоду на дни текущего этапа (Open-Meteo, CC BY 4.0) — раз в 3 часа.
 
 const JOLPICA = 'https://api.jolpi.ca/ergast/f1';
 const SB_URL = Deno.env.get('SUPABASE_URL')!;
@@ -17,7 +19,7 @@ const GP: Record<string, { name: string; slug: string; country: string }> = {
   albert_park: { name: 'Гран-при Австралии', slug: 'melbourne', country: 'Австралия' },
   shanghai: { name: 'Гран-при Китая', slug: 'shanghai', country: 'Китай' },
   suzuka: { name: 'Гран-при Японии', slug: 'suzuka', country: 'Япония' },
-  bahrain: { name: 'Гран-при Бахрейна', slug: 'sakhir', country: 'Бахрейн' },
+  bahrain: { name: 'Гран-при Бахрейна', slug: 'bahrain', country: 'Бахрейн' },
   jeddah: { name: 'Гран-при Саудовской Аравии', slug: 'jeddah', country: 'Саудовская Аравия' },
   miami: { name: 'Гран-при Майами', slug: 'miami', country: 'США' },
   villeneuve: { name: 'Гран-при Канады', slug: 'montreal', country: 'Канада' },
@@ -101,6 +103,8 @@ async function syncSchedule(year: number) {
       circuit: (circuit.circuitName as string) ?? id,
       country: gp?.country ?? ((circuit.Location as Json)?.country as string),
       is_sprint: Boolean(r.Sprint),
+      lat: Number((circuit.Location as Json)?.lat) || null,
+      lon: Number((circuit.Location as Json)?.long) || null,
       sessions: sessions.filter((s) => s.starts_at),
     };
   });
@@ -128,6 +132,61 @@ async function syncEntries(year: number) {
   const rows = ((race?.Results as Json[]) ?? []).map(resultRow);
   if (!rows.length) return 0;
   return rpc<number>('sync_entries', { season_year: year, rows });
+}
+
+// ── Чемпионат мира ──────────────────────────────────────────────────────
+async function syncChampionship(year: number) {
+  const d = await jolpica(`/${year}/driverStandings.json?limit=60`);
+  const dl = ((((d?.MRData as Json)?.StandingsTable as Json)?.StandingsLists as Json[] | undefined)?.[0]?.DriverStandings as Json[]) ?? [];
+  const drivers = dl.map((x) => {
+    const dr = x.Driver as Json;
+    return {
+      position: x.position ?? x.positionText,
+      driver_id: dr.driverId,
+      code: (dr.code as string) ?? (dr.familyName as string).slice(0, 3).toUpperCase(),
+      given_name: dr.givenName,
+      family_name: dr.familyName,
+      points: x.points,
+      wins: x.wins,
+    };
+  }).filter((x) => x.position);
+  const c = await jolpica(`/${year}/constructorStandings.json?limit=30`);
+  const cl = ((((c?.MRData as Json)?.StandingsTable as Json)?.StandingsLists as Json[] | undefined)?.[0]?.ConstructorStandings as Json[]) ?? [];
+  const teams = cl.map((x) => ({
+    position: x.position ?? x.positionText,
+    team_id: (x.Constructor as Json).constructorId,
+    points: x.points,
+    wins: x.wins,
+  })).filter((x) => x.position);
+  const nd = drivers.length ? await rpc<number>('sync_championship', { season_year: year, kind: 'drivers', rows: drivers }) : 0;
+  const nt = teams.length ? await rpc<number>('sync_championship', { season_year: year, kind: 'teams', rows: teams }) : 0;
+  return { drivers: nd, teams: nt };
+}
+
+// ── Погода (Open-Meteo, без ключа; лицензия CC BY 4.0 — подпись на сайте) ──
+type WeatherTarget = { event_id: number; lat: number; lon: number; first_day: string; last_day: string };
+
+async function syncWeather() {
+  const [t] = await rpc<WeatherTarget[]>('sync_weather_target');
+  if (!t) return 0;
+  // Прогноз доступен на 16 дней вперёд; раньше — пропускаем.
+  if (Date.parse(t.first_day) - Date.now() > 15 * 24 * HOUR) return 0;
+  const url =
+    `https://api.open-meteo.com/v1/forecast?latitude=${t.lat}&longitude=${t.lon}` +
+    `&daily=temperature_2m_max,temperature_2m_min,wind_speed_10m_max,precipitation_probability_max,weather_code` +
+    `&timezone=UTC&start_date=${String(t.first_day).slice(0, 10)}&end_date=${String(t.last_day).slice(0, 10)}`;
+  const res = await fetch(url, { headers: { 'User-Agent': 'Gridline-sync/1.0 (non-commercial fan project)' } });
+  if (!res.ok) throw new Error(`Open-Meteo: ${res.status}`);
+  const d = (await res.json()) as { daily?: Record<string, (number | string | null)[]> };
+  const days = (d.daily?.time ?? []).map((day, i) => ({
+    day,
+    t_max: d.daily?.temperature_2m_max?.[i] ?? null,
+    t_min: d.daily?.temperature_2m_min?.[i] ?? null,
+    wind_max: d.daily?.wind_speed_10m_max?.[i] ?? null,
+    precip_prob: d.daily?.precipitation_probability_max?.[i] ?? null,
+    code: d.daily?.weather_code?.[i] ?? null,
+  }));
+  return rpc<number>('sync_weather', { ev: t.event_id, days });
 }
 
 // ── Результаты ──────────────────────────────────────────────────────────
@@ -189,6 +248,23 @@ Deno.serve(async () => {
       await rpc('sync_mark', { k: 'entries', ok: true, details: { drivers: report.entries } });
     }
     await syncResults(report);
+    // Чемпионат и погода — не критичны: их сбой не должен мешать результатам.
+    if (Date.now() - (await lastOk('championship')) > 3 * HOUR) {
+      try {
+        report.championship = await syncChampionship(year);
+        await rpc('sync_mark', { k: 'championship', ok: true, details: report.championship as Json });
+      } catch (e) {
+        report.championship = { error: e instanceof Error ? e.message : String(e) };
+      }
+    }
+    if (Date.now() - (await lastOk('weather')) > 3 * HOUR) {
+      try {
+        report.weather = await syncWeather();
+        await rpc('sync_mark', { k: 'weather', ok: true, details: { days: report.weather } });
+      } catch (e) {
+        report.weather = { error: e instanceof Error ? e.message : String(e) };
+      }
+    }
     await rpc('sync_mark', { k: 'run', ok: true, details: report });
     return Response.json(report);
   } catch (e) {

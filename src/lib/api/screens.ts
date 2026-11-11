@@ -54,8 +54,33 @@ export type PredictScreen = {
   submissions: Submission[];
 };
 
+export type ChampRow = {
+  position: number;
+  points: number;
+  wins: number;
+  code: string | null;
+  name: string | null;
+  number: number | null;
+  team_name: string | null;
+  team_code: string | null;
+  color: string | null;
+};
+
+export type WeatherDay = {
+  day: string;
+  t_max: number | null;
+  t_min: number | null;
+  wind_max: number | null;
+  precip_prob: number | null;
+  code: number | null;
+};
+
 export type HomeScreen = {
   event: EventInfo | null;
+  // Поля из миграции 0009; до её применения их нет в ответе.
+  track?: string | null;
+  weather?: WeatherDay[];
+  championship?: { drivers: ChampRow[]; teams: ChampRow[] };
   submitted: boolean;
   season_done: number;
   last_race: {

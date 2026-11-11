@@ -44,6 +44,7 @@ export default function ResultsPage() {
       <PageTitle title="Календарь" sub="Результаты" />
       <Toolbar>
         <PillLink to="/schedule">Расписание</PillLink>
+        <PillLink to="/tracks">Трассы</PillLink>
         <PillLink to="/results">Результаты</PillLink>
       </Toolbar>
       <Content>
