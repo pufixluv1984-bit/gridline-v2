@@ -437,3 +437,7 @@ skip_nonce_check = true
 enabled = false
 client_id = "env(SUPABASE_AUTH_EXTERNAL_DISCORD_CLIENT_ID)"
 secret = "env(SUPABASE_AUTH_EXTERNAL_DISCORD_SECRET)"
+
+# Функция синхронизации вызывается pg_cron без JWT; от частых вызовов её защищает sync_begin() в базе.
+[functions.sync-f1]
+verify_jwt = false

@@ -47,12 +47,11 @@ reset role;
 
 -- ── VOVA создаёт лигу ───────────────────────────────────────────────────
 select pg_temp.login('11111111-1111-1111-1111-111111111111');
-select lives_ok($$ insert into leagues (id, name, season_id, owner_id)
-  values ('aaaaaaaa-0000-0000-0000-000000000001', 'Друзья', (select id from seasons where year = 2026),
-          '11111111-1111-1111-1111-111111111111') $$, 'вошедший создаёт лигу');
-select is((select role::text from league_members where league_id = 'aaaaaaaa-0000-0000-0000-000000000001'
+select lives_ok($$ insert into leagues (name, season_id)
+  values ('Друзья', (select id from seasons where year = 2026)) $$, 'вошедший создаёт лигу (владельца ставит база)');
+select is((select role::text from league_members where league_id = (select id from leagues where name = 'Друзья')
            and user_id = '11111111-1111-1111-1111-111111111111'), 'owner', 'создатель стал владельцем');
-select matches((select invite_code from leagues where id = 'aaaaaaaa-0000-0000-0000-000000000001'),
+select matches((select invite_code from leagues where id = (select id from leagues where name = 'Друзья')),
   '^[A-HJKMNP-Z2-9]{6}$', 'инвайт-код из 6 символов без похожих');
 select throws_ok($$ insert into leagues (name, season_id, owner_id)
   values ('Чужая', 1, '22222222-2222-2222-2222-222222222222') $$, '42501', null, 'нельзя создать лигу от чужого имени');
@@ -61,7 +60,7 @@ select throws_ok($$ insert into events (season_id, round, slug, name, circuit, c
 select throws_ok($$ update profiles set nickname = '<script>' where id = '11111111-1111-1111-1111-111111111111' $$,
   '23514', null, 'ник проверяет база');
 select throws_ok($$ update leagues set owner_id = '22222222-2222-2222-2222-222222222222'
-  where id = 'aaaaaaaa-0000-0000-0000-000000000001' $$, '42501', null, 'владельца лиги не сменить обычным update');
+  where id = (select id from leagues where name = 'Друзья') $$, '42501', null, 'владельца лиги не сменить обычным update');
 reset role;
 
 -- ── T-SHY ещё не в лиге ─────────────────────────────────────────────────
@@ -70,7 +69,7 @@ select is((select count(*)::int from leagues), 0, 'чужую лигу не ви
 select is((select count(*)::int from league_members), 0, 'чужой состав не видно');
 select is((select count(*)::int from profiles), 1, 'виден только свой профиль');
 select throws_ok($$ insert into league_members (league_id, user_id)
-  values ('aaaaaaaa-0000-0000-0000-000000000001', '22222222-2222-2222-2222-222222222222') $$,
+  values ((select id from leagues where name = 'Друзья'), '22222222-2222-2222-2222-222222222222') $$,
   '42501', null, 'вступить в лигу напрямую нельзя');
 update profiles set nickname = 'HACK' where id = '11111111-1111-1111-1111-111111111111';
 reset role;
@@ -79,15 +78,15 @@ select is((select nickname from profiles where id = '11111111-1111-1111-1111-111
 
 -- ── После вступления (в фазе 1 это делает join_league) ─────────────────
 insert into league_members (league_id, user_id) values
-  ('aaaaaaaa-0000-0000-0000-000000000001', '22222222-2222-2222-2222-222222222222');
+  ((select id from leagues where name = 'Друзья'), '22222222-2222-2222-2222-222222222222');
 select pg_temp.login('22222222-2222-2222-2222-222222222222');
 select is((select count(*)::int from leagues), 1, 'участник видит лигу');
 select is((select count(*)::int from profiles), 2, 'участник видит профили соседей по лиге');
 select is((select count(*)::int from profiles where id = '33333333-3333-3333-3333-333333333333'), 0,
   'профили вне общих лиг скрыты');
-update leagues set name = 'Захват' where id = 'aaaaaaaa-0000-0000-0000-000000000001';
+update leagues set name = 'Захват' where id = (select id from leagues where name = 'Друзья');
 reset role;
-select is((select name from leagues where id = 'aaaaaaaa-0000-0000-0000-000000000001'), 'Друзья',
+select is((select name from leagues where id = (select id from leagues where name = 'Друзья')), 'Друзья',
   'участник не правит настройки лиги');
 
 select * from finish();
