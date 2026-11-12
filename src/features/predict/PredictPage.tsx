@@ -15,6 +15,7 @@ import {
   samePicks, toPrediction, usedInBlock, type Block, type Extras, type Picks,
 } from './picks';
 import { BoostPicker, YesNo } from './Bonus';
+import { Notices, Toast } from '@/ui/Toast';
 
 const RACE_RULES = [
   ['Точное место', '+10'],
@@ -58,6 +59,7 @@ export default function PredictPage() {
   const [extras, setExtras] = useState<Extras>(emptyExtras);
   const [active, setActive] = useState(0);
   const [syncedFrom, setSyncedFrom] = useState<Picks | null>(null);
+  const [toast, setToast] = useState<'saved' | 'failed' | null>(null);
 
   // Подставляем сохранённый прогноз, когда он пришёл с сервера (состояние из пропсов — прямо в рендере).
   if (syncedFrom !== saved) {
@@ -104,7 +106,9 @@ export default function PredictPage() {
     },
     onError: (_e, _v, ctx) => {
       if (ctx?.prev) qc.setQueryData(key, ctx.prev);
+      setToast('failed');
     },
+    onSuccess: () => setToast('saved'),
     onSettled: () => {
       void qc.invalidateQueries({ queryKey: ['screen'] });
     },
@@ -160,6 +164,8 @@ export default function PredictPage() {
         ) : !ev ? (
           <div className="empty-state"><h3>Сезон закончился</h3><p>Прогнозы снова откроются перед первым этапом нового сезона.</p></div>
         ) : (
+          <>
+          <Notices notices={data?.notices} />
           <div className="row" style={{ alignItems: 'flex-start' }}>
             <section className="card rise" style={{ flex: '2 1 760px', minWidth: 0 }}>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 16, justifyContent: 'space-between', alignItems: 'flex-start' }}>
@@ -339,11 +345,14 @@ export default function PredictPage() {
               )}
             </div>
           </div>
+          </>
         )}
         <div className="mute" style={{ fontSize: 12, padding: '4px 6px 0', lineHeight: 1.6 }}>
           Прогноз закрывается со стартом квалификации, чужие прогнозы скрыты до закрытия. Не отправил прогноз — 0 очков за этап. Очки предварительные 48 часов после гонки (штрафы стюардов), потом фиксируются. Максимум за этап без бустера: 14 за квалификацию, 110 за гонку, 25 за бонусы.
         </div>
       </Content>
+      {toast === 'saved' && <Toast tone="g" title="Прогноз сохранён" text="Можно менять до старта квалификации" onDone={() => setToast(null)} />}
+      {toast === 'failed' && <Toast tone="r" title="Не удалось сохранить" text="Проверь интернет и повтори" onDone={() => setToast(null)} />}
     </>
   );
 }

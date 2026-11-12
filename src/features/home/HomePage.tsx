@@ -10,6 +10,7 @@ import { useServerNow } from '@/lib/time/useServerNow';
 import { Avatar, Countdown, DriverTile, Skeleton } from '@/ui/game';
 import { IconCrosshair } from '@/ui/icons';
 import { hasTrack } from '@/lib/tracks';
+import { Notices } from '@/ui/Toast';
 import { TrackMap } from '@/ui/TrackMap';
 import { weatherIcon, weatherText, weekday } from './weather';
 import { Content, PageTitle, PillLink, PrimaryLink, Toolbar, ToolbarDivider } from '@/ui/Page';
@@ -53,6 +54,7 @@ export default function HomePage() {
           <div className="empty-state"><h3>Нет связи с сервером</h3><p>Проверь интернет — мы попробуем ещё раз автоматически.</p><button type="button" className={`${b.cta} ${b.sm}`} onClick={() => q.refetch()}>Повторить</button></div>
         ) : (
           <>
+            <Notices notices={data!.notices} />
             <Championship data={data!} />
             <div className="row">
               <NextStage data={data!} open={open} />

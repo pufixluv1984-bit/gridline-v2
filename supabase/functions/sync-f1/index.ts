@@ -316,7 +316,8 @@ Deno.serve(async () => {
     }
     const year = new Date().getUTCFullYear();
 
-    if (Date.now() - (await lastOk('schedule')) > 6 * HOUR) {
+    // Расписание — раз в 6 часов или сразу, если у этапов ещё нет координат трасс (нужны для погоды).
+    if (Date.now() - (await lastOk('schedule')) > 6 * HOUR || (await rpc<boolean>('sync_needs_coords'))) {
       report.schedule = await syncSchedule(year);
       await rpc('sync_mark', { k: 'schedule', ok: true, details: { races: report.schedule } });
     }
@@ -345,7 +346,7 @@ Deno.serve(async () => {
         report.championship = { error: e instanceof Error ? e.message : String(e) };
       }
     }
-    if (Date.now() - (await lastOk('weather')) > 3 * HOUR) {
+    if (Date.now() - (await lastOk('weather')) > 3 * HOUR || report.schedule) {
       try {
         report.weather = await syncWeather();
         await rpc('sync_mark', { k: 'weather', ok: true, details: { days: report.weather } });

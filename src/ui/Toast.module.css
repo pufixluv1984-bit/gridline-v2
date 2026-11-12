@@ -1,0 +1,59 @@
+/* Макет Overlays: .toast, .ti (g / r / y), подпись .m */
+.toast {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  border-radius: 16px;
+  background: #16161b;
+  border: 1px solid var(--line);
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.5);
+  font-size: 14px;
+}
+.toast b {
+  display: block;
+  font-weight: 600;
+}
+.m {
+  display: block;
+  color: var(--mute);
+  font-size: 12.5px;
+  margin-top: 2px;
+  line-height: 1.45;
+}
+.ti {
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.g {
+  background: rgba(127, 224, 160, 0.14);
+  color: var(--pos);
+}
+.r {
+  background: rgba(255, 90, 80, 0.14);
+  color: var(--neg);
+}
+.y {
+  background: rgba(255, 184, 0, 0.14);
+  color: var(--warn);
+}
+/* Всплывающий: справа сверху, появляется через opacity/transform */
+.float {
+  position: fixed;
+  top: 24px;
+  right: 24px;
+  z-index: 120;
+  max-width: 380px;
+  animation: in 0.25s var(--ease-out) both;
+}
+@keyframes in {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+}

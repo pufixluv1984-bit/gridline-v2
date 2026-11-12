@@ -78,6 +78,7 @@ export type PredictScreen = {
   prediction: (SavedPredictionRow & { updated_at: string }) | null;
   /** Бустер уже стоит на другом этапе этого окна (5 этапов) — здесь его поставить нельзя. */
   boost_used?: { round: number; name: string } | null;
+  notices?: { session: string; old_at: string; new_at: string }[];
   last: { name: string; total: number; qualy: number | null; race: number | null; bonus: number | null } | null;
   league: { id: string; name: string } | null;
   submissions: Submission[];
@@ -106,6 +107,7 @@ export type WeatherDay = {
 
 export type HomeScreen = {
   event: EventInfo | null;
+  notices?: { session: string; old_at: string; new_at: string }[];
   // Поля из миграции 0009; до её применения их нет в ответе.
   track?: string | null;
   weather?: WeatherDay[];
