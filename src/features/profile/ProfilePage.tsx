@@ -72,6 +72,7 @@ export default function ProfilePage() {
   const acc = data?.accuracy;
   const overall = acc ? pct(acc.qualy_hit + acc.race_hit, acc.qualy_total + acc.race_total) : null;
   const firstLeague = data?.leagues[0];
+  const fl = data?.fantasy?.league;
 
   return (
     <>
@@ -98,6 +99,15 @@ export default function ProfilePage() {
         )}
 
         <div className="row">
+          {fl ? (
+            <section className={`card rise ${s.stat}`} style={{ ['--i' as string]: 1 }}>
+              <div className="eyebrow">Фэнтези · место</div>
+              <div className={`num ${s.big}`}>{fl.rank}<small> из {fl.members}</small></div>
+              <div style={{ marginTop: 14 }}>
+                {fl.rank === 1 && Number(fl.points) > 0 ? <span className="chip green">Лидер</span> : <span className="chip">{fl.name}</span>}
+              </div>
+            </section>
+          ) : (
           <section className={`card rise ${s.stat}`} style={{ ['--i' as string]: 1 }}>
             <div className="eyebrow">Лига · место</div>
             <div className={`num ${s.big}`}>
@@ -112,6 +122,7 @@ export default function ProfilePage() {
               )}
             </div>
           </section>
+          )}
           <section className={`card rise ${s.stat}`} style={{ ['--i' as string]: 2 }}>
             <div className="eyebrow">Очки сезона</div>
             <div className={`num ${s.big}`}>{total.toLocaleString('ru-RU')}</div>
@@ -133,9 +144,14 @@ export default function ProfilePage() {
         </div>
 
         <div className="row">
-          <BestDrivers data={data} />
+          {data?.fantasy?.squad ? <FantasyCard data={data} /> : <BestDrivers data={data} />}
           <PredictCard data={data} me={me} />
         </div>
+        {data?.fantasy?.squad && (
+          <div className="row">
+            <BestDrivers data={data} />
+          </div>
+        )}
 
         <History data={data} season={season} onSeason={setSeason} />
 
@@ -163,7 +179,7 @@ export default function ProfilePage() {
               )}
             </div>
           </section>
-          {isMe && data && me && <ProfileSettings key={`${p?.nickname}${p?.avatar_color}${p?.fav_driver?.id}${p?.fav_team?.id}`} data={data} userId={me} />}
+          {isMe && data && me && <ProfileSettings key={`${p?.nickname}${p?.avatar_color}${p?.fav_driver?.id}${p?.fav_team?.id}${data.fantasy?.team_name}`} data={data} userId={me} />}
         </div>
       </Content>
     </>
@@ -242,6 +258,50 @@ function BestDrivers({ data }: { data: ProfileScreen | undefined }) {
           </div>
         ))}
         {data && list.length === 0 && <div className="mute" style={{ fontSize: 14 }}>Появятся после первого этапа с результатами.</div>}
+      </div>
+    </section>
+  );
+}
+
+/** Макет Profile: «Фэнтези-команда» — состав последнего этапа, бюджет, замены, чипы. */
+function FantasyCard({ data }: { data: ProfileScreen }) {
+  const f = data.fantasy!;
+  const sq = f.squad!;
+  const used = new Set(f.chips_used);
+  return (
+    <section className="card rise" style={{ ['--i' as string]: 5, flex: '1 1 560px' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12 }}>
+        <h2 className="h">Фэнтези-команда{f.team_name ? ` «${f.team_name}»` : ''}</h2>
+        {data.is_me && <Link className="mini" to="/fantasy/squad" style={{ display: 'inline-flex', alignItems: 'center' }}>Состав</Link>}
+      </div>
+      <div className={s.lineup}>
+        {sq.lineup.map((d) => (
+          <div key={d.id} title={d.name} style={{ position: 'relative' }}>
+            <DriverTile driver={{ code: d.code, number: d.number, color: d.color ?? '#3a3a42', team_code: d.team_code ?? '', name: d.name }} size={60} className={s.md} />
+            {sq.drs === d.id && <i className="code act" style={{ position: 'absolute', right: -4, top: -6, minWidth: 0, height: 18, fontSize: 10 }}>×2</i>}
+            <div className="num" style={{ fontSize: 13, fontWeight: 600 }}>{d.code}</div>
+          </div>
+        ))}
+        {sq.cons.map((t) => (
+          <div key={t.id} title={t.name}>
+            <div style={{ height: 60, width: 60, borderRadius: 16, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, background: '#15151a', border: '1px solid var(--line)', font: '700 12px var(--font-num)' }}>
+              <i style={{ width: 4, height: 18, borderRadius: 2, background: t.color }} />{t.code}
+            </div>
+            <div className="num" style={{ fontSize: 13, fontWeight: 600 }}>{t.code}</div>
+          </div>
+        ))}
+      </div>
+      <div style={{ marginTop: 20 }}>
+        <div className="kv"><span className="mute">Бюджет</span><b className="num">${Number(sq.cost).toFixed(1)}M <span className="mute" style={{ fontWeight: 500 }}>· свободно ${(f.budget - Number(sq.cost)).toFixed(1)}M</span></b></div>
+        <div className="kv"><span className="mute">Замены на этапе</span><b>{sq.free_before >= 99 ? 'первая сборка' : `${sq.transfers} из ${sq.free_before} бесплатных`}</b></div>
+        <div className="kv">
+          <span className="mute">Чипы</span>
+          <span style={{ display: 'flex', gap: 6, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+            {(['wildcard', 'limitless', 'final_fix', 'autopilot', 'no_negative', 'extra_drs'] as const).map((c, i) => (
+              <span key={c} className={`chip ${used.has(c) ? '' : 'green'}`} style={used.has(c) ? { opacity: 0.5 } : undefined}>{['WC', 'LL', 'FF', 'AP', 'NN', 'X3'][i]}</span>
+            ))}
+          </span>
+        </div>
       </div>
     </section>
   );
@@ -350,6 +410,7 @@ function ProfileSettings({ data, userId }: { data: ProfileScreen; userId: string
   const [nick, setNick] = useState(p.nickname);
   const [color, setColor] = useState(p.avatar_color);
   const [nextNickAt, setNextNickAt] = useState<number | null>(null);
+  const [teamName, setTeamName] = useState(data.fantasy?.team_name ?? '');
 
   const save = useMutation({
     mutationFn: (patch: Parameters<typeof updateProfile>[1]) => updateProfile(userId, patch),
@@ -387,6 +448,16 @@ function ProfileSettings({ data, userId }: { data: ProfileScreen; userId: string
             <span style={{ display: 'inline-flex', alignItems: 'center', gap: 10 }}><i className={s.dotc} style={{ background: p.avatar_color }} />{initialsOf(p.nickname)}</span>
             <span className="mute">Цвет</span>
           </button>
+        </div>
+        <div className="kv">
+          <label className="mute" htmlFor="team-name">Название команды</label>
+          <span style={{ display: 'inline-flex', gap: 8 }}>
+            <input id="team-name" className={s.fld} style={{ cursor: 'text' }} maxLength={24} placeholder="Для фэнтези-лиги" value={teamName}
+              onChange={(e) => setTeamName(e.target.value)} />
+            {teamName.trim() !== (data.fantasy?.team_name ?? '') && (
+              <button type="button" className="mini go" disabled={save.isPending} onClick={() => save.mutate({ team_name: teamName.trim() || null })}>Сохранить</button>
+            )}
+          </span>
         </div>
         <div className="kv">
           <label className="mute" htmlFor="fav-driver">Любимый пилот</label>

@@ -14,17 +14,18 @@ import b from '@/ui/Button.module.css';
 import { LobbyTabs } from './LobbyTabs';
 
 const MODES = [
-  { t: 'Прогнозы', on: true },
-  { t: 'Фэнтези', on: false },
-  { t: 'Оба', on: false },
-];
+  { id: 'predict', t: 'Прогнозы', help: 'Игра прогнозов на этапы: квалификация, топ-10 и бонусы.' },
+  { id: 'fantasy', t: 'Фэнтези', help: 'Фэнтези-лига: состав из 5 пилотов и 2 конструкторов на бюджет.' },
+  { id: 'both', t: 'Оба', help: 'Две таблицы: прогнозы и фэнтези-лига, с одними и теми же друзьями.' },
+] as const;
+type Mode = (typeof MODES)[number]['id'];
 const ACCESS = [
   { t: 'По приглашению', on: false },
   { t: 'По ссылке', on: true },
   { t: 'Открытое', on: false },
 ];
 
-/** Макет Lobby-Create. Фэнтези, приглашения по нику и открытые лиги — в следующих фазах. */
+/** Макет Lobby-Create. Приглашения по нику и открытые лиги — позже. */
 export default function CreateLeaguePage() {
   const navigate = useNavigate();
   const qc = useQueryClient();
@@ -33,6 +34,7 @@ export default function CreateLeaguePage() {
   const profile = useQuery({ queryKey: profileKeys.me(userId ?? 'none'), queryFn: () => getMyProfile(userId!), enabled: !!userId });
   const schedule = useQuery({ queryKey: screenKeys.schedule(), queryFn: scheduleScreen, staleTime: 10 * 60_000 });
 
+  const [mode, setMode] = useState<Mode>('predict');
   const [name, setName] = useState('');
   const [count, setCount] = useState(8);
   const [startId, setStartId] = useState<string>('');
@@ -43,7 +45,7 @@ export default function CreateLeaguePage() {
 
   const create = useMutation({
     mutationFn: async () =>
-      createLeague({ name, maxMembers: count, startEventId: start?.id ?? null, seasonId: await currentSeasonId() }),
+      createLeague({ name, mode, maxMembers: count, startEventId: start?.id ?? null, seasonId: await currentSeasonId() }),
     onSuccess: (id) => {
       setCurrentLeague(id);
       void qc.invalidateQueries({ queryKey: ['screen'] });
@@ -82,12 +84,12 @@ export default function CreateLeaguePage() {
               <span className="lab">Режим игры</span>
               <div className="seg2" role="group" aria-label="Режим игры">
                 {MODES.map((m) => (
-                  <button key={m.t} type="button" className={m.on ? 'on' : ''} disabled={!m.on} title={m.on ? undefined : 'Фэнтези-лига откроется к сезону 2027'}>
+                  <button key={m.id} type="button" className={mode === m.id ? 'on' : ''} aria-pressed={mode === m.id} onClick={() => setMode(m.id)}>
                     {m.t}
                   </button>
                 ))}
               </div>
-              <div className="help">Игра прогнозов на этапы. Фэнтези-лига откроется к сезону 2027.</div>
+              <div className="help">{MODES.find((m) => m.id === mode)?.help}</div>
             </div>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 22 }}>
               <div style={{ flex: '1 1 220px' }}>

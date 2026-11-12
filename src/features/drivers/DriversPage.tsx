@@ -79,7 +79,11 @@ export default function DriversPage() {
                       ) : (
                         <>
                           <div><span className="eyebrow">Очки</span><b>{fmt(d.points)}</b></div>
-                          <div><span className="eyebrow">Место</span><b>{d.position ?? '—'}</b></div>
+                          {q.data?.prices?.[d.id] != null ? (
+                            <div><span className="eyebrow">Цена</span><b>${Number(q.data.prices[d.id]).toFixed(1)}M</b></div>
+                          ) : (
+                            <div><span className="eyebrow">Место</span><b>{d.position ?? '—'}</b></div>
+                          )}
                         </>
                       )}
                     </div>

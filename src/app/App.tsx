@@ -14,6 +14,12 @@ const SettingsPage = lazy(() => import('@/features/settings/SettingsPage'));
 const ProfilePage = lazy(() => import('@/features/profile/ProfilePage'));
 const DriversPage = lazy(() => import('@/features/drivers/DriversPage'));
 const DriverProfilePage = lazy(() => import('@/features/drivers/DriverProfilePage'));
+const FantasyLeaderboard = lazy(() => import('@/features/fantasy/LeaderboardPage'));
+const FantasySquad = lazy(() => import('@/features/fantasy/SquadPage'));
+const FantasyMarket = lazy(() => import('@/features/fantasy/MarketPage'));
+const FantasyResults = lazy(() => import('@/features/fantasy/ResultsPage'));
+const FantasyAnalytics = lazy(() => import('@/features/fantasy/AnalyticsPage'));
+const FantasyRules = lazy(() => import('@/features/fantasy/RulesPage'));
 const CreateLeaguePage = lazy(() => import('@/features/lobby/CreateLeaguePage'));
 const InvitePage = lazy(() => import('@/features/lobby/InvitePage'));
 const JoinPage = lazy(() => import('@/features/lobby/JoinPage'));
@@ -38,7 +44,6 @@ const guest = (el: ReactNode) => <RedirectIfSignedIn>{el}</RedirectIfSignedIn>;
 
 // Разделы следующих фаз — пока заглушки внутри каркаса.
 const SOON: { path: string; title: string; phase: number }[] = [
-  { path: 'fantasy/*', title: 'Фэнтези-лига', phase: 4 },
 ];
 
 export function App() {
@@ -83,6 +88,12 @@ export function App() {
                 {/* Правила начисления прогнозов — на экране прогноза (карточки справа). */}
                 <Route path="rules" element={<Navigate to="/predict" replace />} />
                 <Route path="admin/results" element={<AdminResultsPage />} />
+                <Route path="fantasy" element={<FantasyLeaderboard />} />
+                <Route path="fantasy/squad" element={<FantasySquad />} />
+                <Route path="fantasy/market" element={<FantasyMarket />} />
+                <Route path="fantasy/results" element={<FantasyResults />} />
+                <Route path="fantasy/analytics" element={<FantasyAnalytics />} />
+                <Route path="fantasy/rules" element={<FantasyRules />} />
                 {SOON.map((r) => (
                   <Route key={r.path} path={r.path} element={<SoonPage title={r.title} phase={r.phase} />} />
                 ))}

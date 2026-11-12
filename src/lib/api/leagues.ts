@@ -32,7 +32,7 @@ function friendly(error: { hint?: string | null; code?: string; message?: string
   return new Error('Не получилось. Попробуй ещё раз.');
 }
 
-export async function createLeague(input: { name: string; maxMembers: number; startEventId: number | null; seasonId: number }) {
+export async function createLeague(input: { name: string; mode?: 'predict' | 'fantasy' | 'both'; maxMembers: number; startEventId: number | null; seasonId: number }) {
   const { data, error } = await getSupabase()
     .from('leagues')
     .insert({
@@ -40,7 +40,7 @@ export async function createLeague(input: { name: string; maxMembers: number; st
       season_id: input.seasonId,
       max_members: input.maxMembers,
       start_event_id: input.startEventId,
-      mode: 'predict',
+      mode: input.mode ?? 'predict',
       bonus_config: { fastest_lap: true },
     })
     .select('id')

@@ -588,3 +588,125 @@ select.in {
   font-size: 22px;
   font-weight: 600;
 }
+
+/* Фэнтези (макеты Fantasy-*): DRS-кнопка, удаление, карточки чипов, код чипа, баннер замены */
+.slot.boost {
+  border-color: rgba(232, 33, 26, 0.5);
+  background: linear-gradient(90deg, rgba(232, 33, 26, 0.14), var(--bg-field) 65%);
+  box-shadow: 0 0 34px rgba(232, 33, 26, 0.14);
+}
+.bst {
+  height: 36px;
+  padding: 0 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: #16161b;
+  color: #b8b8c0;
+  font: 700 13px var(--font-num);
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+.bst:hover {
+  color: #fff;
+  border-color: rgba(255, 255, 255, 0.3);
+}
+.bst.on {
+  background: var(--accent);
+  border-color: transparent;
+  color: #fff;
+  box-shadow: 0 0 22px var(--glowc);
+}
+.bst:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+.xbtn {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: transparent;
+  color: #8d8d96;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  cursor: pointer;
+}
+.xbtn:hover {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.08);
+}
+.chipc {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 16px;
+  border-radius: 18px;
+  background: #0f0f12;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+.chipc.act {
+  border-color: rgba(232, 33, 26, 0.55);
+  background: linear-gradient(180deg, rgba(232, 33, 26, 0.16), #0f0f12 70%);
+  box-shadow: 0 0 30px rgba(232, 33, 26, 0.16);
+}
+.chipc.used {
+  opacity: 0.5;
+}
+.code {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 34px;
+  height: 26px;
+  padding: 0 8px;
+  border-radius: 8px;
+  font: 700 12px var(--font-num);
+  letter-spacing: 0.04em;
+  background: #1b1b21;
+  color: #e6e6ea;
+}
+.act .code,
+.code.act {
+  background: var(--accent);
+  color: #fff;
+}
+.sbn {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 18px;
+  border-radius: 18px;
+  background: rgba(255, 184, 0, 0.07);
+  border: 1px solid rgba(255, 184, 0, 0.32);
+}
+.sbn .ic {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 184, 0, 0.14);
+  color: #ffb800;
+}
+.tagw {
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #ffb800;
+  font-weight: 600;
+}
+.mini.off {
+  opacity: 0.5;
+  cursor: not-allowed;
+  background: transparent;
+}
+.mini.in {
+  background: rgba(80, 200, 120, 0.12);
+  color: var(--pos);
+  border-color: rgba(80, 200, 120, 0.3);
+}

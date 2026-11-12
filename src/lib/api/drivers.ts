@@ -17,7 +17,7 @@ export type CatalogDriver = {
   career_wins: number | null;
 };
 
-export type DriversScreen = { season: number; drivers: CatalogDriver[] };
+export type DriversScreen = { season: number; drivers: CatalogDriver[]; prices?: Record<string, number> };
 
 export type CareerSeason = {
   year: number;

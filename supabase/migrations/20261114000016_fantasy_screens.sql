@@ -435,7 +435,15 @@ begin
       from public.fantasy_league_table(lg) t where t.user_id = u) end,
     'squad', case when sq.user_id is null then null else jsonb_build_object(
       'drivers', sq.drivers, 'teams', sq.teams, 'drs', sq.drs, 'chip', sq.chip, 'cost', sq.cost,
-      'transfers', sq.transfers, 'free_before', sq.free_before) end,
+      'transfers', sq.transfers, 'free_before', sq.free_before,
+      'lineup', (select jsonb_agg(jsonb_build_object('id', d.id, 'code', d.code, 'name', coalesce(d.name_ru, d.family_name),
+                                                     'number', se.number, 'color', t.color, 'team_code', t.code) order by x.ord)
+                 from unnest(sq.drivers) with ordinality x(id, ord)
+                 join public.drivers d on d.id = x.id
+                 left join public.season_entries se on se.season_id = season and se.driver_id = d.id
+                 left join public.teams t on t.id = se.team_id),
+      'cons', (select jsonb_agg(jsonb_build_object('id', t.id, 'code', t.code, 'name', t.name, 'color', t.color) order by x.ord)
+               from unnest(sq.teams) with ordinality x(id, ord) join public.teams t on t.id = x.id)) end,
     'chips_used', coalesce((select jsonb_agg(s.chip) from public.fantasy_squads s join public.events e on e.id = s.event_id and e.season_id = season
                             where s.user_id = u and s.chip is not null and (u = auth.uid() or now() >= public.fantasy_lock_at(s.event_id))), '[]'::jsonb),
     'history', coalesce((select jsonb_agg(jsonb_build_object('round', e.round, 'name', e.name, 'total', fs.total) order by e.round)

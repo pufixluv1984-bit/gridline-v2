@@ -83,7 +83,11 @@ export function StandingsCard({ data, me }: { data: LeagueScreen | undefined; me
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 14, alignItems: 'center', justifyContent: 'space-between', marginBottom: 18 }}>
         <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
           <div className="seg" role="tablist" aria-label="Игра">
-            <button role="tab" type="button" disabled title="Фэнтези-лига — к сезону 2027">Фэнтези</button>
+            {data?.league.mode && data.league.mode !== 'predict' ? (
+              <Link role="tab" to="/fantasy" style={{ height: 36, padding: '0 16px', borderRadius: 999, display: 'inline-flex', alignItems: 'center', color: 'var(--mute)', fontSize: 14, fontWeight: 500 }}>Фэнтези</Link>
+            ) : (
+              <button role="tab" type="button" disabled title="В этой лиге только прогнозы">Фэнтези</button>
+            )}
             <button role="tab" type="button" className="on" aria-selected="true">Прогнозы</button>
           </div>
           <div className="seg" role="tablist" aria-label="Период">

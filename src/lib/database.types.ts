@@ -15,11 +15,12 @@ export type Database = {
           fav_driver: string | null;
           fav_team: string | null;
           nickname_changed_at: string | null;
+          team_name: string | null;
           created_at: string;
           updated_at: string;
         };
         Insert: never;
-        Update: { nickname?: string; avatar_color?: string; fav_driver?: string | null; fav_team?: string | null };
+        Update: { nickname?: string; avatar_color?: string; fav_driver?: string | null; fav_team?: string | null; team_name?: string | null };
         Relationships: [];
       };
       leagues: {

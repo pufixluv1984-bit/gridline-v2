@@ -52,6 +52,18 @@ export type ProfileScreen = {
   best_drivers: { id: string; code: string; name: string; points: number; color: string | null; team_code: string | null; number: number | null }[];
   leagues: { id: string; name: string; member_count: number; rank: number | null }[];
   duel: { rival: { id: string; nickname: string; avatar_color: string }; wins: number; losses: number } | null;
+  fantasy?: {
+    team_name: string | null;
+    league: { id: string; name: string; rank: number; members: number; points: number } | null;
+    squad: {
+      drivers: string[]; teams: string[]; drs: string | null; chip: string | null; cost: number; transfers: number; free_before: number;
+      lineup: { id: string; code: string; name: string; number: number | null; color: string | null; team_code: string | null }[];
+      cons: { id: string; code: string; name: string; color: string }[];
+    } | null;
+    chips_used: string[];
+    history: { round: number; name: string; total: number }[];
+    budget: number;
+  } | null;
 };
 
 export async function profileScreen(player?: string, season?: number): Promise<ProfileScreen> {
@@ -68,6 +80,7 @@ export async function updateProfile(userId: string, patch: Database['public']['T
   const { error } = await getSupabase().from('profiles').update(patch).eq('id', userId);
   if (error) {
     if (error.hint === 'nick_cooldown') throw new Error('Ник можно менять раз в 30 дней.');
+    if (error.code === '23514' && 'team_name' in patch) throw new Error('Название команды: от 2 до 24 символов, без пробелов по краям.');
     if (error.code === '23514') throw new Error('Ник: от 2 до 20 символов — буквы, цифры, пробел, точка, дефис, подчёркивание.');
     throw error;
   }
