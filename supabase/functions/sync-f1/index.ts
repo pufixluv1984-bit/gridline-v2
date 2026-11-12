@@ -11,7 +11,8 @@
 //   • погоду на дни текущего этапа (Open-Meteo, CC BY 4.0) — раз в 3 часа;
 //   • safety car в гонке (OpenF1 race_control) — после клетчатого флага;
 //   • результаты практик (OpenF1 session_result) — только для просмотра, очков не дают;
-//   • карьеры пилотов (Jolpica) и биографии (русская Википедия) — по два пилота за запуск, раз в неделю.
+//   • карьеры пилотов (Jolpica) и биографии (русская Википедия) — по два пилота за запуск, раз в неделю;
+//   • переход на новый сезон: когда текущий закончен и в Jolpica есть календарь следующего.
 
 const JOLPICA = 'https://api.jolpi.ca/ergast/f1';
 const SB_URL = Deno.env.get('SUPABASE_URL')!;
@@ -447,7 +448,24 @@ Deno.serve(async () => {
     if (!(await rpc<boolean>('sync_begin'))) {
       return Response.json({ skipped: 'слишком часто' });
     }
-    const year = new Date().getUTCFullYear();
+    // Текущий сезон — из базы. Когда он закончен, раз в 6 часов ищем календарь следующего и переключаемся
+    // (решение владельца 12.11.2026: переход на новый сезон автоматический).
+    let year = await rpc<number>('sync_season_year');
+    if ((await rpc<boolean>('sync_season_done')) && Date.now() - (await lastOk('next-season')) > 6 * HOUR) {
+      try {
+        const races = await syncSchedule(year + 1);
+        await rpc('sync_mark', { k: 'next-season', ok: true, details: { year: year + 1, races } });
+        if (races > 0) {
+          const next = await rpc<number | null>('sync_season_rollover');
+          if (next) {
+            year = next;
+            report.rollover = next;
+          }
+        }
+      } catch (e) {
+        report.next_season = { error: e instanceof Error ? e.message : String(e) };
+      }
+    }
 
     // Расписание — раз в 6 часов или сразу, если у этапов ещё нет координат трасс (нужны для погоды).
     if (Date.now() - (await lastOk('schedule')) > 6 * HOUR || (await rpc<boolean>('sync_needs_coords'))) {

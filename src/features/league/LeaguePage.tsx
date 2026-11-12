@@ -2,7 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useEffect, useMemo, useState } from 'react';
 import { Link, Navigate, useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '@/features/auth/authContext';
-import { kickMember, leaveLeague, transferLeague } from '@/lib/api/leagues';
+import { carryOverLeague, kickMember, leaveLeague, transferLeague } from '@/lib/api/leagues';
 import { homeScreen, leagueScreen, screenKeys, type LeagueScreen } from '@/lib/api/screens';
 import { getCurrentLeague, setCurrentLeague } from '@/lib/currentLeague';
 import { initialsOf } from '@/lib/initials';
@@ -74,6 +74,15 @@ export default function LeaguePage() {
     },
   });
 
+  const carry = useMutation({
+    mutationFn: () => carryOverLeague(id),
+    onSuccess: (nid) => {
+      void qc.invalidateQueries({ queryKey: ['screen'] });
+      setCurrentLeague(nid);
+      navigate(`/league/${nid}`);
+    },
+  });
+
   if (q.error) {
     return (
       <>
@@ -142,6 +151,29 @@ export default function LeaguePage() {
           )}
         </section>
 
+        {data?.archive && (
+          <div className="sbn">
+            <span className="ic" aria-hidden="true">★</span>
+            <div style={{ flex: '1 1 300px' }}>
+              <div style={{ fontWeight: 600, fontSize: 15 }}>Сезон {league?.season ?? ''} завершён — это архив лиги</div>
+              <div className="mute" style={{ fontSize: 13, marginTop: 4, lineHeight: 1.45 }}>
+                {data.carried_to
+                  ? `Лига уже перенесена в сезон ${data.current_season}.`
+                  : isOwner
+                    ? `Перенеси лигу в сезон ${data.current_season}: те же игроки и правила, таблица с нуля. Архив останется.`
+                    : `Хозяин лиги может перенести её в сезон ${data.current_season}.`}
+              </div>
+            </div>
+            {data.carried_to ? (
+              <Link className="mini go" to={`/league/${data.carried_to}`} style={{ display: 'inline-flex', alignItems: 'center' }}>Открыть лигу {data.current_season}</Link>
+            ) : isOwner ? (
+              <button type="button" className="mini go" disabled={carry.isPending} onClick={() => carry.mutate()}>
+                {carry.isPending ? 'Переносим…' : `Перенести в ${data.current_season}`}
+              </button>
+            ) : null}
+          </div>
+        )}
+        {carry.error && <div className="alert bad" role="alert">{carry.error.message}</div>}
         <StandingsCard data={data} me={me} />
 
         {isOwner && league && <LeagueSettings key={JSON.stringify(league.bonus_config)} leagueId={id} config={league.bonus_config} />}

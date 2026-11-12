@@ -144,6 +144,7 @@ export type LeagueScreen = {
     bonus_config: Record<string, boolean>;
     start_event: { round: number; name: string } | null;
     member_count: number;
+    season?: number;
   };
   table: LeagueRow[];
   per_event: { user_id: string; round: number; points: number }[];
@@ -152,6 +153,10 @@ export type LeagueScreen = {
   rounds?: { round: number; name: string }[];
   all_time?: { user_id: string; points: number; exact_hits: number }[];
   titles?: LeagueTitles;
+  /** Фаза 5: лига прошлого сезона — архив; хозяин может перенести её в текущий сезон. */
+  archive?: boolean;
+  current_season?: number;
+  carried_to?: string | null;
   members: { user_id: string; nickname: string; avatar_color: string; role: 'owner' | 'member'; joined_at: string }[];
   event: EventInfo | null;
   submissions: Submission[];

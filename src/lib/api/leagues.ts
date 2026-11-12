@@ -102,3 +102,10 @@ export async function updateLeagueBonuses(league: string, config: Record<BonusKe
   const { error } = await getSupabase().from('leagues').update({ bonus_config: config }).eq('id', league);
   if (error) throw friendly(error);
 }
+
+/** Перенести лигу прошлого сезона в текущий (только хозяин). Возвращает id новой лиги. */
+export async function carryOverLeague(league: string): Promise<string> {
+  const { data, error } = await getSupabase().rpc('league_carry_over' as never, { league } as never);
+  if (error) throw new Error(error.code === '42501' ? 'Перенести лигу может только её хозяин.' : error.message);
+  return data as unknown as string;
+}
