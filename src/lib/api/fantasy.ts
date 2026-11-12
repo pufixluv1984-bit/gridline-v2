@@ -26,6 +26,10 @@ export type MarketDriver = {
   price: number;
   delta: number;
   reason: string | null;
+  /** Справедливая цена (модель v2, FANTASY-FORMULA §4.1); null — старая модель или старт сезона. */
+  target?: number | null;
+  /** Цена по этапам сезона до текущего. */
+  history?: { round: number; price: number }[];
   pts3: number;
   season_pts: number;
   last_pts: number;
@@ -41,6 +45,10 @@ export type MarketTeam = {
   price: number;
   delta: number;
   reason: string | null;
+  /** Справедливая цена (модель v2, FANTASY-FORMULA §4.1); null — старая модель или старт сезона. */
+  target?: number | null;
+  /** Цена по этапам сезона до текущего. */
+  history?: { round: number; price: number }[];
   pts3: number;
   season_pts: number;
   last_pts: number;

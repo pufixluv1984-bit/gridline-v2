@@ -9,7 +9,7 @@ import pg from '@/ui/Page.module.css';
 import { FantasyTabs, IconSwap } from './FantasyTabs';
 
 type Sort = 'price' | 'season' | 'delta';
-const COLS = '56px minmax(180px,1.3fr) 110px 120px 110px 100px 110px 150px';
+const COLS = '56px minmax(180px,1.3fr) 110px 150px 110px 100px 110px 150px';
 
 /** Макет Fantasy-Market: бюджет состава, цены с изменением и причиной, очки, владение в лиге. */
 export default function MarketPage() {
@@ -113,9 +113,19 @@ export default function MarketPage() {
                         {d?.out && <span className="tagw">не едет на этапе</span>}
                       </div>
                     </div>
-                    <div className="num" style={{ textAlign: 'right', fontSize: 17, fontWeight: 600 }}>{money(r.price)}</div>
-                    <div className={`num ${delta > 0 ? 'mv up' : delta < 0 ? 'mv dn' : 'mv eq'}`} style={{ textAlign: 'right', fontSize: 15 }}>
-                      {delta > 0 ? `+${delta.toFixed(1)}` : delta < 0 ? delta.toFixed(1) : '—'}
+                    <div style={{ textAlign: 'right' }}>
+                      <div className="num" style={{ fontSize: 17, fontWeight: 600 }}>{money(r.price)}</div>
+                      {r.target != null && (
+                        <div className="num mute" style={{ fontSize: 12, marginTop: 3 }} title="Справедливая цена: к ней цена движется после каждого этапа">
+                          цель {money(r.target)}
+                        </div>
+                      )}
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 10 }}>
+                      <PriceSpark history={r.history} />
+                      <span className={`num ${delta > 0 ? 'mv up' : delta < 0 ? 'mv dn' : 'mv eq'}`} style={{ fontSize: 15 }}>
+                        {delta > 0 ? `+${delta.toFixed(1)}` : delta < 0 ? delta.toFixed(1) : '—'}
+                      </span>
                     </div>
                     <div className="num" style={{ textAlign: 'right', fontSize: 16 }}>{pts(r.season_pts)}</div>
                     <div className="num mute" style={{ textAlign: 'right', fontSize: 15 }}>{Number(r.last_pts) > 0 ? '+' : ''}{pts(r.last_pts)}</div>
@@ -127,7 +137,7 @@ export default function MarketPage() {
                 );
               })}
               <div className="mute" style={{ fontSize: 12.5, marginTop: 14, lineHeight: 1.5 }}>
-                Цены меняются после каждого этапа по очкам на миллион за последние 3 этапа: от −0.6 до +0.6 у недорогих, от −0.3 до +0.3 у дорогих (пилот от $18M, конструктор от $20M). «В лиге» — по составам прошлого закрытого этапа.
+                Цены живые: после каждого этапа база считает рейтинг формы (свежие очки, сезон, квалификация и сравнение с напарником, тренд) и справедливую цену; цена проходит 30% пути к ней, не больше ±0.8 за этап. Наведи на строку — причина изменения. «В лиге» — по составам прошлого закрытого этапа.
               </div>
             </section>
           </>
@@ -146,5 +156,36 @@ function Kpi({ label, value, suffix, color }: { label: string; value: string; su
         {suffix && <span className="mute" style={{ fontSize: 18, fontWeight: 500 }}>{suffix}</span>}
       </div>
     </div>
+  );
+}
+
+/** Мини-график цены по этапам сезона (последние 12). Точные цифры — в подсказке и для экранного диктора. */
+function PriceSpark({ history }: { history?: { round: number; price: number }[] }) {
+  const pts = (history ?? []).slice(-12);
+  if (pts.length < 2) return <span style={{ width: 64 }} aria-hidden="true" />;
+  const w = 64;
+  const h = 22;
+  const ps = pts.map((x) => Number(x.price));
+  const lo = Math.min(...ps);
+  const hi = Math.max(...ps);
+  const span = hi - lo || 1;
+  const xy = ps.map((p, i) => [(i / (ps.length - 1)) * (w - 4) + 2, h - 3 - ((p - lo) / span) * (h - 6)] as const);
+  const up = ps[ps.length - 1]! >= ps[0]!;
+  const color = up ? 'var(--pos)' : 'var(--neg)';
+  const last = xy[xy.length - 1]!;
+  const label = `Цена по этапам: ${pts.map((x) => `${x.round}: $${Number(x.price).toFixed(1)}M`).join(', ')}`;
+  return (
+    <svg width={w} height={h} viewBox={`0 0 ${w} ${h}`} role="img" aria-label={label} style={{ flex: 'none' }}>
+      <title>{label}</title>
+      <polyline
+        points={xy.map(([x, y]) => `${x.toFixed(1)},${y.toFixed(1)}`).join(' ')}
+        fill="none"
+        stroke={color}
+        strokeWidth="1.6"
+        strokeLinejoin="round"
+        strokeLinecap="round"
+      />
+      <circle cx={last[0]} cy={last[1]} r="2.2" fill={color} />
+    </svg>
   );
 }
