@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { emptyExtras, emptyPicks, extrasFrom, filledIn, fromPrediction, isComplete, pick, sameExtras, toPrediction, usedInBlock } from './picks';
+import { blockState, emptyExtras, emptyPicks, extrasFrom, filledIn, fromPrediction, isComplete, pick, sameExtras, toPrediction, usedInBlock } from './picks';
 
 describe('picks', () => {
   it('ставит пилота и переходит к следующему пустому слоту', () => {
@@ -35,7 +35,9 @@ describe('picks', () => {
     const p = fromPrediction({ qualy: ['a', 'b', 'c'], race: 'abcdefghij'.split(''), fastest_lap: null });
     expect(isComplete(p)).toBe(true);
     expect(filledIn(p, 'race')).toBe(10);
-    expect(toPrediction(p)).toEqual({ qualy: ['a', 'b', 'c'], race: 'abcdefghij'.split(''), fastestLap: null, firstDnf: null });
+    expect(toPrediction(p)).toEqual({
+      qualy: ['a', 'b', 'c'], race: 'abcdefghij'.split(''), sprint: [null, null, null], fastestLap: null, firstDnf: null,
+    });
     expect(isComplete(emptyPicks())).toBe(false);
   });
 });
@@ -65,5 +67,30 @@ describe('бонусы фазы 2', () => {
     expect(fromPrediction(saved)[14]).toBe('none');
     expect(extrasFrom(saved)).toEqual({ poleWins: true, safetyCar: false, dnfMany: null, boost: 'race' });
     expect(sameExtras(extrasFrom(saved), emptyExtras())).toBe(false);
+  });
+});
+
+describe('спринт и дедлайны по блокам (фаза 5)', () => {
+  it('спринт — свой блок топ-3, повторы внутри запрещены', () => {
+    let p = pick(emptyPicks(), 15, 'norris').picks;
+    p = pick(p, 16, 'norris').picks;
+    expect([p[15], p[16]]).toEqual([null, 'norris']);
+    expect(blockState(p, 'sprint')).toBe('partial');
+    expect(usedInBlock(p, 17, 'norris')).toBe(true);
+    expect(usedInBlock(p, 0, 'norris')).toBe(false);
+  });
+
+  it('прогноз без квалификации читается: пустые слоты', () => {
+    const p = fromPrediction({ qualy: null, race: 'abcdefghij'.split(''), sprint: ['x', 'y', 'z'], fastest_lap: null });
+    expect(blockState(p, 'qualy')).toBe('empty');
+    expect(blockState(p, 'race')).toBe('full');
+    expect(blockState(p, 'sprint')).toBe('full');
+  });
+
+  it('следующий слот — только среди разрешённых (закрытые блоки пропускаются)', () => {
+    const r = pick(emptyPicks(), 3, 'a', (i) => i >= 3 && i <= 14);
+    expect(r.next).toBe(4);
+    const r2 = pick(emptyPicks(), 14, 'none', (i) => i >= 3 && i <= 14);
+    expect(r2.next).toBe(3);
   });
 });

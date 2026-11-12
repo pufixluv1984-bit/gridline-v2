@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '@/features/auth/authContext';
 import { teamCar, type TeamCode } from '@/lib/assets';
-import { homeScreen, screenKeys, type HomeScreen } from '@/lib/api/screens';
+import { homeScreen, screenKeys, type HomeScreen, nextDeadline } from '@/lib/api/screens';
 import { getCurrentLeague, setCurrentLeague } from '@/lib/currentLeague';
 import { SESSION_NAMES, formatDateTime, formatDayShort, formatTime } from '@/lib/time/format';
 import { useServerNow } from '@/lib/time/useServerNow';
@@ -27,7 +27,8 @@ export default function HomePage() {
   const data = q.data;
   const now = useServerNow();
   const ev = data?.event ?? null;
-  const open = !!ev?.deadline && Date.parse(ev.deadline) > now;
+  const next = nextDeadline(ev, now);
+  const open = !!next;
 
   const pickLeague = (id: string) => {
     setCurrentLeague(id);
@@ -57,7 +58,7 @@ export default function HomePage() {
             <Notices notices={data!.notices} />
             <Championship data={data!} />
             <div className="row">
-              <NextStage data={data!} open={open} />
+              <NextStage data={data!} next={next} />
               <LastWinner data={data!} />
             </div>
             <div className="row">
@@ -72,7 +73,8 @@ export default function HomePage() {
   );
 }
 
-function NextStage({ data, open }: { data: HomeScreen; open: boolean }) {
+function NextStage({ data, next }: { data: HomeScreen; next: { at: string; label: string } | null }) {
+  const open = !!next;
   const ev = data.event;
   if (!ev) {
     return (
@@ -99,13 +101,15 @@ function NextStage({ data, open }: { data: HomeScreen; open: boolean }) {
           </h1>
           <p className="mute" style={{ margin: '12px 0 0', fontSize: 15, lineHeight: 1.5 }}>
             {ev.deadline
-              ? open
-                ? `Приём закрывается с началом квалификации — ${formatDateTime(ev.deadline)} по твоему времени.`
-                : `Квалификация началась ${formatDateTime(ev.deadline)}. Прогнозы друзей уже открыты.`
+              ? next
+                ? `Приём закрывается с началом ${next.label} — ${formatDateTime(next.at)} по твоему времени.`
+                : ev.split_deadlines
+                  ? 'Гонка началась. Прогнозы друзей уже открыты.'
+                  : `Квалификация началась ${formatDateTime(ev.deadline)}. Прогнозы друзей уже открыты.`
               : 'Время квалификации ещё не объявлено.'}
           </p>
         </div>
-        {open && ev.deadline && <Countdown to={ev.deadline} />}
+        {next && <Countdown to={next.at} />}
         <div>
           <Link className={b.cta} style={{ padding: '0 28px', background: 'var(--text)', color: '#0a0a0d', boxShadow: '0 0 0 1px rgba(255,255,255,.25),0 8px 32px var(--glowc)' }} to="/predict">
             {data.submitted ? (open ? 'Изменить прогноз' : 'Мой прогноз') : 'Сделать прогноз'}

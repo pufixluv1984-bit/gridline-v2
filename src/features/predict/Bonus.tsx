@@ -1,4 +1,4 @@
-import type { Block } from './picks';
+import type { BoostBlock as Block } from './picks';
 
 /** Ставка «да / нет» (бонусы фазы 2). Повторный клик по выбранному варианту снимает ответ. */
 export function YesNo({
@@ -44,13 +44,17 @@ export function BoostPicker({
   onChange,
   disabled,
   usedElsewhere,
+  closed = () => false,
 }: {
   value: Block | null;
   onChange: (v: Block | null) => void;
   disabled?: boolean;
   usedElsewhere: { round: number; name: string } | null;
+  /** Блок уже закрыт (дедлайны по блокам): на него бустер не ставится, с него не снимается. */
+  closed?: (b: Block) => boolean;
 }) {
   const locked = !!usedElsewhere && value === null;
+  const stuck = value !== null && closed(value);
   return (
     <div>
       <div className="seg2" role="radiogroup" aria-label="Бустер ×2">
@@ -61,7 +65,7 @@ export function BoostPicker({
             role="radio"
             aria-checked={value === o.v}
             className={value === o.v ? 'on' : ''}
-            disabled={disabled || (locked && o.v !== null)}
+            disabled={disabled || stuck || (locked && o.v !== null) || (o.v !== null && closed(o.v))}
             onClick={() => onChange(o.v)}
           >
             {o.t}
@@ -70,7 +74,9 @@ export function BoostPicker({
         ))}
       </div>
       <div className="help">
-        {usedElsewhere
+        {stuck
+          ? 'Блок с бустером уже закрыт — бустер остаётся на нём.'
+          : usedElsewhere
           ? `Бустер этого окна уже стоит на этапе ${usedElsewhere.round} (${usedElsewhere.name}). Сними его там, чтобы поставить здесь.`
           : 'Очки выбранного блока удвоятся. Следующий бустер — через 5 этапов.'}
       </div>

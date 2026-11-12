@@ -10,6 +10,7 @@ import { Content, PageTitle, PillLink, Toolbar } from '@/ui/Page';
 // Отдельного макета нет — собран из элементов Predict и Results.
 const REASON: Record<ScoreKind, string> = {
   qualy_exact: 'Точное место в квалификации',
+  sprint_exact: 'Точное место в спринте',
   race_exact: 'Точное место',
   race_off1: 'Мимо на 1 место',
   race_off2: 'Мимо на 2 места',
@@ -60,7 +61,7 @@ function Body({ d, onEvent }: { d: BreakdownScreen; onEvent: (id: number) => voi
   const pos = new Map(d.race.map((r) => [r.driver_id, r]));
   const lines = d.lines;
   const total = lines.reduce((s, l) => s + l.points * l.multiplier, 0);
-  const block = (b: 'qualy' | 'race' | 'bonus') => lines.filter((l) => l.block === b).reduce((s, l) => s + l.points * l.multiplier, 0);
+  const block = (b: 'qualy' | 'sprint' | 'race' | 'bonus') => lines.filter((l) => l.block === b).reduce((s, l) => s + l.points * l.multiplier, 0);
   const lineFor = (kind: ScoreKind | ScoreKind[], slot = 0) =>
     lines.find((l) => (Array.isArray(kind) ? kind.includes(l.kind) : l.kind === kind) && l.slot === slot);
   const p = d.prediction;
@@ -111,14 +112,23 @@ function Body({ d, onEvent }: { d: BreakdownScreen; onEvent: (id: number) => voi
       ) : (
         <div className="row" style={{ alignItems: 'flex-start' }}>
           <Block title="Квалификация" points={block('qualy')} boosted={boost === 'qualy'} i={1}>
-            {p.qualy.map((id, k) => {
+            {(p.qualy ?? []).map((id, k) => {
               const l = lineFor('qualy_exact', k + 1);
               const actual = d.qualy[k];
               return <Row key={k} label={['Поул', 'P2', 'P3'][k]!} driver={byId.get(id) ?? null} note={actual ? `факт: ${name(actual)}` : 'ещё нет результата'} line={l ? { text: REASON[l.kind], pts: l.points, mult: l.multiplier } : null} />;
             })}
           </Block>
+          {p.sprint && (
+            <Block title="Спринт" points={block('sprint')} boosted={false} i={1}>
+              {p.sprint.map((id, k) => {
+                const l = lineFor('sprint_exact', k + 1);
+                const actual = d.sprint?.[k];
+                return <Row key={k} label={['P1', 'P2', 'P3'][k]!} driver={byId.get(id) ?? null} note={actual ? `факт: ${name(actual)}` : 'ещё нет результата'} line={l ? { text: REASON[l.kind], pts: l.points, mult: l.multiplier } : null} />;
+              })}
+            </Block>
+          )}
           <Block title="Гонка · топ-10" points={block('race')} boosted={boost === 'race'} i={2}>
-            {p.race.map((id, k) => {
+            {(p.race ?? []).map((id, k) => {
               const l = lineFor(['race_exact', 'race_off1', 'race_off2', 'race_in_top10'], k + 1);
               const r = pos.get(id);
               const note = !d.race.length ? 'ещё нет результата' : !r ? 'не классифицирован' : r.dnf ? `сход, ${r.position}-й` : `финиш ${r.position}-м`;

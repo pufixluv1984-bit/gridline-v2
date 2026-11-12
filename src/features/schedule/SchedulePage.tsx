@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
-import { scheduleScreen, screenKeys, type EventInfo } from '@/lib/api/screens';
+import { scheduleScreen, screenKeys, type EventInfo, nextDeadline } from '@/lib/api/screens';
 import { SESSION_NAMES, formatDateTime, formatRange } from '@/lib/time/format';
 import { useServerNow } from '@/lib/time/useServerNow';
 import { Countdown, Skeleton } from '@/ui/game';
@@ -12,7 +12,7 @@ const GRID = '70px minmax(200px,1.2fr) minmax(160px,1fr) 170px 150px';
 function status(e: EventInfo, now: number, currentId: number | null) {
   const race = e.sessions.find((s) => s.kind === 'race');
   if (e.status === 'cancelled') return { t: 'Отменён', cls: '' };
-  if (e.id === currentId) return { t: e.deadline && Date.parse(e.deadline) > now ? 'Приём открыт' : 'Идёт уик-энд', cls: 'red' };
+  if (e.id === currentId) return { t: nextDeadline(e, now) ? 'Приём открыт' : 'Идёт уик-энд', cls: 'red' };
   if (race && Date.parse(race.starts_at) < now) return { t: 'Завершён', cls: 'green' };
   return { t: 'Впереди', cls: '' };
 }
@@ -23,7 +23,8 @@ export default function SchedulePage() {
   const now = useServerNow();
   const events = q.data?.events ?? [];
   const cur = events.find((e) => e.id === q.data?.current_event_id) ?? null;
-  const open = !!cur?.deadline && Date.parse(cur.deadline) > now;
+  const next = nextDeadline(cur, now);
+  const isOpen = !!next;
 
   return (
     <>
@@ -38,7 +39,7 @@ export default function SchedulePage() {
           <section className="card rise" style={{ display: 'flex', flexWrap: 'wrap', gap: 28, alignItems: 'center', justifyContent: 'space-between', padding: '28px 32px' }}>
             <div style={{ flex: '1 1 440px' }}>
               <div className="eyebrow" style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                <i className={open ? 'live-dot' : ''} style={{ width: 8, height: 8, borderRadius: '50%', background: open ? 'var(--accent)' : '#3a3a42', display: 'inline-block' }} />
+                <i className={isOpen ? 'live-dot' : ''} style={{ width: 8, height: 8, borderRadius: '50%', background: isOpen ? 'var(--accent)' : '#3a3a42', display: 'inline-block' }} />
                 Следующий этап · {cur.round}
               </div>
               <div className="num" style={{ fontSize: 44, fontWeight: 600, margin: '14px 0 6px', letterSpacing: '-.02em' }}>{cur.name}</div>
@@ -46,9 +47,9 @@ export default function SchedulePage() {
                 {cur.country} · {cur.sessions.length ? formatRange(cur.sessions[0]!.starts_at, cur.sessions[cur.sessions.length - 1]!.starts_at) : ''}
                 {cur.deadline ? ` · квалификация ${formatDateTime(cur.deadline)}` : ''}
               </div>
-              {open && cur.deadline && <div style={{ marginTop: 24 }}><Countdown to={cur.deadline} /></div>}
+              {next && <div style={{ marginTop: 24 }}><Countdown to={next.at} /></div>}
               <div style={{ display: 'flex', gap: 12, marginTop: 24, flexWrap: 'wrap' }}>
-                <Link className={p.btn} to="/predict">{open ? 'Сделать прогноз' : 'Мой прогноз'}</Link>
+                <Link className={p.btn} to="/predict">{isOpen ? 'Сделать прогноз' : 'Мой прогноз'}</Link>
               </div>
             </div>
             <div style={{ flex: '1 1 320px', display: 'flex', flexDirection: 'column', gap: 4 }}>

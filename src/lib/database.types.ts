@@ -39,12 +39,12 @@ export type Database = {
         Relationships: [];
       };
       predictions: {
-        Row: { user_id: string; event_id: number; qualy: string[]; race: string[]; fastest_lap: string | null; submitted_at: string; updated_at: string };
+        Row: { user_id: string; event_id: number; qualy: string[] | null; race: string[] | null; sprint: string[] | null; fastest_lap: string | null; submitted_at: string; updated_at: string };
         Insert: {
-          event_id: number; qualy: string[]; race: string[]; fastest_lap?: string | null; first_dnf?: string | null;
+          event_id: number; qualy: string[] | null; race: string[] | null; sprint?: string[] | null; fastest_lap?: string | null; first_dnf?: string | null;
           pole_wins?: boolean | null; safety_car?: boolean | null; dnf_many?: boolean | null; boost_block?: string | null;
         };
-        Update: { event_id?: number; qualy?: string[]; race?: string[]; fastest_lap?: string | null };
+        Update: { event_id?: number; qualy?: string[] | null; race?: string[] | null; sprint?: string[] | null; fastest_lap?: string | null };
         Relationships: [];
       };
       league_members: {

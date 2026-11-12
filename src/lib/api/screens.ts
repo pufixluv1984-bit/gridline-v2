@@ -15,6 +15,10 @@ export type EventInfo = {
   is_sprint: boolean;
   status: 'scheduled' | 'cancelled' | 'void';
   deadline: string | null;
+  /** Фаза 5: дедлайны по блокам (с Катара 2026). Без них — всё закрывается с квалификацией. */
+  split_deadlines?: boolean;
+  deadlines?: { qualy: string | null; sprint: string | null; race: string | null };
+  next_deadline?: string | null;
   season_rounds: number;
   sessions: { kind: SessionKind; starts_at: string }[];
 };
@@ -47,8 +51,9 @@ export type LeagueRow = {
 export type Submission = { user_id: string; nickname: string; avatar_color: string; submitted: boolean };
 
 export type SavedPredictionRow = {
-  qualy: string[];
-  race: string[];
+  qualy: string[] | null;
+  race: string[] | null;
+  sprint?: string[] | null;
   fastest_lap: string | null;
   first_dnf?: string | null;
   pole_wins?: boolean | null;
@@ -58,15 +63,16 @@ export type SavedPredictionRow = {
 };
 
 export type ScoreKind =
-  | 'qualy_exact' | 'race_exact' | 'race_off1' | 'race_off2' | 'race_in_top10' | 'race_podium'
+  | 'qualy_exact' | 'sprint_exact' | 'race_exact' | 'race_off1' | 'race_off2' | 'race_in_top10' | 'race_podium'
   | 'fastest_lap' | 'first_dnf' | 'pole_wins' | 'safety_car' | 'dnf_many';
 
 export type BreakdownScreen = {
   event: EventInfo | null;
   player: { id: string; nickname: string; avatar_color: string } | null;
   prediction: (SavedPredictionRow & { updated_at: string }) | null;
-  lines: { block: 'qualy' | 'race' | 'bonus'; kind: ScoreKind; slot: number; driver_id: string | null; points: number; multiplier: number; provisional: boolean }[];
+  lines: { block: 'qualy' | 'sprint' | 'race' | 'bonus'; kind: ScoreKind; slot: number; driver_id: string | null; points: number; multiplier: number; provisional: boolean }[];
   qualy: string[];
+  sprint?: string[];
   race: { driver_id: string; position: number; dnf: boolean; laps: number | null; fastest: boolean }[];
   safety_car: boolean | null;
   drivers: Driver[];
@@ -204,3 +210,20 @@ export const breakdownScreen = (ev?: number, player?: string) =>
 
 /** Когда синхронизация с Jolpica последний раз прошла успешно (для подвала). */
 export const dataUpdatedAt = () => call<string | null>('data_updated_at');
+
+const BLOCK_LABEL = { qualy: 'квалификации', sprint: 'спринта', race: 'гонки' } as const;
+/**
+ * Ближайший открытый дедлайн прогноза этапа (фаза 5: по блокам; по-старому — квалификация).
+ * Считается на клиенте от серверного времени, чтобы таймер переключался между блоками без перезагрузки.
+ */
+export function nextDeadline(ev: EventInfo | null, now: number): { at: string; label: string } | null {
+  if (!ev) return null;
+  if (!ev.split_deadlines || !ev.deadlines) {
+    return ev.deadline && Date.parse(ev.deadline) > now ? { at: ev.deadline, label: BLOCK_LABEL.qualy } : null;
+  }
+  const list = (['qualy', 'sprint', 'race'] as const)
+    .map((b): { at: string | null; label: string } => ({ at: ev.deadlines![b], label: BLOCK_LABEL[b] }))
+    .filter((x): x is { at: string; label: string } => !!x.at && Date.parse(x.at) > now)
+    .sort((a, b) => Date.parse(a.at) - Date.parse(b.at));
+  return list[0] ?? null;
+}

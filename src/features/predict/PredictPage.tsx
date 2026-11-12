@@ -4,15 +4,15 @@ import { Link } from 'react-router-dom';
 import { savePrediction } from '@/lib/api/predictions';
 import { predictScreen, screenKeys, type Driver, type PredictScreen } from '@/lib/api/screens';
 import { getCurrentLeague } from '@/lib/currentLeague';
-import { formatDateTime } from '@/lib/time/format';
+import { formatDateTime, SESSION_NAMES } from '@/lib/time/format';
 import { useServerNow } from '@/lib/time/useServerNow';
 import { Avatar, Countdown, DriverTile, Skeleton } from '@/ui/game';
 import { IconTarget } from '@/ui/icons';
 import { Content, PageTitle, PillLink, Toolbar, ToolbarDivider } from '@/ui/Page';
 import p from '@/ui/Page.module.css';
 import {
-  FIRST_DNF, NONE, SLOTS, clear, emptyExtras, emptyPicks, extrasFrom, filledIn, fromPrediction, isComplete, pick, sameExtras,
-  samePicks, toPrediction, usedInBlock, type Block, type Extras, type Picks,
+  FIRST_DNF, NONE, SLOTS, blockState, clear, emptyExtras, emptyPicks, extrasFrom, filledIn, fromPrediction, isComplete, pick, sameExtras,
+  samePicks, toPrediction, usedInBlock, type Block, type BoostBlock, type Extras, type Picks,
 } from './picks';
 import { BoostPicker, YesNo } from './Bonus';
 import { Notices, Toast } from '@/ui/Toast';
@@ -39,6 +39,11 @@ const BONUS_RULES = [
 ];
 
 const lastName = (d: Driver) => d.name.split(' ').slice(-1)[0] ?? d.name;
+const BLOCK_NAMES: Record<Block, string> = { qualy: 'Квалификация', sprint: 'Спринт', race: 'Гонка и бонусы', bonus: 'Гонка и бонусы' };
+const SPRINT_RULES = [
+  ['Победитель спринта точно', '+6'],
+  ['P2 и P3 точно', '+4 и +4'],
+];
 
 /**
  * Экран «Прогноз этапа» (макет Predict). Правила начисления — из docs/PRODUCT.md §2:
@@ -66,38 +71,84 @@ export default function PredictPage() {
     setSyncedFrom(saved);
     setPicks(saved);
     setExtras(savedExtras);
-    const firstEmpty = saved.findIndex((x) => !x);
-    setActive(firstEmpty >= 0 ? firstEmpty : 0);
+    const firstEmpty = saved.findIndex((x, i) => !x && slotOpen(i));
+    setActive(firstEmpty >= 0 ? firstEmpty : Math.max(0, SLOTS.findIndex((x) => slotOpen(x.index))));
   }
   const setExtra = <K extends keyof Extras>(k: K, v: Extras[K]) => setExtras((e) => ({ ...e, [k]: v }));
 
   const ev = data?.event ?? null;
-  const open = !!ev?.deadline && Date.parse(ev.deadline) > now;
+  // Дедлайны блоков (фаза 5). По-старому (до Лас-Вегаса 2026) все блоки закрываются с квалификацией.
+  const split = !!ev?.split_deadlines;
+  const hasSprint = split && !!ev?.is_sprint;
+  const deadlineOf = (b: Block): string | null =>
+    !ev
+      ? null
+      : !split
+        ? ev.deadline
+        : b === 'qualy'
+          ? (ev.deadlines?.qualy ?? ev.deadline)
+          : b === 'sprint'
+            ? (ev.deadlines?.sprint ?? null)
+            : (ev.deadlines?.race ?? ev.deadline);
+  const closed = (b: Block) => {
+    const d = deadlineOf(b);
+    return !d || Date.parse(d) <= now;
+  };
+  const slotOpen = (i: number) => {
+    const b = SLOTS[i]!.block;
+    return (b !== 'sprint' || hasSprint) && !closed(b);
+  };
+  const blocks: ('qualy' | 'race' | 'sprint')[] = hasSprint ? ['qualy', 'sprint', 'race'] : ['qualy', 'race'];
+  const open = !!ev && blocks.some((b) => !closed(b));
+  const nextDeadline = ev?.next_deadline ?? (open ? ev?.deadline : null) ?? null;
+  const nextBlock = split && nextDeadline ? (blocks.find((b) => deadlineOf(b) === nextDeadline) ?? null) : null;
   const byId = useMemo(() => new Map((data?.drivers ?? []).map((d) => [d.id, d])), [data?.drivers]);
   const grid = (data?.drivers ?? []).filter((d) => d.active);
   const dirty = !samePicks(picks, saved) || !sameExtras(extras, savedExtras);
-  const complete = isComplete(picks);
+  // Отправить можно: по-старому — квалификация и топ-10 целиком; по блокам — открытые блоки либо пустые, либо целиком.
+  const partial = blocks.filter((b) => !closed(b) && blockState(picks, b) === 'partial');
+  const complete = split ? partial.length === 0 && blocks.some((b) => blockState(picks, b) === 'full') : isComplete(picks);
+
+  // Что отправляем: закрытые блоки — как сохранено (база их не даст изменить), открытые — текущие, если целиком.
+  const payload = () => {
+    const t = toPrediction(picks);
+    const sp = data?.prediction ?? null;
+    const blockVal = (b: 'qualy' | 'race' | 'sprint', cur: string[]) =>
+      closed(b) ? ((sp?.[b] as string[] | null | undefined) ?? null) : blockState(picks, b) === 'full' ? cur : null;
+    const raceClosed = closed('race');
+    return {
+      qualy: blockVal('qualy', t.qualy),
+      race: blockVal('race', t.race),
+      sprint: hasSprint ? blockVal('sprint', t.sprint) : null,
+      fastestLap: raceClosed ? (sp?.fastest_lap ?? null) : t.fastestLap,
+      firstDnf: raceClosed ? (sp?.first_dnf ?? null) : t.firstDnf,
+      poleWins: raceClosed ? (sp?.pole_wins ?? null) : extras.poleWins,
+      safetyCar: raceClosed ? (sp?.safety_car ?? null) : extras.safetyCar,
+      dnfMany: raceClosed ? (sp?.dnf_many ?? null) : extras.dnfMany,
+      boost: sp?.boost_block && closed(sp.boost_block) ? sp.boost_block : extras.boost,
+    };
+  };
 
   const save = useMutation({
-    mutationFn: () =>
-      savePrediction({ eventId: ev!.id, ...toPrediction(picks), poleWins: extras.poleWins, safetyCar: extras.safetyCar, dnfMany: extras.dnfMany, boost: extras.boost }),
+    mutationFn: () => savePrediction({ eventId: ev!.id, ...payload() }),
     // Оптимистично: сразу считаем прогноз отправленным, при отказе базы откатываем.
     onMutate: async () => {
       await qc.cancelQueries({ queryKey: key });
       const prev = qc.getQueryData<PredictScreen>(key);
       if (prev) {
-        const t = toPrediction(picks);
+        const t = payload();
         qc.setQueryData<PredictScreen>(key, {
           ...prev,
           prediction: {
             qualy: t.qualy,
             race: t.race,
+            sprint: t.sprint,
             fastest_lap: t.fastestLap,
             first_dnf: t.firstDnf,
-            pole_wins: extras.poleWins,
-            safety_car: extras.safetyCar,
-            dnf_many: extras.dnfMany,
-            boost_block: extras.boost,
+            pole_wins: t.poleWins,
+            safety_car: t.safetyCar,
+            dnf_many: t.dnfMany,
+            boost_block: t.boost,
             updated_at: new Date().toISOString(),
           },
         });
@@ -115,13 +166,13 @@ export default function PredictPage() {
   });
 
   const choose = (driverId: string) => {
-    if (!open) return;
-    const r = pick(picks, active, driverId);
+    if (!slotOpen(active)) return;
+    const r = pick(picks, active, driverId, slotOpen);
     setPicks(r.picks);
     setActive(r.next);
   };
   const tapSlot = (i: number) => {
-    if (!open) return;
+    if (!slotOpen(i)) return;
     if (active === i && picks[i]) setPicks(clear(picks, i));
     else setActive(i);
   };
@@ -129,18 +180,22 @@ export default function PredictPage() {
   const slotView = (i: number) => {
     const d = picks[i] && picks[i] !== NONE ? byId.get(picks[i]!) ?? null : null;
     const none = picks[i] === NONE;
-    return { d, none, cls: `slot ${!open ? '' : active === i ? 'act' : d || none ? '' : 'empty'}` };
+    return { d, none, cls: `slot ${!slotOpen(i) ? '' : active === i ? 'act' : d || none ? '' : 'empty'}` };
   };
-  const boostCls = (b: Block) => (extras.boost === b ? { borderColor: 'rgba(232,33,26,.5)', boxShadow: '0 0 34px rgba(232,33,26,.14)' } : undefined);
+  const boostCls = (b: BoostBlock) => (extras.boost === b ? { borderColor: 'rgba(232,33,26,.5)', boxShadow: '0 0 34px rgba(232,33,26,.14)' } : undefined);
 
   const sendHint = !open
     ? 'Приём закрыт — прогноз зафиксирован'
-    : !complete
-      ? `Заполни квалификацию и топ-10: ещё ${13 - picks.slice(0, 13).filter(Boolean).length}`
+    : split && partial.length
+      ? `Заполни блок целиком или очисти его: ${partial.map((b) => BLOCK_NAMES[b].toLowerCase()).join(', ')}`
+      : !complete
+      ? split
+        ? 'Заполни хотя бы один блок целиком'
+        : `Заполни квалификацию и топ-10: ещё ${13 - picks.slice(0, 13).filter(Boolean).length}`
       : save.isSuccess && !dirty
-        ? 'Прогноз принят. До дедлайна его можно изменить'
+        ? split ? 'Прогноз принят. Открытые блоки можно менять до их закрытия' : 'Прогноз принят. До дедлайна его можно изменить'
         : data?.prediction && !dirty
-          ? 'Прогноз отправлен. До дедлайна его можно изменить'
+          ? split ? 'Прогноз отправлен. Открытые блоки можно менять до их закрытия' : 'Прогноз отправлен. До дедлайна его можно изменить'
           : 'Бонусы и бустер можно пропустить';
 
   return (
@@ -173,18 +228,22 @@ export default function PredictPage() {
                   <div className="eyebrow">Этап {ev.round} · {ev.name}</div>
                   <div className="num" style={{ fontSize: 30, fontWeight: 600, marginTop: 12, letterSpacing: '-.01em' }}>Твой прогноз</div>
                   <div className="mute" style={{ fontSize: 14, marginTop: 8 }}>
-                    {open ? `Приём до ${formatDateTime(ev.deadline!)} — старт квалификации` : 'Приём закрыт: квалификация началась'}
+                    {!open
+                      ? split ? 'Приём закрыт: гонка началась' : 'Приём закрыт: квалификация началась'
+                      : split && nextBlock
+                        ? `${BLOCK_NAMES[nextBlock]}: приём до ${formatDateTime(nextDeadline!)} — старт ${(SESSION_NAMES[nextBlock] ?? '').toLowerCase()}`
+                        : `Приём до ${formatDateTime(ev.deadline!)} — старт квалификации`}
                   </div>
                 </div>
-                {open ? <Countdown to={ev.deadline!} small seconds={false} /> : <span className="chip red">Приём закрыт</span>}
+                {open && nextDeadline ? <Countdown to={nextDeadline} small seconds={false} /> : <span className="chip red">Приём закрыт</span>}
               </div>
 
-              <BlockHead title="Квалификация · топ-3" chip={`${filledIn(picks, 'qualy')} из 3`} full={filledIn(picks, 'qualy') === 3} />
+              <BlockHead title="Квалификация · топ-3" chip={`${filledIn(picks, 'qualy')} из 3`} full={filledIn(picks, 'qualy') === 3} until={split ? deadlineOf('qualy') : null} closed={closed('qualy')} />
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,minmax(0,1fr))', gap: 10 }}>
                 {SLOTS.slice(0, 3).map((s) => {
                   const v = slotView(s.index);
                   return (
-                    <button key={s.index} type="button" className={v.cls} style={{ padding: '10px 14px', gap: 12, textAlign: 'left' }} onClick={() => tapSlot(s.index)} disabled={!open} aria-pressed={active === s.index}>
+                    <button key={s.index} type="button" className={v.cls} style={{ padding: '10px 14px', gap: 12, textAlign: 'left' }} onClick={() => tapSlot(s.index)} disabled={!slotOpen(s.index)} aria-pressed={active === s.index}>
                       <span className="num" style={{ width: 44, fontSize: 15, fontWeight: 600, color: 'var(--gold)' }}>{s.label}</span>
                       <DriverTile driver={v.d} size={40} />
                       <div style={{ flex: 1, minWidth: 0 }}>
@@ -196,17 +255,38 @@ export default function PredictPage() {
                 })}
               </div>
 
-              <BlockHead title="Топ-10 финиша" chip={`${filledIn(picks, 'race')} из 10`} full={filledIn(picks, 'race') === 10} />
+              {hasSprint && (
+                <>
+                  <BlockHead title="Спринт · топ-3" chip={`${filledIn(picks, 'sprint')} из 3`} full={filledIn(picks, 'sprint') === 3} until={deadlineOf('sprint')} closed={closed('sprint')} />
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,minmax(0,1fr))', gap: 10 }}>
+                    {SLOTS.slice(15, 18).map((s) => {
+                      const v = slotView(s.index);
+                      return (
+                        <button key={s.index} type="button" className={v.cls} style={{ padding: '10px 14px', gap: 12, textAlign: 'left' }} onClick={() => tapSlot(s.index)} disabled={!slotOpen(s.index)} aria-pressed={active === s.index}>
+                          <span className="num" style={{ width: 56, fontSize: 15, fontWeight: 600, color: 'var(--gold)' }}>{s.label}</span>
+                          <DriverTile driver={v.d} size={40} />
+                          <div style={{ flex: 1, minWidth: 0 }}>
+                            <div style={{ fontWeight: 600, fontSize: 15 }}>{v.d ? lastName(v.d) : 'Выбрать'}</div>
+                            <div className="mute" style={{ fontSize: 12, marginTop: 2 }}>{v.d ? v.d.team_name : s.points}</div>
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </>
+              )}
+
+              <BlockHead title="Топ-10 финиша" chip={`${filledIn(picks, 'race')} из 10`} full={filledIn(picks, 'race') === 10} until={split ? deadlineOf('race') : null} closed={closed('race')} />
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2,minmax(0,1fr))', gap: 10 }}>
                 {SLOTS.slice(3, 13).map((s) => {
                   const v = slotView(s.index);
                   return (
-                    <button key={s.index} type="button" className={v.cls} style={{ padding: '10px 14px', gap: 12, textAlign: 'left' }} onClick={() => tapSlot(s.index)} disabled={!open} aria-pressed={active === s.index}>
+                    <button key={s.index} type="button" className={v.cls} style={{ padding: '10px 14px', gap: 12, textAlign: 'left' }} onClick={() => tapSlot(s.index)} disabled={!slotOpen(s.index)} aria-pressed={active === s.index}>
                       <span className="num" style={{ width: 36, fontSize: 18, fontWeight: 600, color: s.pos <= 3 ? 'var(--gold)' : 'var(--mute)' }}>P{s.pos}</span>
                       <DriverTile driver={v.d} size={40} />
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <div style={{ fontWeight: 600, fontSize: 15 }}>{v.d ? v.d.name : 'Выбери пилота'}</div>
-                        <div className="mute" style={{ fontSize: 12, marginTop: 2 }}>{v.d ? v.d.team_name : active === s.index && open ? 'Выбираешь сейчас' : ''}</div>
+                        <div className="mute" style={{ fontSize: 12, marginTop: 2 }}>{v.d ? v.d.team_name : active === s.index && slotOpen(s.index) ? 'Выбираешь сейчас' : ''}</div>
                       </div>
                     </button>
                   );
@@ -222,7 +302,7 @@ export default function PredictPage() {
                   const s = SLOTS[i]!;
                   const v = slotView(i);
                   return (
-                    <button key={i} type="button" className={v.cls} style={{ flexDirection: 'column', alignItems: 'center', textAlign: 'center', padding: '16px 12px', gap: 10, ...boostCls('bonus') }} onClick={() => tapSlot(i)} disabled={!open} aria-pressed={active === i}>
+                    <button key={i} type="button" className={v.cls} style={{ flexDirection: 'column', alignItems: 'center', textAlign: 'center', padding: '16px 12px', gap: 10, ...boostCls('bonus') }} onClick={() => tapSlot(i)} disabled={!slotOpen(i)} aria-pressed={active === i}>
                       <div className="eyebrow">{s.label}</div>
                       {v.none ? (
                         <div className="ph" style={{ width: 72, height: 72, borderRadius: 22, ['--c' as string]: '#7fe0a0' }}><span className="npc" style={{ fontSize: 15 }}>никто</span></div>
@@ -235,9 +315,9 @@ export default function PredictPage() {
                   );
                 })}
                 <div style={{ gridColumn: 'span 2', display: 'flex', flexDirection: 'column', gap: 10 }}>
-                  <YesNo label="Поул выиграет гонку" points="+3" value={extras.poleWins} onChange={(v) => setExtra('poleWins', v)} disabled={!open} />
-                  <YesNo label="Будет safety car" points="+3" value={extras.safetyCar} onChange={(v) => setExtra('safetyCar', v)} disabled={!open} />
-                  <YesNo label="Сходов 2 и больше" points="+3" value={extras.dnfMany} onChange={(v) => setExtra('dnfMany', v)} disabled={!open} />
+                  <YesNo label="Поул выиграет гонку" points="+3" value={extras.poleWins} onChange={(v) => setExtra('poleWins', v)} disabled={closed('race')} />
+                  <YesNo label="Будет safety car" points="+3" value={extras.safetyCar} onChange={(v) => setExtra('safetyCar', v)} disabled={closed('race')} />
+                  <YesNo label="Сходов 2 и больше" points="+3" value={extras.dnfMany} onChange={(v) => setExtra('dnfMany', v)} disabled={closed('race')} />
                 </div>
               </div>
 
@@ -245,12 +325,12 @@ export default function PredictPage() {
                 <span className="eyebrow">Бустер ×2</span>
                 <span className="chip">Один на каждые 5 этапов</span>
               </div>
-              <BoostPicker value={extras.boost} onChange={(v) => setExtra('boost', v)} disabled={!open} usedElsewhere={data?.boost_used ?? null} />
+              <BoostPicker value={extras.boost} onChange={(v) => setExtra('boost', v)} disabled={!open} usedElsewhere={data?.boost_used ?? null} closed={(b) => closed(b)} />
 
-              {open && (
+              {slotOpen(active) && (
                 <>
                   <div style={{ margin: '28px 0 14px' }}>
-                    <span className="eyebrow">Выбери пилота для: <b style={{ color: '#fff' }}>{SLOTS[active]!.block === 'race' ? `P${SLOTS[active]!.pos} в гонке` : SLOTS[active]!.block === 'qualy' ? `${SLOTS[active]!.label} в квалификации` : SLOTS[active]!.label}</b></span>
+                    <span className="eyebrow">Выбери пилота для: <b style={{ color: '#fff' }}>{SLOTS[active]!.block === 'race' ? `P${SLOTS[active]!.pos} в гонке` : SLOTS[active]!.block === 'qualy' ? `${SLOTS[active]!.label} в квалификации` : SLOTS[active]!.block === 'sprint' ? `${SLOTS[active]!.label} в спринте` : SLOTS[active]!.label}</b></span>
                   </div>
                   {active === FIRST_DNF && (
                     <button type="button" className={`slot ${picks[FIRST_DNF] === NONE ? 'act' : ''}`} style={{ width: '100%', justifyContent: 'center', marginBottom: 10, fontWeight: 600 }} onClick={() => choose(NONE)}>
@@ -301,7 +381,7 @@ export default function PredictPage() {
                         <span className={`chip ${s.submitted ? 'green' : ''}`}>{s.submitted ? 'Отправил' : 'Ждём'}</span>
                       </div>
                     ))}
-                    <div className="mute" style={{ fontSize: 12 }}>Лига «{data.league.name}». Чужие прогнозы скрыты до закрытия приёма.</div>
+                    <div className="mute" style={{ fontSize: 12 }}>Лига «{data.league.name}». Чужие прогнозы скрыты до {split ? 'старта гонки' : 'закрытия приёма'}.</div>
                   </div>
                 ) : (
                   <div className="mute" style={{ fontSize: 14, marginTop: 12, lineHeight: 1.5 }}>
@@ -313,6 +393,13 @@ export default function PredictPage() {
                 <h2 className="h">Очки за квалификацию</h2>
                 <div style={{ marginTop: 10 }}>{QUALY_RULES.map(([n, v]) => <div key={n} className="kv"><span>{n}</span><b className="num">{v}</b></div>)}</div>
               </section>
+              {hasSprint && (
+                <section className="card rise" style={{ ['--i' as string]: 2 }}>
+                  <h2 className="h">Очки за спринт</h2>
+                  <div style={{ marginTop: 10 }}>{SPRINT_RULES.map(([n, v]) => <div key={n} className="kv"><span>{n}</span><b className="num">{v}</b></div>)}</div>
+                  <div className="mute" style={{ fontSize: 12, marginTop: 8, lineHeight: 1.5 }}>Бустер на спринт не ставится.</div>
+                </section>
+              )}
               <section className="card rise" style={{ ['--i' as string]: 3 }}>
                 <h2 className="h">Очки за топ-10</h2>
                 <div style={{ marginTop: 10 }}>{RACE_RULES.map(([n, v]) => <div key={n} className="kv"><span>{n}</span><b className="num">{v}</b></div>)}</div>
@@ -348,20 +435,26 @@ export default function PredictPage() {
           </>
         )}
         <div className="mute" style={{ fontSize: 12, padding: '4px 6px 0', lineHeight: 1.6 }}>
-          Прогноз закрывается со стартом квалификации, чужие прогнозы скрыты до закрытия. Не отправил прогноз — 0 очков за этап. Очки предварительные 48 часов после гонки (штрафы стюардов), потом фиксируются. Максимум за этап без бустера: 14 за квалификацию, 110 за гонку, 25 за бонусы.
+          {split
+            ? 'Каждый блок закрывается со стартом своей сессии: квалификация — квалификации, спринт — спринта, топ-10 и бонусы — гонки. Чужие прогнозы скрыты до старта гонки.'
+            : 'Прогноз закрывается со стартом квалификации, чужие прогнозы скрыты до закрытия.'}{' '}
+          Не отправил прогноз — 0 очков за этап. Очки предварительные 48 часов после гонки (штрафы стюардов), потом фиксируются. Максимум за этап без бустера: 14 за квалификацию, 110 за гонку, 25 за бонусы.
         </div>
       </Content>
-      {toast === 'saved' && <Toast tone="g" title="Прогноз сохранён" text="Можно менять до старта квалификации" onDone={() => setToast(null)} />}
+      {toast === 'saved' && <Toast tone="g" title="Прогноз сохранён" text={split ? 'Открытые блоки можно менять до их закрытия' : 'Можно менять до старта квалификации'} onDone={() => setToast(null)} />}
       {toast === 'failed' && <Toast tone="r" title="Не удалось сохранить" text="Проверь интернет и повтори" onDone={() => setToast(null)} />}
     </>
   );
 }
 
-function BlockHead({ title, chip, full }: { title: string; chip: string; full: boolean }) {
+function BlockHead({ title, chip, full, until = null, closed = false }: { title: string; chip: string; full: boolean; until?: string | null; closed?: boolean }) {
   return (
-    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', margin: '28px 0 14px' }}>
-      <span className="eyebrow">{title}</span>
-      <span className={`chip ${full ? 'green' : ''}`}>{chip}</span>
+    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10, flexWrap: 'wrap', margin: '28px 0 14px' }}>
+      <span className="eyebrow">
+        {title}
+        {until && <span className="mute" style={{ marginLeft: 10, textTransform: 'none', letterSpacing: 0 }}>{closed ? '· блок закрыт' : `· до ${formatDateTime(until)}`}</span>}
+      </span>
+      <span className={`chip ${closed && until ? 'red' : full ? 'green' : ''}`}>{closed && until ? 'Закрыт' : chip}</span>
     </div>
   );
 }

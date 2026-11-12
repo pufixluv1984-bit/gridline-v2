@@ -1,8 +1,11 @@
 // Логика выбора пилотов на экране прогноза (без React — чтобы покрыть тестами).
-// 15 слотов: 0–2 квалификация (поул, P2, P3), 3–12 топ-10 гонки, 13 — быстрый круг, 14 — первый сход.
+// 18 слотов: 0–2 квалификация (поул, P2, P3), 3–12 топ-10 гонки, 13 — быстрый круг, 14 — первый сход,
+// 15–17 — топ-3 спринта (только спринт-этапы, фаза 5).
 // Ставки «да/нет» (поул выиграет, safety car, 2+ сходов) и бустер хранятся отдельно — см. Extras.
 
-export type Block = 'qualy' | 'race' | 'bonus';
+export type Block = 'qualy' | 'sprint' | 'race' | 'bonus';
+/** Блоки, на которые ставится бустер (на спринт — нет, решение 12.11.2026). */
+export type BoostBlock = 'qualy' | 'race' | 'bonus';
 export type Slot = { index: number; block: Block; pos: number; label: string; points: string };
 
 /** Ответ «Никто не сойдёт» в слоте первого схода. */
@@ -15,36 +18,41 @@ export const SLOTS: Slot[] = [
   ...Array.from({ length: 10 }, (_, i) => ({ index: 3 + i, block: 'race' as const, pos: i + 1, label: `P${i + 1}`, points: '' })),
   { index: 13, block: 'bonus', pos: 0, label: 'Быстрый круг', points: '+6' },
   { index: 14, block: 'bonus', pos: 0, label: 'Первый сход', points: '+10' },
+  { index: 15, block: 'sprint', pos: 1, label: 'Победа', points: '+6' },
+  { index: 16, block: 'sprint', pos: 2, label: 'P2', points: '+4' },
+  { index: 17, block: 'sprint', pos: 3, label: 'P3', points: '+4' },
 ];
 export const FASTEST = 13;
 export const FIRST_DNF = 14;
 
-export type Picks = (string | null)[]; // длина 15, driverId / 'none' или null
+export type Picks = (string | null)[]; // длина 18, driverId / 'none' или null
 
 export type Extras = {
   poleWins: boolean | null;
   safetyCar: boolean | null;
   dnfMany: boolean | null;
-  boost: Block | null;
+  boost: BoostBlock | null;
 };
 export const emptyExtras = (): Extras => ({ poleWins: null, safetyCar: null, dnfMany: null, boost: null });
 
 export const emptyPicks = (): Picks => Array(SLOTS.length).fill(null);
 
 export type SavedPrediction = {
-  qualy: string[];
-  race: string[];
+  qualy: string[] | null;
+  race: string[] | null;
+  sprint?: string[] | null;
   fastest_lap: string | null;
   first_dnf?: string | null;
   pole_wins?: boolean | null;
   safety_car?: boolean | null;
   dnf_many?: boolean | null;
-  boost_block?: Block | null;
+  boost_block?: BoostBlock | null;
 };
 
 export function fromPrediction(p: SavedPrediction | null): Picks {
   if (!p) return emptyPicks();
-  return [...p.qualy, ...p.race, p.fastest_lap, p.first_dnf ?? null];
+  const nulls = (n: number) => Array<string | null>(n).fill(null);
+  return [...(p.qualy ?? nulls(3)), ...(p.race ?? nulls(10)), p.fastest_lap, p.first_dnf ?? null, ...(p.sprint ?? nulls(3))];
 }
 
 export function extrasFrom(p: SavedPrediction | null): Extras {
@@ -56,6 +64,7 @@ export function toPrediction(picks: Picks) {
   return {
     qualy: picks.slice(0, 3) as string[],
     race: picks.slice(3, 13) as string[],
+    sprint: picks.slice(15, 18) as string[],
     fastestLap: picks[FASTEST] ?? null,
     firstDnf: picks[FIRST_DNF] ?? null,
   };
@@ -63,12 +72,18 @@ export function toPrediction(picks: Picks) {
 
 const blockOf = (i: number) => SLOTS[i]!.block;
 const indicesOf = (block: Block) => SLOTS.filter((s) => s.block === block).map((s) => s.index);
-/** Повторы запрещены только внутри квалификации и топ-10; бонусы независимы. */
+/** Повторы запрещены внутри квалификации, спринта и топ-10; бонусы независимы. */
 const uniqueBlock = (b: Block) => b !== 'bonus';
 
 /** Обязательное заполнено: квалификация 3 и топ-10 (бонусы и бустер можно пропустить). */
 export const isComplete = (picks: Picks) => picks.slice(0, 13).every(Boolean);
 export const filledIn = (picks: Picks, block: Block) => indicesOf(block).filter((i) => picks[i]).length;
+export const sizeOf = (block: Block) => indicesOf(block).length;
+/** Состояние блока: пустой, частично заполнен (отправить нельзя), целиком. */
+export function blockState(picks: Picks, block: 'qualy' | 'sprint' | 'race'): 'empty' | 'partial' | 'full' {
+  const n = filledIn(picks, block);
+  return n === 0 ? 'empty' : n === sizeOf(block) ? 'full' : 'partial';
+}
 
 /** Пилот уже стоит в этом блоке (в другом слоте)? */
 export function usedInBlock(picks: Picks, active: number, driverId: string): boolean {
@@ -80,7 +95,12 @@ export function usedInBlock(picks: Picks, active: number, driverId: string): boo
  * Ставит пилота в активный слот. Если он уже стоял в этом блоке на другом месте — переставляет
  * (прежний слот освобождается). Возвращает новые выборы и следующий пустой слот по кругу.
  */
-export function pick(picks: Picks, active: number, driverId: string): { picks: Picks; next: number } {
+export function pick(
+  picks: Picks,
+  active: number,
+  driverId: string,
+  allowed: (i: number) => boolean = () => true,
+): { picks: Picks; next: number } {
   const out = picks.slice();
   if (uniqueBlock(blockOf(active))) {
     for (const i of indicesOf(blockOf(active))) if (i !== active && out[i] === driverId) out[i] = null;
@@ -89,7 +109,7 @@ export function pick(picks: Picks, active: number, driverId: string): { picks: P
   let next = active;
   for (let k = 1; k <= SLOTS.length; k++) {
     const j = (active + k) % SLOTS.length;
-    if (!out[j]) {
+    if (!out[j] && allowed(j)) {
       next = j;
       break;
     }
