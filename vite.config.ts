@@ -17,6 +17,12 @@ export default defineConfig({
   build: {
     target: 'es2022',
     assetsInlineLimit: 0,
+    // Библиотека Supabase — отдельным файлом: меняется редко и кешируется независимо от кода сайта.
+    rolldownOptions: {
+      output: {
+        codeSplitting: { groups: [{ name: 'supabase', test: /node_modules[\\/]@supabase/ }] },
+      },
+    },
   },
   test: {
     environment: 'jsdom',
