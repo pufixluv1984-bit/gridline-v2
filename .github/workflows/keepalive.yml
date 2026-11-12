@@ -1,14 +1,20 @@
 # Бесплатный проект Supabase засыпает после недели без запросов (docs/ARCHITECTURE.md, п. 11).
-# Раз в 2 дня — лёгкий публичный запрос к расписанию с anon-ключом.
+# Раз в день — лёгкий публичный запрос к расписанию с anon-ключом. Неделя без запросов — это 7 пропусков подряд.
+#
+# Вторая ловушка: GitHub сам отключает запуски по расписанию, если в репозитории 60 дней не было коммитов.
+# Поэтому каждый запуск заново «включает» этот же workflow через API — это сбрасывает 60-дневный счётчик
+# (тот же приём, что в готовых actions вроде gh-workflow-keepalive, но без сторонних зависимостей).
+# Если запрос к базе не прошёл — запуск падает, и GitHub присылает владельцу письмо об ошибке.
 name: Keep-alive
 
 on:
   schedule:
-    - cron: '17 6 */2 * *'
+    - cron: '17 6 * * *'
   workflow_dispatch:
 
 permissions:
   contents: read
+  actions: write
 
 jobs:
   ping:
@@ -19,6 +25,17 @@ jobs:
           URL: ${{ secrets.VITE_SUPABASE_URL }}
           KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
         run: |
-          if [ -z "$URL" ]; then echo "Секрет VITE_SUPABASE_URL не задан — пропускаю"; exit 0; fi
-          curl -fsS "$URL/rest/v1/seasons?select=id&limit=1" -H "apikey: $KEY" -H "Authorization: Bearer $KEY" > /dev/null
-          echo "Supabase ответил"
+          if [ -z "$URL" ] || [ -z "$KEY" ]; then echo "::error::Не заданы секреты VITE_SUPABASE_URL / VITE_SUPABASE_ANON_KEY"; exit 1; fi
+          for i in 1 2 3; do
+            if curl -fsS --max-time 30 "$URL/rest/v1/seasons?select=id&limit=1" -H "apikey: $KEY" -H "Authorization: Bearer $KEY" > /dev/null; then
+              echo "Supabase ответил"; exit 0
+            fi
+            echo "Попытка $i не прошла, жду минуту"; sleep 60
+          done
+          echo "::error::Supabase не ответил — проверь проект (не на паузе ли он)"; exit 1
+
+      - name: Не дать GitHub отключить расписание (60 дней без коммитов)
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh api -X PUT "repos/${{ github.repository }}/actions/workflows/keepalive.yml/enable"
