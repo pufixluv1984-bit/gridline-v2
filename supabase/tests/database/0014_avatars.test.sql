@@ -52,7 +52,7 @@ reset role;
 
 -- ── Корзина ─────────────────────────────────────────────────────────────
 -- Состав форматов меняется миграциями (0021 добавила GIF, см. 0015_avatars_gc); здесь главное — без SVG.
-select ok(not ('image/svg+xml' = any((select allowed_mime_types from storage.buckets where id = 'avatars'))),
+select ok(not exists (select 1 from storage.buckets b where b.id = 'avatars' and 'image/svg+xml' = any(b.allowed_mime_types)),
   'корзина avatars не принимает SVG');
 
 select * from finish();
