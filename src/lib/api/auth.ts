@@ -32,7 +32,16 @@ export async function signInWithProvider(provider: OAuthProvider): Promise<void>
   if (error) throw friendlyError(error);
 }
 
+// Выход по кнопке — не «сессия истекла»: окно истёкшей сессии показываем только при неожиданном выходе.
+let userSignedOut = false;
+export const signedOutByUser = () => userSignedOut;
+/** Выход по действию игрока (кнопка «Выйти», удаление аккаунта). */
+export const markSignedOutByUser = () => {
+  userSignedOut = true;
+};
+
 export async function signOut(): Promise<void> {
+  userSignedOut = true;
   await getSupabase().auth.signOut();
 }
 

@@ -3,7 +3,7 @@ begin;
 create extension if not exists pgtap with schema extensions;
 set search_path = public, extensions;
 
-select plan(28);
+select plan(30);
 
 insert into auth.users (id, email, raw_user_meta_data) values
   ('f2000000-0000-0000-0000-00000000000a', 'a@test.local', '{"nickname":"VOVA"}'),
@@ -147,6 +147,8 @@ select is((fantasy_squad_screen(pg_temp.ev('f-31')) -> 'market' -> 'drivers' -> 
 select is(jsonb_array_length(fantasy_leaderboard_screen() -> 'table'), 2, 'лидерборд: участники фэнтези-лиги');
 select ok((fantasy_results_screen(pg_temp.ev('f-30')) -> 'mine' ->> 'total') is not null, 'результаты этапа: мои очки');
 select ok(profile_screen() ? 'fantasy', 'профиль: фэнтези-блок');
+select is((home_screen() -> 'summary' ->> 'round')::int, 24, 'итоги этапа: последний этап с результатами');
+select ok((home_screen() -> 'summary' ->> 'fantasy') is not null, 'итоги этапа: очки фэнтези');
 reset role;
 
 select * from finish();

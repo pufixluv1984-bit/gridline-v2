@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '@/features/auth/authContext';
 import { teamCar, type TeamCode } from '@/lib/assets';
+import { StageSummary } from './StageSummary';
 import { homeScreen, screenKeys, type HomeScreen, nextDeadline } from '@/lib/api/screens';
 import { getCurrentLeague, setCurrentLeague } from '@/lib/currentLeague';
 import { SESSION_NAMES, formatDateTime, formatDayShort, formatTime } from '@/lib/time/format';
@@ -56,6 +57,7 @@ export default function HomePage() {
         ) : (
           <>
             <Notices notices={data!.notices} />
+            <StageSummary summary={data!.summary} />
             <Championship data={data!} />
             <div className="row">
               <NextStage data={data!} next={next} />

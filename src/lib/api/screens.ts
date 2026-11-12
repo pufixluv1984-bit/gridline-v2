@@ -131,6 +131,8 @@ export type HomeScreen = {
   league_id: string | null;
   table: LeagueRow[];
   submissions: Submission[];
+  /** Фаза 5: окно «Итоги этапа». */
+  summary?: import('@/features/home/StageSummary').Summary | null;
 };
 
 export type LeagueScreen = {

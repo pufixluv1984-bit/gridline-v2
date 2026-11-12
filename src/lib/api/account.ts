@@ -1,4 +1,5 @@
 import { getSupabase } from '../supabase';
+import { markSignedOutByUser } from './auth';
 
 /**
  * Удаляет аккаунт вошедшего игрока (RPC delete_my_account, миграция 0002) и выходит на этом устройстве.
@@ -14,5 +15,6 @@ export async function deleteMyAccount(): Promise<void> {
     throw new Error('Не получилось удалить аккаунт. Попробуй ещё раз.');
   }
   // Пользователя на сервере уже нет — чистим только локальную сессию.
+  markSignedOutByUser();
   await sb.auth.signOut({ scope: 'local' });
 }

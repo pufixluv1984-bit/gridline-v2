@@ -1,4 +1,5 @@
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { QueryCache, QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { isNetworkError, setOffline } from '@/lib/systemStatus';
 import { lazy, Suspense, type ReactNode } from 'react';
 import { HashRouter, Navigate, Route, Routes } from 'react-router-dom';
 import { AuthProvider } from '@/features/auth/AuthProvider';
@@ -35,6 +36,13 @@ const BreakdownPage = lazy(() => import('@/features/breakdown/BreakdownPage'));
 const JoinByCodePage = lazy(() => import('@/features/lobby/JoinPage').then((m) => ({ default: m.JoinByCodePage })));
 
 const queryClient = new QueryClient({
+  // Сеть пропала или база не отвечает — экран «Нет связи» (макет Error-Network) вместо пустых карточек.
+  queryCache: new QueryCache({
+    onError: (e) => {
+      if (isNetworkError(e)) setOffline(true);
+    },
+    onSuccess: () => setOffline(false),
+  }),
   defaultOptions: {
     queries: { staleTime: 30_000, retry: 1, refetchOnWindowFocus: false },
   },

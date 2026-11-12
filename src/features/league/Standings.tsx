@@ -1,5 +1,7 @@
 import { useMemo, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { Modal } from '@/ui/Modal';
+import b from '@/ui/Button.module.css';
 import type { LeagueScreen } from '@/lib/api/screens';
 import { plural } from '@/lib/time/format';
 import { Avatar, Skeleton } from '@/ui/game';
@@ -28,6 +30,7 @@ function ranked<T extends { main: number }>(xs: T[]): (T & { rank: number })[] {
  */
 export function StandingsCard({ data, me }: { data: LeagueScreen | undefined; me: string | undefined }) {
   const [period, setPeriod] = useState<Period>('season');
+  const [card, setCard] = useState<string | null>(null);
   const table = useMemo(() => data?.table ?? [], [data]);
   const rounds = useMemo(() => data?.rounds ?? [], [data]);
   const lastRound = rounds.at(-1);
@@ -132,7 +135,10 @@ export function StandingsCard({ data, me }: { data: LeagueScreen | undefined; me
               )}
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 12, minWidth: 0 }}>
-              <Avatar nickname={r.nickname} color={r.avatar_color} />
+              <button type="button" onClick={() => setCard(r.user_id)} aria-label={`Карточка игрока ${r.nickname}`}
+                style={{ padding: 0, border: 0, background: 'none', cursor: 'pointer', borderRadius: '50%' }}>
+                <Avatar nickname={r.nickname} color={r.avatar_color} />
+              </button>
               <div style={{ minWidth: 0 }}>
                 <div style={{ fontWeight: 600, fontSize: 16 }}>
                   <Link to={r.user_id === me ? '/profile' : `/profile/${r.user_id}`}>{r.nickname}</Link>
@@ -204,6 +210,64 @@ export function StandingsCard({ data, me }: { data: LeagueScreen | undefined; me
           </div>
         </div>
       )}
+      {card && data && <PlayerCard data={data} userId={card} me={me} byUser={byUser} onClose={() => setCard(null)} />}
     </section>
+  );
+}
+
+/** Макет Overlays, карточка игрока: место, очки, лучший этап, очный счёт по этапам с тобой. */
+function PlayerCard({ data, userId, me, byUser, onClose }: {
+  data: LeagueScreen;
+  userId: string;
+  me: string | undefined;
+  byUser: Map<string, Map<number, number>>;
+  onClose: () => void;
+}) {
+  const navigate = useNavigate();
+  const r = data.table.find((x) => x.user_id === userId);
+  const mine = data.table.find((x) => x.user_id === me);
+  if (!r) return null;
+  const theirs = byUser.get(userId) ?? new Map<number, number>();
+  const mineMap = (me && byUser.get(me)) || new Map<number, number>();
+  const best = Math.max(0, ...theirs.values());
+  let a = 0;
+  let c = 0;
+  for (const round of new Set([...theirs.keys(), ...mineMap.keys()])) {
+    const x = mineMap.get(round) ?? 0;
+    const y = theirs.get(round) ?? 0;
+    if (x > y) a++;
+    else if (y > x) c++;
+  }
+  const total = a + c || 1;
+  const self = userId === me;
+  return (
+    <Modal
+      title={r.nickname}
+      icon={<Avatar nickname={r.nickname} color={r.avatar_color} size={64} />}
+      onClose={onClose}
+      actions={
+        <>
+          <button type="button" className={`${b.cta} ${b.sm} ${b.ghost}`} onClick={onClose}>Закрыть</button>
+          <button type="button" className={`${b.cta} ${b.sm}`} onClick={() => navigate(self ? '/profile' : `/profile/${userId}`)}>Профиль</button>
+        </>
+      }
+    >
+      <div className="mute" style={{ fontSize: 13, marginTop: -8 }}>{r.rank} место в лиге · точных {r.exact_hits}</div>
+      <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+        <div className="tile"><span className="eyebrow">Очки</span><b>{r.points}</b></div>
+        <div className="tile"><span className="eyebrow">Лучший этап</span><b>{best}</b></div>
+        <div className="tile"><span className="eyebrow">Этапов выиграно</span><b>{r.events_won}</b></div>
+      </div>
+      {!self && mine && (
+        <div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, marginBottom: 8 }}><b>Ты</b><b>{r.nickname}</b></div>
+          <div style={{ display: 'flex', height: 10, borderRadius: 5, overflow: 'hidden', background: '#1e1e24', gap: 3 }}>
+            <i style={{ display: 'block', width: `${(a / total) * 100}%`, background: mine.avatar_color }} />
+            <i style={{ display: 'block', width: `${(c / total) * 100}%`, background: r.avatar_color }} />
+          </div>
+          <div className="help">Очный счёт по этапам: {a} — {c}</div>
+        </div>
+      )}
+    </Modal>
   );
 }

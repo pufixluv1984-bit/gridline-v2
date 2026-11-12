@@ -10,6 +10,12 @@ export type AuthState =
 
 export const AuthContext = createContext<AuthState>({ status: 'loading', session: null });
 
+/** Сессия пропала сама (истёк токен, вышли на другом устройстве) — окно «Сессия истекла» (макет Overlays). */
+export const ExpiredContext = createContext(false);
+export function useSessionExpired(): boolean {
+  return useContext(ExpiredContext);
+}
+
 export function useAuth(): AuthState {
   return useContext(AuthContext);
 }

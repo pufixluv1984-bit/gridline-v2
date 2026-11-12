@@ -16,6 +16,8 @@ import {
 } from './picks';
 import { BoostPicker, YesNo } from './Bonus';
 import { Notices, Toast } from '@/ui/Toast';
+import { Modal } from '@/ui/Modal';
+import m from '@/ui/Modal.module.css';
 
 const RACE_RULES = [
   ['Точное место', '+10'],
@@ -102,6 +104,20 @@ export default function PredictPage() {
   const open = !!ev && blocks.some((b) => !closed(b));
   const nextDeadline = ev?.next_deadline ?? (open ? ev?.deadline : null) ?? null;
   const nextBlock = split && nextDeadline ? (blocks.find((b) => deadlineOf(b) === nextDeadline) ?? null) : null;
+
+  // Окно «Прогноз закрыт» (макет Overlays): блок закрылся, пока экран открыт.
+  const closedSig = ev ? `${ev.id}:${blocks.map((b) => (closed(b) ? 1 : 0)).join('')}` : '';
+  const [sig, setSig] = useState(closedSig);
+  const [justClosed, setJustClosed] = useState<'qualy' | 'race' | 'sprint' | 'all' | null>(null);
+  if (sig !== closedSig) {
+    const [prevEv, prevBits = ''] = sig.split(':');
+    const bits = closedSig.split(':')[1] ?? '';
+    if (prevEv === String(ev?.id) && prevBits.length === bits.length) {
+      const idx = [...bits].findIndex((c, i) => c === '1' && prevBits[i] === '0');
+      if (idx >= 0) setJustClosed(bits.includes('0') ? blocks[idx]! : 'all');
+    }
+    setSig(closedSig);
+  }
   const byId = useMemo(() => new Map((data?.drivers ?? []).map((d) => [d.id, d])), [data?.drivers]);
   const grid = (data?.drivers ?? []).filter((d) => d.active);
   const dirty = !samePicks(picks, saved) || !sameExtras(extras, savedExtras);
@@ -441,6 +457,29 @@ export default function PredictPage() {
           Не отправил прогноз — 0 очков за этап. Очки предварительные 48 часов после гонки (штрафы стюардов), потом фиксируются. Максимум за этап без бустера: 14 за квалификацию, 110 за гонку, 25 за бонусы.
         </div>
       </Content>
+      {justClosed && (
+        <Modal
+          title={justClosed === 'all' ? 'Прогноз закрыт' : `${BLOCK_NAMES[justClosed]}: приём закрыт`}
+          icon={
+            <span className="bigico grn" style={{ width: 52, height: 52, borderRadius: 16 }}>
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <rect x="5" y="11" width="14" height="9" rx="3" />
+                <path d="M8 11V8a4 4 0 0 1 8 0v3" />
+              </svg>
+            </span>
+          }
+          onClose={() => setJustClosed(null)}
+          actions={<button type="button" className="mini go" onClick={() => setJustClosed(null)}>Посмотреть мой прогноз</button>}
+        >
+          <p className={m.text}>
+            {justClosed === 'all'
+              ? `${split ? 'Гонка' : 'Квалификация'} началась — изменить прогноз уже нельзя. Твой вариант зафиксирован, прогнозы друзей теперь видны в разборе.`
+              : justClosed === 'qualy'
+                ? 'Квалификация началась — блок квалификации зафиксирован. Спринт и гонку ещё можно поменять до их старта.'
+                : 'Спринт начался — блок спринта зафиксирован. Топ-10 и бонусы можно менять до старта гонки.'}
+          </p>
+        </Modal>
+      )}
       {toast === 'saved' && <Toast tone="g" title="Прогноз сохранён" text={split ? 'Открытые блоки можно менять до их закрытия' : 'Можно менять до старта квалификации'} onDone={() => setToast(null)} />}
       {toast === 'failed' && <Toast tone="r" title="Не удалось сохранить" text="Проверь интернет и повтори" onDone={() => setToast(null)} />}
     </>

@@ -1,5 +1,8 @@
-import { useQuery } from '@tanstack/react-query';
-import { Outlet } from 'react-router-dom';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { Outlet, useLocation } from 'react-router-dom';
+import { NetworkErrorPage, ScreenBoundary } from '@/features/errors/SystemErrors';
+import { Welcome } from '@/features/profile/Welcome';
+import { setOffline, useSystemStatus } from '@/lib/systemStatus';
 import { useAuth } from '@/features/auth/authContext';
 import { getMyProfile, profileKeys } from '@/lib/api/profile';
 import { initialsOf } from '@/lib/initials';
@@ -18,10 +21,25 @@ export function AppLayout() {
     staleTime: 5 * 60_000,
   });
 
+  const net = useSystemStatus();
+  const qc = useQueryClient();
+  const { pathname } = useLocation();
+  const retry = () => {
+    setOffline(false);
+    void qc.refetchQueries({ type: 'active' });
+  };
+
   return (
     <Frame rail={<Rail initials={auth.status === 'unconfigured' ? 'DV' : initialsOf(profile.data?.nickname)} />}>
-      <Outlet />
+      {net === 'offline' ? (
+        <NetworkErrorPage onRetry={retry} offline={typeof navigator !== 'undefined' && navigator.onLine === false} />
+      ) : (
+        <ScreenBoundary resetKey={pathname}>
+          <Outlet />
+        </ScreenBoundary>
+      )}
       <Footer />
+      {auth.status === 'signed-in' && <Welcome profile={profile.data} />}
     </Frame>
   );
 }
