@@ -1,5 +1,6 @@
 // Время хранится в UTC, показывается в поясе игрока (правило 4). Даты и подписи — на языке сайта.
 import { intlLocale, t, type Key } from '@/i18n';
+import { dbShortGp } from '@/i18n/db';
 
 export const userTimeZone = (): string => Intl.DateTimeFormat().resolvedOptions().timeZone;
 
@@ -83,5 +84,14 @@ export function lapTime(ms: number): string {
   return m ? `${m}:${s.padStart(6, '0')}` : s;
 }
 
-/** «Гран-при Катара» → «Катара»: короткое имя этапа для списков. */
-export const gpShort = (name: string) => name.replace(/^(Гран-при|Гран-прі)\s+/, '').replace(/\s+Grand Prix$/, '');
+/** «Гран-при Катара» → «Катара», «Qatar Grand Prix» → «Qatar»: короткое имя этапа для списков. */
+export const gpShort = (name: string) =>
+  dbShortGp(name) ?? name.replace(/^(Гран-при|Гран-прі)\s+/, '').replace(/\s+Grand Prix$/, '');
+
+/** Название этапа в две строки для крупного заголовка: «Гран-при / Катара», «Qatar / Grand Prix». */
+export function gpLines(name: string): [string, string] {
+  const en = /^(.+)\s(Grand Prix.*)$/.exec(name);
+  if (en) return [en[1]!, en[2]!];
+  const [first = '', ...rest] = name.split(' ');
+  return [first, rest.join(' ')];
+}

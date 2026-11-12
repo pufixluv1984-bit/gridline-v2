@@ -4,6 +4,7 @@
 // t('ключ', { n: 3, name: 'Кими' }) — подстановка {name}; если значение — формы множественного числа,
 // форма выбирается по n через Intl.PluralRules языка.
 import { createContext, Fragment, useContext, type ReactNode } from 'react';
+import { loadDbText } from './db';
 import { LOCALES, type Locale } from './locale';
 import type { Key } from './ru';
 
@@ -33,7 +34,8 @@ function apply(l: Locale, d: Dict) {
 }
 
 export async function loadLocale(l: Locale): Promise<void> {
-  const m = await loaders[l]();
+  // Тексты из базы — вместе со словарём; если их чанк не загрузился, названия просто останутся как в базе.
+  const [m] = await Promise.all([loaders[l](), loadDbText(l).catch(() => undefined)]);
   apply(l, m.default);
 }
 

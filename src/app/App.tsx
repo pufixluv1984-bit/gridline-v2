@@ -7,6 +7,7 @@ import { RedirectIfSignedIn, RequireAuth } from '@/features/auth/RequireAuth';
 import { SoonPage } from '@/features/home/SoonPage';
 import { AppLayout } from './AppLayout';
 import { I18nProvider } from '@/i18n/I18nProvider';
+import { translateDeep } from '@/i18n/db';
 
 // Разбивка по маршрутам (правило 11): каждый экран — отдельный чанк.
 const HomePage = lazy(() => import('@/features/home/HomePage'));
@@ -49,6 +50,15 @@ const queryClient = new QueryClient({
   },
 });
 
+// Смена языка: названия из базы в уже загруженных данных переводятся на месте, без повторных запросов.
+const retranslateCache = () => {
+  for (const q of queryClient.getQueryCache().getAll()) {
+    const d = q.state.data;
+    const next = translateDeep(d);
+    if (next !== d) queryClient.setQueryData(q.queryKey, next);
+  }
+};
+
 const guest = (el: ReactNode) => <RedirectIfSignedIn>{el}</RedirectIfSignedIn>;
 
 // Разделы следующих фаз — пока заглушки внутри каркаса.
@@ -57,7 +67,7 @@ const SOON: { path: string; title: string; phase: number }[] = [
 
 export function App() {
   return (
-    <I18nProvider>
+    <I18nProvider onLoaded={retranslateCache}>
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
         <HashRouter>

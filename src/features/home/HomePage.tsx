@@ -6,7 +6,7 @@ import { driverPhoto, teamCar, teamLogo, type TeamCode } from '@/lib/assets';
 import { StageSummary } from './StageSummary';
 import { homeScreen, screenKeys, type HomeScreen, nextDeadline } from '@/lib/api/screens';
 import { getCurrentLeague, setCurrentLeague } from '@/lib/currentLeague';
-import { SESSION_NAMES, formatDateTime, formatDayShort, formatTime } from '@/lib/time/format';
+import { SESSION_NAMES, formatDateTime, formatDayShort, formatTime, gpLines } from '@/lib/time/format';
 import { useServerNow } from '@/lib/time/useServerNow';
 import { Avatar, Countdown, DriverTile, Skeleton } from '@/ui/game';
 import { IconCrosshair } from '@/ui/icons';
@@ -89,7 +89,7 @@ function NextStage({ data, next }: { data: HomeScreen; next: { at: string; label
       </section>
     );
   }
-  const [gp, ...rest] = ev.name.split(' ');
+  const [gp, rest] = gpLines(ev.name);
   return (
     <section className="card rise" style={{ ['--i' as string]: 1, flex: '2 1 640px', minWidth: 0, overflow: 'hidden', display: 'flex', flexWrap: 'wrap', gap: 24, padding: 32, background: 'radial-gradient(120% 140% at 85% 0%,var(--glowc),transparent 55%),linear-gradient(180deg,#131317,#0c0c0f)' }}>
       <div style={{ flex: '1 1 360px', display: 'flex', flexDirection: 'column', gap: 22, minWidth: 0 }}>
@@ -101,7 +101,7 @@ function NextStage({ data, next }: { data: HomeScreen; next: { at: string; label
           <h1 style={{ margin: 0, fontSize: 46, lineHeight: 1.04, letterSpacing: '-.025em', fontWeight: 600 }}>
             {gp}
             <br />
-            {rest.join(' ')}
+            {rest}
           </h1>
           <p className="mute" style={{ margin: '12px 0 0', fontSize: 15, lineHeight: 1.5 }}>
             {ev.deadline
