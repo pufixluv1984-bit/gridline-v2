@@ -24,7 +24,7 @@ Gridline is an unofficial, non-commercial website where a group of friends plays
 
 Leagues can have any number of players: create a lobby and invite friends with a link or a code. Sign-in is via Google or Discord.
 
-> The website interface is in Russian.
+> The website is available in **English, Ukrainian and Russian**: pick a language on the sign-in screen or in settings.
 
 ## Screenshots
 
@@ -64,7 +64,8 @@ Leagues can have any number of players: create a lobby and invite friends with a
 - If a driver doesn't race, their team's reserve driver is substituted automatically.
 
 **Everything else**
-- Calendar with countdowns and weather, results (including practice sessions), circuit maps, driver catalogue with careers and biographies.
+- Calendar with countdowns and weather, results (including practice sessions), circuit maps, driver catalogue with careers and Wikipedia biographies in each language.
+- **Three languages** (English, Ukrainian, Russian). The choice is saved in the profile and follows the player across devices.
 - Profile picture (JPG, PNG, WebP or animated GIF, cropped in the browser) or a letter avatar.
 - Automatic season rollover: leagues carry over, starting prices come from last season's championship.
 - Smooth scaling for large screens, from 1440 to 4K and ultrawide monitors.
@@ -88,6 +89,7 @@ flowchart LR
 - **The database does the scoring.** SQL functions are idempotent: re-running them never duplicates anything. The UI only displays ready-made rows.
 - **Security lives in the database.** Deadlines, hidden picks, the fantasy budget and league roles are enforced by Row Level Security policies and triggers. The browser only has the public key.
 - **Server time.** Countdowns and open/closed states use `server_now()`, not the device clock.
+- **Three languages without a library.** Interface text lives in typed per-language dictionaries, each loaded on demand. Names and messages the database stores in Russian (Grand Prix, teams, drivers, errors, price reasons) are translated in the Supabase client as responses arrive, so the SQL stays untouched. Tests fail if a string bypasses the dictionaries or a new name has no translation.
 
 More detail (in Russian): [architecture](docs/ARCHITECTURE.md) · [game mechanics](docs/PRODUCT.md) · [fantasy formula](docs/FANTASY-FORMULA.md) · [design](docs/DESIGN.md).
 
@@ -95,7 +97,7 @@ More detail (in Russian): [architecture](docs/ARCHITECTURE.md) · [game mechanic
 
 | Layer | What's used |
 |---|---|
-| Frontend | React 19, TypeScript (strict), Vite, TanStack Query, React Router (`HashRouter`), CSS Modules + CSS custom properties |
+| Frontend | React 19, TypeScript (strict), Vite, TanStack Query, React Router (`HashRouter`), CSS Modules + CSS custom properties, own i18n (uk · ru · en) |
 | Backend | Supabase: Postgres, Row Level Security, Auth (Google, Discord), Storage, Edge Functions (Deno), `pg_cron` + `pg_net` |
 | F1 data | [Jolpica F1 API](https://github.com/jolpica/jolpica-f1), [OpenF1](https://openf1.org), [Open-Meteo](https://open-meteo.com) |
 | Tests | Vitest + Testing Library (frontend), pgTAP (`supabase test db`: RLS, scoring, prices) |
@@ -103,8 +105,8 @@ More detail (in Russian): [architecture](docs/ARCHITECTURE.md) · [game mechanic
 
 ## Quality
 
-- **74** unit tests and **16** pgTAP database test suites run in CI on every push.
-- **22** migrations: the schema changes only through files in `supabase/migrations/`, never by hand in the console.
+- **91** unit tests and **18** pgTAP database test suites run in CI on every push.
+- **24** migrations: the schema changes only through files in `supabase/migrations/`, never by hand in the console.
 - Initial JS is **≈159 KB** gzipped against a 250 KB budget (checked in CI). Screens load on demand; fonts are self-hosted, no Google Fonts.
 - WCAG AA accessibility on every screen (checked with axe).
 
@@ -114,6 +116,7 @@ More detail (in Russian): [architecture](docs/ARCHITECTURE.md) · [game mechanic
 src/
   app/          router, shared layout
   features/     screens: home, predict, league, fantasy, drivers, schedule, results, profile, settings, lobby…
+  i18n/         dictionaries (uk, ru, en), translation of database texts
   lib/          API modules (src/lib/api/*), time, UI scaling, avatars, assets
   ui/           shared components: sidebar, dialogs, avatar, toasts, cards
   styles/       design tokens and shared styles
@@ -135,6 +138,7 @@ docs/           product, architecture, fantasy formula, design, decisions
 | 12 Nov | **Phase 4.** Fantasy: squads, scoring, prices, market, leaderboard, analytics |
 | 12 Nov | **Phase 5.** Per-block deadlines and sprints, season rollover, dialogs and error states, accessibility |
 | 12 Nov | Polish: frameless layout, sidebar, profile photos and GIFs, large screens, settings page, keep-alive, **live fantasy prices** |
+| 12 Nov | **Languages:** the whole site in English, Ukrainian and Russian, including database texts, driver biographies and the privacy policy |
 
 Every decision and the reasoning behind it is in the [decision log](docs/DECISIONS.md); changes by date are in the [CHANGELOG](CHANGELOG.md).
 

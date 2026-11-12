@@ -49,6 +49,15 @@ The key project decisions: what was chosen, why, and where it lives in the code.
 | 26 | Unused avatar files are removed by **`sync-f1` every hour** | 12 Nov 2026 | Safety net if a tab was closed mid-save or an account was deleted |
 | 27 | Profile settings — **a dedicated page with a Save button** | 12 Nov 2026 | Changes go in one request, with cancel and nickname validation |
 
+## Languages
+
+| # | Decision | Date | Why |
+|---|---|---|---|
+| 30 | **English, Ukrainian and Russian**, chosen on the sign-in screen or in settings and **stored in the profile** | 12 Nov 2026 | Friends play from different countries; the language should follow the player across devices |
+| 31 | **Own i18n instead of a library**: typed dictionaries (Russian is the key source, TypeScript checks the others are complete), one lazy chunk per language, `Intl` for plurals, dates and country names | 12 Nov 2026 | A few KB of own code instead of a dependency; a missing translation is a compile error |
+| 32 | **Database texts are translated in the client**, in the Supabase `fetch`, both ways (any language → current) | 12 Nov 2026 | No rewrite of ~20 SQL functions; switching language re-translates cached data without new requests. A test checks the dictionary against `sync-f1` and the migrations |
+| 33 | Driver biographies **from each language's Wikipedia** (via interlanguage links), falling back to the nearest language | 12 Nov 2026 | Original text written by native speakers rather than a machine translation |
+
 ## Operations
 
 | # | Decision | Date | Why |

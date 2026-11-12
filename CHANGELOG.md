@@ -2,6 +2,16 @@
 
 Grouped by date and phase. The reasoning behind each decision is in the [decision log](docs/DECISIONS.md).
 
+## 12 November 2026 — languages
+
+- **The whole site in English, Ukrainian and Russian.** Language switch on the sign-in screen and in settings; the choice is stored in the profile (migration 0023).
+- Ukrainian letters (і, ї, є, ґ) allowed in nicknames and avatar letters.
+- Grand Prix, country, team and driver names, fantasy price reasons and database error messages are translated in the client; switching language re-translates loaded data instantly, without new requests.
+- Driver biographies from Wikipedia in each language (migration 0024); the privacy policy in three languages at the same address.
+- Guard tests: no hard-coded interface text outside the dictionaries, no database name without a translation.
+- Fantasy rules: the "Prices" row now describes the live price model; the privacy policy covers uploaded avatar photos and fantasy squads.
+- README screenshots retaken in English.
+
 ## 12 November 2026 — post-launch polish
 
 - **Fantasy: live prices (model v2).** Form rating, fair price, smooth movement capped at ±0.8 per race; rookies start at 85% of their teammate's price; the Market shows the fair price and a price chart. Migration 0022, test 0016.

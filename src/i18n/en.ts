@@ -1107,7 +1107,7 @@ const en: Dict = {
   'rules.lim7': 'Transfer penalty',
   'rules.lim7d': 'Each one beyond the free ones; counted by the end result, reverting is free',
   'rules.lim8': 'Prices',
-  'rules.lim8d': 'By points per million over 3 races: cheap ±0.6, expensive ±0.3; never below $3M',
+  'rules.lim8d': 'By form: 30% of the way to the fair price per race, at most ±0.8; never below $3M',
   'rules.chip.wildcard': 'Unlimited transfers for the race with no penalty. Not in the first round.',
   'rules.chip.limitless': 'One race with no budget limit or penalties, then your previous squad returns. Not in the first round.',
   'rules.chip.final_fix': 'One driver swap after squads lock and before the race starts, within budget. Not in the first round.',
