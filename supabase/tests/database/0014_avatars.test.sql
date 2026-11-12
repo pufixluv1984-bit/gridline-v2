@@ -51,8 +51,9 @@ select ok((public.profile_screen('d2000000-0000-0000-0000-00000000000a') -> 'pla
 reset role;
 
 -- ── Корзина ─────────────────────────────────────────────────────────────
-select is((select allowed_mime_types from storage.buckets where id = 'avatars'), array['image/webp', 'image/jpeg'],
-  'корзина avatars: только WebP и JPEG (без SVG)');
+-- Состав форматов меняется миграциями (0021 добавила GIF, см. 0015_avatars_gc); здесь главное — без SVG.
+select ok(not ('image/svg+xml' = any((select allowed_mime_types from storage.buckets where id = 'avatars'))),
+  'корзина avatars не принимает SVG');
 
 select * from finish();
 rollback;
