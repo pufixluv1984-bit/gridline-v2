@@ -12,10 +12,13 @@ describe('uiScaleFor', () => {
   it('2K — ×1.4, как в макетах 2K', () => {
     expect(uiScaleFor(2560)).toBe(1.4);
   });
-  it('выше 2K плавно растёт до ×1.7 на 4K и дальше не растёт', () => {
+  it('выше 2K плавно растёт до ×1.7 на 4K', () => {
     expect(uiScaleFor(3200)).toBeCloseTo(1.55);
     expect(uiScaleFor(3840)).toBeCloseTo(1.7);
-    expect(uiScaleFor(8000)).toBe(1.7);
+  });
+  it('ещё шире — раскладка не шире 2340 (без пустых полей), страница крупнее', () => {
+    expect(8000 / uiScaleFor(8000)).toBeCloseTo(2340);
+    expect(5000 / uiScaleFor(5000)).toBeCloseTo(2340);
   });
 });
 

@@ -9,13 +9,18 @@
 //
 // Режим «широко» (html[data-wide]): когда раскладка (окно / масштаб) не меньше WIDE_LAYOUT,
 // меню закреплено раскрытым, колонка контента шире, сетки получают больше колонок.
+//
+// Пустых полей по бокам не бывает: раскладка не шире MAX_LAYOUT (меню 240 + колонка 2100).
+// Если окно ещё шире (ультраширокий монитор, сильное отдаление), масштаб растёт дальше,
+// и страница просто становится крупнее, заполняя ширину.
 
 export const UI_BASE_WIDTH = 1440;
 export const WIDE_LAYOUT = 2000;
+export const MAX_LAYOUT = 240 + 2100;
 
 export function uiScaleFor(width: number): number {
-  if (width <= 2560) return Math.min(1.4, Math.max(1, width / UI_BASE_WIDTH));
-  return Math.min(1.7, 1.4 + ((width - 2560) / (3840 - 2560)) * 0.3);
+  const base = width <= 2560 ? Math.min(1.4, Math.max(1, width / UI_BASE_WIDTH)) : Math.min(1.7, 1.4 + ((width - 2560) / (3840 - 2560)) * 0.3);
+  return Math.max(base, width / MAX_LAYOUT);
 }
 
 export function isWideLayout(width: number): boolean {
@@ -26,8 +31,9 @@ export function installUiScale(): void {
   const root = document.documentElement;
   let current = '';
   const apply = () => {
-    // clientWidth — без полосы прокрутки и не зависит от zoom у body.
-    const width = root.clientWidth || window.innerWidth;
+    // Полная ширина окна (с полосой прокрутки), как у медиазапросов: масштаб не прыгает, когда полоса
+    // появляется или исчезает при переходе между экранами, и колонка (≤ окна) не оставляет щели справа.
+    const width = window.innerWidth || root.clientWidth;
     const scale = uiScaleFor(width).toFixed(4);
     const wide = isWideLayout(width);
     const next = `${scale}|${wide}`;

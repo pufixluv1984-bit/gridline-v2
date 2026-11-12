@@ -7,13 +7,16 @@
   --x: 48px; /* сторона квадрата иконки */
   --s: 0.35; /* 84 / 240 */
   --open: 240px;
+  /* Отступ слева считается от свёрнутой ширины (84 − 48) / 2 и не меняется, когда меню раскрыто
+     или закреплено (--w = 240): иконки стоят на месте, подписи помещаются в 240px. */
+  --pad: 18px;
   position: fixed;
   left: 0;
   top: 0;
   z-index: 50;
   height: var(--vh-full);
   width: var(--w);
-  padding: 20px calc((var(--w) - var(--x)) / 2);
+  padding: 20px var(--pad);
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -187,6 +190,7 @@
     --w: 60px;
     --x: 42px;
     --s: 0.25; /* 60 / 240 */
+    --pad: 9px; /* (60 − 42) / 2 */
   }
   .me {
     width: 40px;
