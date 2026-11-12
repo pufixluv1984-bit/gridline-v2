@@ -68,14 +68,6 @@ export default function PredictPage() {
   const [syncedFrom, setSyncedFrom] = useState<Picks | null>(null);
   const [toast, setToast] = useState<'saved' | 'failed' | null>(null);
 
-  // Подставляем сохранённый прогноз, когда он пришёл с сервера (состояние из пропсов — прямо в рендере).
-  if (syncedFrom !== saved) {
-    setSyncedFrom(saved);
-    setPicks(saved);
-    setExtras(savedExtras);
-    const firstEmpty = saved.findIndex((x, i) => !x && slotOpen(i));
-    setActive(firstEmpty >= 0 ? firstEmpty : Math.max(0, SLOTS.findIndex((x) => slotOpen(x.index))));
-  }
   const setExtra = <K extends keyof Extras>(k: K, v: Extras[K]) => setExtras((e) => ({ ...e, [k]: v }));
 
   const ev = data?.event ?? null;
@@ -105,6 +97,14 @@ export default function PredictPage() {
   const nextDeadline = ev?.next_deadline ?? (open ? ev?.deadline : null) ?? null;
   const nextBlock = split && nextDeadline ? (blocks.find((b) => deadlineOf(b) === nextDeadline) ?? null) : null;
 
+  // Подставляем сохранённый прогноз, когда он пришёл с сервера (состояние из пропсов — прямо в рендере).
+  if (syncedFrom !== saved) {
+    setSyncedFrom(saved);
+    setPicks(saved);
+    setExtras(savedExtras);
+    const firstEmpty = saved.findIndex((x, i) => !x && slotOpen(i));
+    setActive(firstEmpty >= 0 ? firstEmpty : Math.max(0, SLOTS.findIndex((x) => slotOpen(x.index))));
+  }
   // Окно «Прогноз закрыт» (макет Overlays): блок закрылся, пока экран открыт.
   const closedSig = ev ? `${ev.id}:${blocks.map((b) => (closed(b) ? 1 : 0)).join('')}` : '';
   const [sig, setSig] = useState(closedSig);
