@@ -1,21 +1,16 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { useState, type CSSProperties, type MouseEvent } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { useAuth } from '@/features/auth/authContext';
 import { teamCar, type TeamCode } from '@/lib/assets';
-import { profileKeys, profileScreen, TITLE_NAMES, updateProfile, type ProfileScreen } from '@/lib/api/profile';
+import { profileKeys, profileScreen, TITLE_NAMES, type ProfileScreen } from '@/lib/api/profile';
 import { plural } from '@/lib/time/format';
-import { serverNow } from '@/lib/time/useServerNow';
 import { Avatar, DriverTile, Skeleton } from '@/ui/game';
-import { Modal } from '@/ui/Modal';
-import { useAvatarEditor } from './useAvatarEditor';
-import { Content, PageTitle, Toolbar, ToolbarDivider } from '@/ui/Page';
+import { Content, PageTitle, PillLink, PrimaryLink, Toolbar, ToolbarDivider } from '@/ui/Page';
 import b from '@/ui/Button.module.css';
 import pg from '@/ui/Page.module.css';
 import s from './Profile.module.css';
 import { avatarOf } from '@/lib/avatar';
-
-const NICK_COOLDOWN_MS = 30 * 24 * 3600 * 1000;
 
 const IconEdit = () => (
   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -78,16 +73,15 @@ export default function ProfilePage() {
       <PageTitle title="Профиль" sub={p?.nickname ?? '…'} />
       <Toolbar>
         {isMe && (
-          <a className={pg.btn} href="#settings" onClick={scrollTo('settings')}>
-            <IconEdit />
+          <PrimaryLink to="/settings" icon={<IconEdit />}>
             Редактировать профиль
-          </a>
+          </PrimaryLink>
         )}
         {isMe && <ToolbarDivider />}
         <a className={`${pg.pill} ${pg.pillOn}`} href="#top" onClick={scrollTo('top')}>Обзор</a>
         <a className={pg.pill} href="#history" onClick={scrollTo('history')}>История</a>
         <a className={pg.pill} href="#leagues" onClick={scrollTo('leagues')}>Лиги</a>
-        {isMe && <a className={pg.pill} href="#settings" onClick={scrollTo('settings')}>Настройки</a>}
+        {isMe && <PillLink to="/settings">Настройки</PillLink>}
       </Toolbar>
       <Content>
         <div id="top" />
@@ -178,7 +172,6 @@ export default function ProfilePage() {
               )}
             </div>
           </section>
-          {isMe && data && me && <ProfileSettings key={`${p?.nickname}${p?.avatar_color}${p?.fav_driver?.id}${p?.fav_team?.id}${data.fantasy?.team_name}`} data={data} userId={me} />}
         </div>
       </Content>
     </>
@@ -396,127 +389,6 @@ function History({ data, season, onSeason }: { data: ProfileScreen | undefined; 
       ) : (
         <div className="mute" style={{ fontSize: 14, marginTop: 18 }}>{data ? 'Этапов с результатами пока нет.' : ''}</div>
       )}
-    </section>
-  );
-}
-
-type Dialog = 'nick' | null;
-
-function ProfileSettings({ data, userId }: { data: ProfileScreen; userId: string }) {
-  const p = data.player!;
-  const qc = useQueryClient();
-  const [dialog, setDialog] = useState<Dialog>(null);
-  const [nick, setNick] = useState(p.nickname);
-  const [nextNickAt, setNextNickAt] = useState<number | null>(null);
-  const [teamName, setTeamName] = useState(data.fantasy?.team_name ?? '');
-  const avatar = useAvatarEditor({ id: p.id, nickname: p.nickname, avatar_color: p.avatar_color, avatar_path: p.avatar_path ?? null, avatar_text: p.avatar_text ?? null });
-
-  const save = useMutation({
-    mutationFn: (patch: Parameters<typeof updateProfile>[1]) => updateProfile(userId, patch),
-    onSuccess: () => {
-      setDialog(null);
-      void qc.invalidateQueries({ queryKey: ['screen'] });
-      void qc.invalidateQueries({ queryKey: ['profile'] });
-    },
-  });
-
-  const openNick = () => {
-    const changed = p.nickname_changed_at ? new Date(p.nickname_changed_at).getTime() : null;
-    setNextNickAt(changed && changed + NICK_COOLDOWN_MS > serverNow() ? changed + NICK_COOLDOWN_MS : null);
-    setNick(p.nickname);
-    save.reset();
-    setDialog('nick');
-  };
-  const close = () => {
-    setDialog(null);
-    save.reset();
-  };
-  const nickOk = nick.trim().length >= 2 && nick.trim().length <= 20 && nick.trim() !== p.nickname;
-
-  return (
-    <section className="card rise" style={{ ['--i' as string]: 9, flex: '1 1 560px' }} id="settings">
-      <h2 className="h">Настройки профиля</h2>
-      <div style={{ marginTop: 12 }}>
-        <div className="kv">
-          <span className="mute">Ник</span>
-          <button type="button" className={s.fld} onClick={openNick}>{p.nickname}<span className="mute">Изменить</span></button>
-        </div>
-        <div className="kv">
-          <span className="mute">Аватар</span>
-          <button type="button" className={s.fld} onClick={avatar.openPhoto}>
-            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 10 }}>
-              <Avatar {...avatarOf(p)} size={26} radius={8} fontSize={10} />
-              {p.avatar_path ? 'Фото' : 'Буквы'}
-            </span>
-            <span className="mute">Изменить</span>
-          </button>
-        </div>
-        <div className="kv">
-          <label className="mute" htmlFor="team-name">Название команды</label>
-          <span style={{ display: 'inline-flex', gap: 8 }}>
-            <input id="team-name" className={s.fld} style={{ cursor: 'text' }} maxLength={24} placeholder="Для фэнтези-лиги" value={teamName}
-              onChange={(e) => setTeamName(e.target.value)} />
-            {teamName.trim() !== (data.fantasy?.team_name ?? '') && (
-              <button type="button" className="mini go" disabled={save.isPending} onClick={() => save.mutate({ team_name: teamName.trim() || null })}>Сохранить</button>
-            )}
-          </span>
-        </div>
-        <div className="kv">
-          <label className="mute" htmlFor="fav-driver">Любимый пилот</label>
-          <select id="fav-driver" className={s.fld} value={p.fav_driver?.id ?? ''} disabled={save.isPending}
-            onChange={(e) => save.mutate({ fav_driver: e.target.value || null })}>
-            <option value="">Не выбран</option>
-            {(data.options?.drivers ?? []).map((d) => <option key={d.id} value={d.id}>{d.name} · {d.team_name}</option>)}
-          </select>
-        </div>
-        <div className="kv">
-          <label className="mute" htmlFor="fav-team">Любимая команда</label>
-          <select id="fav-team" className={s.fld} value={p.fav_team?.id ?? ''} disabled={save.isPending}
-            onChange={(e) => save.mutate({ fav_team: e.target.value || null })}>
-            <option value="">Не выбрана</option>
-            {(data.options?.teams ?? []).map((t) => <option key={t.id} value={t.id}>{t.name}</option>)}
-          </select>
-        </div>
-        <div className="kv">
-          <span className="mute">Аккаунт, выход и удаление</span>
-          <Link className="mini" to="/settings" style={{ display: 'inline-flex', alignItems: 'center' }}>Настройки аккаунта</Link>
-        </div>
-      </div>
-      {save.error && !dialog && <div className="alert bad" role="alert" style={{ marginTop: 12 }}>{save.error.message}</div>}
-
-      {dialog === 'nick' && (
-        <Modal
-          title="Сменить ник"
-          onClose={close}
-          busy={save.isPending}
-          actions={
-            <>
-              <button type="button" className={`${b.cta} ${b.sm} ${b.ghost}`} onClick={close} disabled={save.isPending}>Отмена</button>
-              <button type="button" className={`${b.cta} ${b.sm}`} disabled={!nickOk || !!nextNickAt || save.isPending} onClick={() => save.mutate({ nickname: nick.trim() })}>
-                {save.isPending ? 'Сохраняем…' : 'Сохранить'}
-              </button>
-            </>
-          }
-        >
-          <div>
-            <label className="lab" htmlFor="nick">Новый ник</label>
-            <input id="nick" className="in" type="text" value={nick} maxLength={20} disabled={!!nextNickAt}
-              onChange={(e) => setNick(e.target.value)}
-              onKeyDown={(e) => { if (e.key === 'Enter' && nickOk && !nextNickAt) save.mutate({ nickname: nick.trim() }); }} />
-            <div className="help">От 2 до 20 символов. Его видят все игроки лиги.</div>
-          </div>
-          <div className="alert info">
-            <span>
-              {nextNickAt
-                ? `Ник уже меняли недавно. Следующая смена — с ${new Intl.DateTimeFormat('ru-RU', { day: 'numeric', month: 'long' }).format(nextNickAt)}.`
-                : 'Менять ник можно раз в 30 дней. История очков сохранится.'}
-            </span>
-          </div>
-          {save.error && <div className="alert bad" role="alert">{save.error.message}</div>}
-        </Modal>
-      )}
-
-      {avatar.element}
     </section>
   );
 }

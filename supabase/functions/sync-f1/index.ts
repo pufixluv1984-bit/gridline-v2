@@ -12,7 +12,8 @@
 //   • safety car в гонке (OpenF1 race_control) — после клетчатого флага;
 //   • результаты практик (OpenF1 session_result) — только для просмотра, очков не дают;
 //   • карьеры пилотов (Jolpica) и биографии (русская Википедия) — по два пилота за запуск, раз в неделю;
-//   • переход на новый сезон: когда текущий закончен и в Jolpica есть календарь следующего.
+//   • переход на новый сезон: когда текущий закончен и в Jolpica есть календарь следующего;
+//   • аватарки: раз в час удаляет из Storage файлы, на которые не ссылается ни один профиль.
 
 const JOLPICA = 'https://api.jolpi.ca/ergast/f1';
 const SB_URL = Deno.env.get('SUPABASE_URL')!;
@@ -87,6 +88,25 @@ async function lastOk(key: string): Promise<number> {
 }
 
 const iso = (date?: string, time?: string) => (date ? new Date(`${date}T${time ?? '00:00:00Z'}`).toISOString() : null);
+
+// ── Аватарки: удаление неиспользуемых файлов (миграция 0021) ───────────────
+// Браузер сам удаляет старое фото при замене, но если вкладку закрыли посреди сохранения или аккаунт
+// удалён, файлы остаются. Раз в час находим их в базе и удаляем через Storage API.
+async function cleanAvatars(): Promise<Json> {
+  const names = await rpc<string[]>('avatars_orphans', { max_rows: 1000 });
+  let removed = 0;
+  for (let i = 0; i < names.length; i += 100) {
+    const prefixes = names.slice(i, i + 100);
+    const res = await fetch(`${SB_URL}/storage/v1/object/avatars`, {
+      method: 'DELETE',
+      headers: { apikey: SB_KEY, Authorization: `Bearer ${SB_KEY}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ prefixes }),
+    });
+    if (!res.ok) throw new Error(`storage delete: ${res.status} ${await res.text()}`);
+    removed += prefixes.length;
+  }
+  return { found: names.length, removed };
+}
 
 // ── Расписание ──────────────────────────────────────────────────────────
 async function syncSchedule(year: number) {
@@ -509,6 +529,15 @@ Deno.serve(async () => {
         await rpc('sync_mark', { k: 'weather', ok: true, details: { days: report.weather } });
       } catch (e) {
         report.weather = { error: e instanceof Error ? e.message : String(e) };
+      }
+    }
+    // Неиспользуемые аватарки — раз в час. Сбой не мешает остальному.
+    if (Date.now() - (await lastOk('avatars-gc')) > HOUR) {
+      try {
+        report.avatars = await cleanAvatars();
+        await rpc('sync_mark', { k: 'avatars-gc', ok: true, details: report.avatars as Json });
+      } catch (e) {
+        report.avatars = { error: e instanceof Error ? e.message : String(e) };
       }
     }
     // Карьеры пилотов для каталога и профиля пилота — по два за запуск, раз в неделю на пилота.

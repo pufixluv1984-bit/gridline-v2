@@ -13,15 +13,16 @@ export function avatarUrl(path: string, size: 256 | 512): string {
   return `${env.supabaseUrl}/storage/v1/object/public/avatars/${safe}-${size}`;
 }
 
-export type ImageKind = 'jpeg' | 'png' | 'webp';
+export type ImageKind = 'jpeg' | 'png' | 'webp' | 'gif';
 
-/** Тип картинки по первым байтам (не по расширению и не по file.type). SVG и всё прочее — null. */
+/** Тип картинки по первым байтам (не по расширению и не по file.type). SVG и всё прочее — null. GIF — анимированная аватарка. */
 export function sniffImage(head: Uint8Array): ImageKind | null {
   const b = (i: number) => head[i] ?? -1;
   if (b(0) === 0xff && b(1) === 0xd8 && b(2) === 0xff) return 'jpeg';
   if (b(0) === 0x89 && b(1) === 0x50 && b(2) === 0x4e && b(3) === 0x47 && b(4) === 0x0d && b(5) === 0x0a && b(6) === 0x1a && b(7) === 0x0a) return 'png';
   const ascii = (from: number, s: string) => [...s].every((c, i) => b(from + i) === c.charCodeAt(0));
   if (ascii(0, 'RIFF') && ascii(8, 'WEBP')) return 'webp';
+  if (ascii(0, 'GIF87a') || ascii(0, 'GIF89a')) return 'gif';
   return null;
 }
 
@@ -40,7 +41,7 @@ export function problemText(p: FileProblem): { title: string; text: string } {
     case 'too_big':
       return { title: 'Файл слишком большой', text: `${formatMb(p.size)} — максимум 2 МБ. Сожми фото или выбери другое.` };
     case 'format':
-      return { title: 'Неподдерживаемый формат', text: 'Подойдёт JPG, PNG или WebP.' };
+      return { title: 'Неподдерживаемый формат', text: 'Подойдёт JPG, PNG, WebP или GIF.' };
     case 'too_small':
       return { title: 'Фото слишком маленькое', text: `${p.width}×${p.height} px — нужно от 256 px по меньшей стороне.` };
     case 'broken':

@@ -9,11 +9,13 @@ describe('sniffImage', () => {
     expect(sniffImage(bytes(0xff, 0xd8, 0xff, 0xe0))).toBe('jpeg');
     expect(sniffImage(bytes(0x89, 'PNG', 0x0d, 0x0a, 0x1a, 0x0a))).toBe('png');
     expect(sniffImage(bytes('RIFF', 0, 0, 0, 0, 'WEBP'))).toBe('webp');
+    expect(sniffImage(bytes('GIF89a', 1, 0))).toBe('gif');
+    expect(sniffImage(bytes('GIF87a'))).toBe('gif');
   });
-  it('не принимает SVG, GIF и пустой файл', () => {
+  it('не принимает SVG, BMP и пустой файл', () => {
     expect(sniffImage(bytes('<svg xmlns="http://www.w3.org/2000/svg">'))).toBeNull();
     expect(sniffImage(bytes('<?xml version="1.0"?><svg'))).toBeNull();
-    expect(sniffImage(bytes('GIF89a'))).toBeNull();
+    expect(sniffImage(bytes('BM', 0, 0))).toBeNull();
     expect(sniffImage(new Uint8Array())).toBeNull();
   });
 });

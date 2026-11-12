@@ -5,9 +5,10 @@ import { deleteMyAccount } from '@/lib/api/account';
 import { isSiteAdmin } from '@/lib/api/admin';
 import { Link } from 'react-router-dom';
 import { signOut } from '@/lib/api/auth';
-import { getMyProfile, profileKeys } from '@/lib/api/profile';
-import { useAvatarEditor } from '@/features/profile/useAvatarEditor';
-import { Avatar } from '@/ui/Avatar';
+import { getMyProfile, profileKeys, profileScreen } from '@/lib/api/profile';
+import { Skeleton } from '@/ui/game';
+import { ProfileForm } from './ProfileForm';
+import { Toast } from '@/ui/Toast';
 import { IconWarn } from '@/ui/icons';
 import { Modal } from '@/ui/Modal';
 import { Card, Content, PageTitle } from '@/ui/Page';
@@ -26,8 +27,9 @@ const IconLogout = () => (
 );
 
 /**
- * «Профиль · Настройки» (макет Settings + окна из Overlays). Сейчас только аккаунт:
- * кто вошёл, выход и удаление. Редактирование профиля и настройки лиги — в следующих фазах.
+ * «Профиль · Настройки» (макет Settings + окна из Overlays): профиль с сохранением, выход и удаление.
+ * Блок «Уведомления» из макета не делается: рассылок на сайте нет (вход только OAuth, писем нет).
+ * Настройки лобби — на экране лиги.
  */
 export default function SettingsPage() {
   const auth = useAuth();
@@ -44,9 +46,14 @@ export default function SettingsPage() {
   const [confirm, setConfirm] = useState('');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [savedToast, setSavedToast] = useState(false);
 
   const nickname = profile.data?.nickname ?? '';
-  const avatar = useAvatarEditor(profile.data);
+  // Поля формы и списки (команды, пилоты) — из экрана профиля: один запрос на экран.
+  const screen = useQuery({ queryKey: profileKeys.screen(), queryFn: () => profileScreen(), enabled: !!user });
+  const pl = screen.data?.player;
+  // Форма пересоздаётся, когда сохранённые значения пришли с сервера (после «Сохранить» или с другой вкладки).
+  const formKey = pl ? [pl.nickname, pl.fav_team?.id, pl.fav_driver?.id, screen.data?.fantasy?.team_name].join('|') : '';
   const providers = ((user?.app_metadata?.providers as string[] | undefined) ?? [])
     .filter((x) => x !== 'email')
     .map((x) => PROVIDER_NAMES[x] ?? x);
@@ -81,52 +88,31 @@ export default function SettingsPage() {
       <PageTitle title="Профиль" sub="Настройки" />
       <Content>
         <div className={s.row}>
-          <Card i={0} className={s.col}>
-            <h2 className={p.h}>Аккаунт</h2>
-            <div className={s.who}>
-              <Avatar
-                nickname={nickname || '··'}
-                color={profile.data?.avatar_color ?? 'var(--gold)'}
-                photo={profile.data?.avatar_path}
-                text={profile.data?.avatar_text}
-                size={84}
-                radius={24}
-                fontSize={30}
-              />
-              <div style={{ minWidth: 0 }}>
-                <div className={s.nick}>{nickname || '…'}</div>
-                <div className={s.chips}>
-                  {providers.map((x) => (
-                    <span key={x} className={s.chip}>
-                      Вход через {x}
-                    </span>
-                  ))}
+          {screen.data?.player && user ? (
+            <ProfileForm
+              key={formKey}
+              data={screen.data}
+              userId={user.id}
+              email={user.email}
+              providers={providers}
+              onSaved={() => setSavedToast(true)}
+            />
+          ) : (
+            <Card i={0} className={`${s.col} ${s.wide}`}>
+              <h2 className={p.h}>Профиль</h2>
+              {screen.error ? (
+                <div className="alert bad" role="alert" style={{ marginTop: 16 }}>Не получилось загрузить профиль. Обнови страницу.</div>
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginTop: 16 }}>
+                  <Skeleton h={84} w={84} />
+                  <Skeleton h={52} />
+                  <Skeleton h={52} />
                 </div>
-                <div className={s.photoBtns}>
-                  <button type="button" className={`${b.cta} ${b.sm} ${b.ghost}`} disabled={!profile.data} onClick={avatar.openPhoto}>
-                    Загрузить фото
-                  </button>
-                  <button
-                    type="button"
-                    className={`${b.cta} ${b.sm} ${b.ghost}`}
-                    disabled={!profile.data?.avatar_path || avatar.removing}
-                    onClick={() => void avatar.remove()}
-                  >
-                    {avatar.removing ? 'Убираем…' : 'Убрать'}
-                  </button>
-                </div>
-                <div className="help" style={{ margin: '8px 0 0' }}>
-                  Квадрат от 256 px, до 2 МБ
-                </div>
-                {avatar.removeError && (
-                  <div className="alert bad" role="alert" style={{ marginTop: 10 }}>
-                    {avatar.removeError}
-                  </div>
-                )}
-              </div>
-            </div>
-          </Card>
+              )}
+            </Card>
+          )}
 
+          <div className={s.side}>
           {admin.data && (
             <Card i={1} className={s.col}>
               <h2 className={p.h}>Админ сайта</h2>
@@ -160,6 +146,7 @@ export default function SettingsPage() {
               </button>
             </div>
           </Card>
+          </div>
         </div>
       </Content>
 
@@ -226,7 +213,7 @@ export default function SettingsPage() {
           )}
         </Modal>
       )}
-      {avatar.element}
+      {savedToast && <Toast tone="g" title="Профиль сохранён" onDone={() => setSavedToast(false)} />}
     </>
   );
 }

@@ -13,7 +13,7 @@ import { initialsOf } from '@/lib/initials';
 import { Toast } from '@/ui/Toast';
 import { CropWindow, LettersWindow, PickWindow, type Me, type Save, type Step } from './AvatarWindows';
 
-const ACCEPT = 'image/jpeg,image/png,image/webp';
+const ACCEPT = 'image/jpeg,image/png,image/webp,image/gif';
 
 /**
  * Окна аватара из макета Overlays: «Новое фото профиля» (с загрузкой файла и ошибками), «Кадрирование»,
@@ -95,7 +95,7 @@ export function useAvatarEditor(me: Me | null | undefined) {
         bmp.close();
         return go({ k: 'problem', problem: { kind: 'too_small', width, height } });
       }
-      go({ k: 'crop', bmp, url: URL.createObjectURL(blob), name: file.name });
+      go({ k: 'crop', bmp, url: URL.createObjectURL(blob), name: file.name, gif: kind === 'gif' ? (fr.result as ArrayBuffer) : null });
     };
     fr.readAsArrayBuffer(file);
   };
@@ -167,7 +167,15 @@ export function useAvatarEditor(me: Me | null | undefined) {
           onSave={async (rect) => {
             setSave({ k: 'saving' });
             try {
-              const [s512, s256] = await Promise.all([renderAvatar(step.bmp, rect, 512), renderAvatar(step.bmp, rect, 256)]);
+              let s256: Blob;
+              let s512: Blob;
+              if (step.gif) {
+                // GIF: анимация 256×256 (модуль грузится только сейчас); для крупных мест тот же файл.
+                const { renderAvatarGif } = await import('@/lib/avatarGif');
+                s256 = s512 = await renderAvatarGif(step.gif, rect);
+              } else {
+                [s512, s256] = await Promise.all([renderAvatar(step.bmp, rect, 512), renderAvatar(step.bmp, rect, 256)]);
+              }
               const path = await saveAvatarPhoto(me.id, { s256, s512 });
               done({ avatar_color: me.avatar_color, avatar_text: me.avatar_text, avatar_path: path }, 'Фото обновлено');
             } catch (e) {

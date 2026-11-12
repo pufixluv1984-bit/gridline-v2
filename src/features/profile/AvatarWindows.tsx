@@ -18,7 +18,7 @@ export type Step =
   | { k: 'pick' }
   | { k: 'problem'; problem: FileProblem }
   | { k: 'loading'; name: string; size: number; progress: number }
-  | { k: 'crop'; bmp: ImageBitmap; url: string; name: string }
+  | { k: 'crop'; bmp: ImageBitmap; url: string; name: string; gif: ArrayBuffer | null }
   | { k: 'letters' };
 
 export type Save = { k: 'idle' } | { k: 'saving' } | { k: 'error'; network: boolean; message: string };
@@ -139,7 +139,7 @@ export function PickWindow({
         </span>
         <b>Перетащи фото сюда</b>
         <span className="mute" style={{ fontSize: 13 }}>
-          JPG или PNG, квадрат от 256 px, до 2 МБ
+          JPG, PNG или GIF, квадрат от 256 px, до 2 МБ
         </span>
         <button type="button" className={`${b.cta} ${b.sm} ${b.ghost}`} style={{ marginTop: 4 }} onClick={onChoose}>
           Выбрать файл
@@ -290,7 +290,7 @@ export function CropWindow({
         />
       </div>
       <div className="help" style={{ margin: 0 }}>
-        Двигай фото и меняй масштаб, чтобы лицо было в рамке.
+        Двигай фото и меняй масштаб, чтобы лицо было в рамке.{step.gif ? ' GIF сохранится анимированным, 256×256.' : ''}
       </div>
       {save.k === 'error' && (
         <div className="alert bad" role="alert">
