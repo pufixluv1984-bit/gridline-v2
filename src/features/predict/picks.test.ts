@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { emptyPicks, filledIn, fromPrediction, isComplete, pick, toPrediction, usedInBlock } from './picks';
+import { emptyExtras, emptyPicks, extrasFrom, filledIn, fromPrediction, isComplete, pick, sameExtras, toPrediction, usedInBlock } from './picks';
 
 describe('picks', () => {
   it('ставит пилота и переходит к следующему пустому слоту', () => {
@@ -35,7 +35,35 @@ describe('picks', () => {
     const p = fromPrediction({ qualy: ['a', 'b', 'c'], race: 'abcdefghij'.split(''), fastest_lap: null });
     expect(isComplete(p)).toBe(true);
     expect(filledIn(p, 'race')).toBe(10);
-    expect(toPrediction(p)).toEqual({ qualy: ['a', 'b', 'c'], race: 'abcdefghij'.split(''), fastestLap: null });
+    expect(toPrediction(p)).toEqual({ qualy: ['a', 'b', 'c'], race: 'abcdefghij'.split(''), fastestLap: null, firstDnf: null });
     expect(isComplete(emptyPicks())).toBe(false);
+  });
+});
+
+describe('бонусы фазы 2', () => {
+  it('первый сход — отдельный слот, «Никто» допустим', () => {
+    const p = pick(emptyPicks(), 14, 'none').picks;
+    expect(toPrediction(p).firstDnf).toBe('none');
+  });
+  it('в бонусах один пилот может стоять дважды (быстрый круг и первый сход)', () => {
+    let p = pick(emptyPicks(), 13, 'norris').picks;
+    p = pick(p, 14, 'norris').picks;
+    expect([p[13], p[14]]).toEqual(['norris', 'norris']);
+    expect(usedInBlock(p, 14, 'norris')).toBe(false);
+  });
+  it('сохранённый прогноз восстанавливается вместе с ответами и бустером', () => {
+    const saved = {
+      qualy: ['a', 'b', 'c'],
+      race: 'abcdefghij'.split(''),
+      fastest_lap: 'x',
+      first_dnf: 'none',
+      pole_wins: true,
+      safety_car: false,
+      dnf_many: null,
+      boost_block: 'race' as const,
+    };
+    expect(fromPrediction(saved)[14]).toBe('none');
+    expect(extrasFrom(saved)).toEqual({ poleWins: true, safetyCar: false, dnfMany: null, boost: 'race' });
+    expect(sameExtras(extrasFrom(saved), emptyExtras())).toBe(false);
   });
 });

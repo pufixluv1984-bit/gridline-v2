@@ -10,7 +10,11 @@ import { Avatar, Countdown, DriverTile, Skeleton } from '@/ui/game';
 import { IconTarget } from '@/ui/icons';
 import { Content, PageTitle, PillLink, Toolbar, ToolbarDivider } from '@/ui/Page';
 import p from '@/ui/Page.module.css';
-import { SLOTS, clear, emptyPicks, filledIn, fromPrediction, isComplete, pick, samePicks, toPrediction, usedInBlock, type Picks } from './picks';
+import {
+  FIRST_DNF, NONE, SLOTS, clear, emptyExtras, emptyPicks, extrasFrom, filledIn, fromPrediction, isComplete, pick, sameExtras,
+  samePicks, toPrediction, usedInBlock, type Block, type Extras, type Picks,
+} from './picks';
+import { BoostPicker, YesNo } from './Bonus';
 
 const RACE_RULES = [
   ['Точное место', '+10'],
@@ -25,11 +29,20 @@ const QUALY_RULES = [
   ['P3 точно', '+4'],
 ];
 
+const BONUS_RULES = [
+  ['Быстрый круг', 'Лучший круг гонки', '+6'],
+  ['Первый сход', 'Меньше всех кругов среди сошедших; сходов нет — «Никто»', '+10'],
+  ['Победа с поула', 'Выиграет ли гонку пилот с поула', '+3'],
+  ['Safety car', 'Будет ли выезд машины безопасности (VSC не считается)', '+3'],
+  ['Сходов 2 и больше', 'Или меньше двух', '+3'],
+];
+
 const lastName = (d: Driver) => d.name.split(' ').slice(-1)[0] ?? d.name;
 
 /**
  * Экран «Прогноз этапа» (макет Predict). Правила начисления — из docs/PRODUCT.md §2:
- * квалификация топ-3, топ-10 гонки, бонус «быстрый круг» (остальные бонусы и бустер — фаза 2).
+ * квалификация топ-3, топ-10 гонки, бонусы (быстрый круг, первый сход, победа с поула, safety car,
+ * сходов 2+) и бустер ×2 на один блок — один на каждые 5 этапов.
  */
 export default function PredictPage() {
   const league = getCurrentLeague();
@@ -40,7 +53,9 @@ export default function PredictPage() {
 
   const data = q.data;
   const saved = useMemo(() => fromPrediction(data?.prediction ?? null), [data?.prediction]);
+  const savedExtras = useMemo(() => extrasFrom(data?.prediction ?? null), [data?.prediction]);
   const [picks, setPicks] = useState<Picks>(emptyPicks);
+  const [extras, setExtras] = useState<Extras>(emptyExtras);
   const [active, setActive] = useState(0);
   const [syncedFrom, setSyncedFrom] = useState<Picks | null>(null);
 
@@ -48,19 +63,22 @@ export default function PredictPage() {
   if (syncedFrom !== saved) {
     setSyncedFrom(saved);
     setPicks(saved);
+    setExtras(savedExtras);
     const firstEmpty = saved.findIndex((x) => !x);
     setActive(firstEmpty >= 0 ? firstEmpty : 0);
   }
+  const setExtra = <K extends keyof Extras>(k: K, v: Extras[K]) => setExtras((e) => ({ ...e, [k]: v }));
 
   const ev = data?.event ?? null;
   const open = !!ev?.deadline && Date.parse(ev.deadline) > now;
   const byId = useMemo(() => new Map((data?.drivers ?? []).map((d) => [d.id, d])), [data?.drivers]);
   const grid = (data?.drivers ?? []).filter((d) => d.active);
-  const dirty = !samePicks(picks, saved);
+  const dirty = !samePicks(picks, saved) || !sameExtras(extras, savedExtras);
   const complete = isComplete(picks);
 
   const save = useMutation({
-    mutationFn: () => savePrediction({ eventId: ev!.id, ...toPrediction(picks) }),
+    mutationFn: () =>
+      savePrediction({ eventId: ev!.id, ...toPrediction(picks), poleWins: extras.poleWins, safetyCar: extras.safetyCar, dnfMany: extras.dnfMany, boost: extras.boost }),
     // Оптимистично: сразу считаем прогноз отправленным, при отказе базы откатываем.
     onMutate: async () => {
       await qc.cancelQueries({ queryKey: key });
@@ -69,7 +87,17 @@ export default function PredictPage() {
         const t = toPrediction(picks);
         qc.setQueryData<PredictScreen>(key, {
           ...prev,
-          prediction: { qualy: t.qualy, race: t.race, fastest_lap: t.fastestLap, updated_at: new Date().toISOString() },
+          prediction: {
+            qualy: t.qualy,
+            race: t.race,
+            fastest_lap: t.fastestLap,
+            first_dnf: t.firstDnf,
+            pole_wins: extras.poleWins,
+            safety_car: extras.safetyCar,
+            dnf_many: extras.dnfMany,
+            boost_block: extras.boost,
+            updated_at: new Date().toISOString(),
+          },
         });
       }
       return { prev };
@@ -95,9 +123,11 @@ export default function PredictPage() {
   };
 
   const slotView = (i: number) => {
-    const d = picks[i] ? byId.get(picks[i]!) ?? null : null;
-    return { d, cls: `slot ${!open ? '' : active === i ? 'act' : d ? '' : 'empty'}` };
+    const d = picks[i] && picks[i] !== NONE ? byId.get(picks[i]!) ?? null : null;
+    const none = picks[i] === NONE;
+    return { d, none, cls: `slot ${!open ? '' : active === i ? 'act' : d || none ? '' : 'empty'}` };
   };
+  const boostCls = (b: Block) => (extras.boost === b ? { borderColor: 'rgba(232,33,26,.5)', boxShadow: '0 0 34px rgba(232,33,26,.14)' } : undefined);
 
   const sendHint = !open
     ? 'Приём закрыт — прогноз зафиксирован'
@@ -107,9 +137,7 @@ export default function PredictPage() {
         ? 'Прогноз принят. До дедлайна его можно изменить'
         : data?.prediction && !dirty
           ? 'Прогноз отправлен. До дедлайна его можно изменить'
-          : picks[13]
-            ? 'Всё готово'
-            : 'Быстрый круг можно пропустить';
+          : 'Бонусы и бустер можно пропустить';
 
   return (
     <>
@@ -184,29 +212,45 @@ export default function PredictPage() {
                 <span className="chip green">Считается автоматически</span>
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,minmax(0,1fr))', gap: 12 }}>
-                {(() => {
-                  const s = SLOTS[13]!;
-                  const v = slotView(13);
+                {[13, 14].map((i) => {
+                  const s = SLOTS[i]!;
+                  const v = slotView(i);
                   return (
-                    <button type="button" className={v.cls} style={{ flexDirection: 'column', alignItems: 'center', textAlign: 'center', padding: '16px 12px', gap: 10 }} onClick={() => tapSlot(13)} disabled={!open} aria-pressed={active === 13}>
+                    <button key={i} type="button" className={v.cls} style={{ flexDirection: 'column', alignItems: 'center', textAlign: 'center', padding: '16px 12px', gap: 10, ...boostCls('bonus') }} onClick={() => tapSlot(i)} disabled={!open} aria-pressed={active === i}>
                       <div className="eyebrow">{s.label}</div>
-                      <DriverTile driver={v.d} size={72} />
-                      <div style={{ fontWeight: 600, fontSize: 14, minHeight: 18 }}>{v.d ? lastName(v.d) : 'Выбрать'}</div>
-                      <div className="mute" style={{ fontSize: 12 }}>Гонка · <b style={{ color: 'var(--pos)' }}>{s.points}</b></div>
+                      {v.none ? (
+                        <div className="ph" style={{ width: 72, height: 72, borderRadius: 22, ['--c' as string]: '#7fe0a0' }}><span className="npc" style={{ fontSize: 15 }}>никто</span></div>
+                      ) : (
+                        <DriverTile driver={v.d} size={72} />
+                      )}
+                      <div style={{ fontWeight: 600, fontSize: 14, minHeight: 18 }}>{v.none ? 'Никто не сойдёт' : v.d ? lastName(v.d) : 'Выбрать'}</div>
+                      <div className="mute" style={{ fontSize: 12 }}>{i === 13 ? 'Гонка' : 'Круги в гонке'} · <b style={{ color: 'var(--pos)' }}>{s.points}</b></div>
                     </button>
                   );
-                })()}
-                <div className="slot empty" style={{ gridColumn: 'span 3', flexDirection: 'column', alignItems: 'flex-start', justifyContent: 'center', gap: 6, cursor: 'default' }}>
-                  <div style={{ fontWeight: 600, fontSize: 14 }}>Ещё бонусы — со следующего этапа</div>
-                  <div className="mute" style={{ fontSize: 13, lineHeight: 1.45 }}>Первый сход, safety car, победа с поула, число сходов и бустер ×2 появятся к Гран-при Катара.</div>
+                })}
+                <div style={{ gridColumn: 'span 2', display: 'flex', flexDirection: 'column', gap: 10 }}>
+                  <YesNo label="Поул выиграет гонку" points="+3" value={extras.poleWins} onChange={(v) => setExtra('poleWins', v)} disabled={!open} />
+                  <YesNo label="Будет safety car" points="+3" value={extras.safetyCar} onChange={(v) => setExtra('safetyCar', v)} disabled={!open} />
+                  <YesNo label="Сходов 2 и больше" points="+3" value={extras.dnfMany} onChange={(v) => setExtra('dnfMany', v)} disabled={!open} />
                 </div>
               </div>
+
+              <div style={{ margin: '28px 0 14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+                <span className="eyebrow">Бустер ×2</span>
+                <span className="chip">Один на каждые 5 этапов</span>
+              </div>
+              <BoostPicker value={extras.boost} onChange={(v) => setExtra('boost', v)} disabled={!open} usedElsewhere={data?.boost_used ?? null} />
 
               {open && (
                 <>
                   <div style={{ margin: '28px 0 14px' }}>
                     <span className="eyebrow">Выбери пилота для: <b style={{ color: '#fff' }}>{SLOTS[active]!.block === 'race' ? `P${SLOTS[active]!.pos} в гонке` : SLOTS[active]!.block === 'qualy' ? `${SLOTS[active]!.label} в квалификации` : SLOTS[active]!.label}</b></span>
                   </div>
+                  {active === FIRST_DNF && (
+                    <button type="button" className={`slot ${picks[FIRST_DNF] === NONE ? 'act' : ''}`} style={{ width: '100%', justifyContent: 'center', marginBottom: 10, fontWeight: 600 }} onClick={() => choose(NONE)}>
+                      Никто не сойдёт
+                    </button>
+                  )}
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6,minmax(0,1fr))', gap: 10 }}>
                     {grid.map((d) => {
                       const used = usedInBlock(picks, active, d.id);
@@ -270,10 +314,15 @@ export default function PredictPage() {
               </section>
               <section className="card rise" style={{ ['--i' as string]: 4 }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}><h2 className="h">Бонус</h2><span className="chip green">Авто</span></div>
-                <div className="kv" style={{ marginTop: 10 }}>
-                  <span>Быстрый круг<span className="mute" style={{ display: 'block', fontSize: 12, marginTop: 3 }}>Лучший круг гонки</span></span>
-                  <b className="num" style={{ color: 'var(--pos)' }}>+6</b>
+                <div style={{ marginTop: 10 }}>
+                  {BONUS_RULES.map(([n, d, v]) => (
+                    <div key={n} className="kv">
+                      <span>{n}<span className="mute" style={{ display: 'block', fontSize: 12, marginTop: 3 }}>{d}</span></span>
+                      <b className="num" style={{ color: 'var(--pos)' }}>{v}</b>
+                    </div>
+                  ))}
                 </div>
+                <div className="mute" style={{ fontSize: 12, marginTop: 8, lineHeight: 1.5 }}>Бустер ×2 удваивает один блок этапа. Один бустер на каждые 5 этапов сезона.</div>
               </section>
               {data?.last && (
                 <section className="card rise" style={{ ['--i' as string]: 5 }}>
@@ -292,7 +341,7 @@ export default function PredictPage() {
           </div>
         )}
         <div className="mute" style={{ fontSize: 12, padding: '4px 6px 0', lineHeight: 1.6 }}>
-          Прогноз закрывается со стартом квалификации, чужие прогнозы скрыты до закрытия. Не отправил прогноз — 0 очков за этап. Очки предварительные 48 часов после гонки (штрафы стюардов), потом фиксируются. Максимум за этап без бонусов фазы 2: 14 за квалификацию, 110 за гонку и 6 за быстрый круг.
+          Прогноз закрывается со стартом квалификации, чужие прогнозы скрыты до закрытия. Не отправил прогноз — 0 очков за этап. Очки предварительные 48 часов после гонки (штрафы стюардов), потом фиксируются. Максимум за этап без бустера: 14 за квалификацию, 110 за гонку, 25 за бонусы.
         </div>
       </Content>
     </>

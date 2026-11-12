@@ -93,3 +93,12 @@ export async function deleteLeague(league: string) {
   const { error } = await getSupabase().from('leagues').delete().eq('id', league);
   if (error) throw friendly(error);
 }
+
+/** Какие бонусы считаются в лиге (только владелец; отсутствующий ключ = включено). */
+export const BONUS_KEYS = ['fastest_lap', 'first_dnf', 'pole_wins', 'safety_car', 'dnf_many', 'boost'] as const;
+export type BonusKey = (typeof BONUS_KEYS)[number];
+
+export async function updateLeagueBonuses(league: string, config: Record<BonusKey, boolean>) {
+  const { error } = await getSupabase().from('leagues').update({ bonus_config: config }).eq('id', league);
+  if (error) throw friendly(error);
+}

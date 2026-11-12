@@ -22,6 +22,7 @@ const ResultsPage = lazy(() => import('@/features/results/ResultsPage'));
 const TracksPage = lazy(() => import('@/features/schedule/TracksPage'));
 const WaitingPage = lazy(() => import('@/features/lobby/WaitingPage'));
 const AdminResultsPage = lazy(() => import('@/features/admin/AdminResultsPage'));
+const BreakdownPage = lazy(() => import('@/features/breakdown/BreakdownPage'));
 const JoinByCodePage = lazy(() => import('@/features/lobby/JoinPage').then((m) => ({ default: m.JoinByCodePage })));
 
 const queryClient = new QueryClient({
@@ -34,7 +35,6 @@ const guest = (el: ReactNode) => <RedirectIfSignedIn>{el}</RedirectIfSignedIn>;
 
 // Разделы следующих фаз — пока заглушки внутри каркаса.
 const SOON: { path: string; title: string; phase: number }[] = [
-  { path: 'rules', title: 'Правила', phase: 2 },
   { path: 'fantasy/*', title: 'Фэнтези-лига', phase: 4 },
 ];
 
@@ -72,6 +72,10 @@ export function App() {
                 <Route path="lobby/:id/invite" element={<InvitePage />} />
                 <Route path="lobby/:id/waiting" element={<WaitingPage />} />
                 <Route path="tracks" element={<TracksPage />} />
+                <Route path="breakdown" element={<BreakdownPage />} />
+                <Route path="breakdown/:ev" element={<BreakdownPage />} />
+                {/* Правила начисления прогнозов — на экране прогноза (карточки справа). */}
+                <Route path="rules" element={<Navigate to="/predict" replace />} />
                 <Route path="admin/results" element={<AdminResultsPage />} />
                 {SOON.map((r) => (
                   <Route key={r.path} path={r.path} element={<SoonPage title={r.title} phase={r.phase} />} />

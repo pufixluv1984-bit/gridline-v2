@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { ago, countdownParts, formatDateTime, formatRange, formatTime, plural } from './format';
+import { ago, countdownParts, formatDateTime, formatRange, formatTime, lapTime, plural } from './format';
 
 describe('countdownParts', () => {
   it('раскладывает остаток', () => {
@@ -38,4 +38,10 @@ describe('склонения', () => {
     expect(ago('2026-11-11T11:59:50Z', now)).toBe('только что');
     expect(ago('2026-11-11T09:00:00Z', now)).toBe('3 часа назад');
   });
+});
+
+describe('lapTime', () => {
+  it('минуты и секунды', () => expect(lapTime(71717)).toBe('1:11.717'));
+  it('с ведущим нулём секунд', () => expect(lapTime(65004)).toBe('1:05.004'));
+  it('меньше минуты', () => expect(lapTime(59001)).toBe('59.001'));
 });

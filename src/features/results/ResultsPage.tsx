@@ -2,7 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { resultsScreen, screenKeys, type ResultRow } from '@/lib/api/screens';
-import { plural } from '@/lib/time/format';
+import { lapTime, plural } from '@/lib/time/format';
 import { DriverTile, Skeleton } from '@/ui/game';
 import { Content, PageTitle, PillLink, Toolbar } from '@/ui/Page';
 
@@ -10,7 +10,20 @@ const GRID = '60px 56px minmax(200px,1.2fr) minmax(160px,1fr) 170px';
 const MEDAL = ['var(--gold)', '#c9c9d0', '#d08a4a'];
 
 /** Итог пилота вместо отрыва по времени (времена в базе не храним). */
+type Kind = 'race' | 'qualy' | 'fp3' | 'fp2' | 'fp1';
+const KINDS: { k: Kind; t: string; empty: string }[] = [
+  { k: 'race', t: 'Гонка', empty: 'Гонки ещё не было' },
+  { k: 'qualy', t: 'Квалификация', empty: 'Квалификации ещё не было' },
+  { k: 'fp3', t: 'Практика 3', empty: 'Практики 3 ещё не было' },
+  { k: 'fp2', t: 'Практика 2', empty: 'Практики 2 ещё не было' },
+  { k: 'fp1', t: 'Практика 1', empty: 'Практики 1 ещё не было' },
+];
+
 function outcome(r: ResultRow): string {
+  if (r.kind === 'fp1' || r.kind === 'fp2' || r.kind === 'fp3') {
+    if (r.best_ms == null) return 'без времени';
+    return r.position === 1 ? lapTime(r.best_ms) : r.gap_ms != null ? `+${(r.gap_ms / 1000).toFixed(3)}` : lapTime(r.best_ms);
+  }
   if (r.kind === 'qualy') return r.position <= 10 ? 'Q3' : r.position <= 16 ? 'Q2' : 'Q1';
   const t = r.position_text ?? '';
   if (t === 'R') return 'Сход';
@@ -29,11 +42,12 @@ export default function ResultsPage() {
   const navigate = useNavigate();
   const evId = ev ? Number(ev) : undefined;
   const q = useQuery({ queryKey: screenKeys.results(evId), queryFn: () => resultsScreen(evId), staleTime: 5 * 60_000 });
-  const [kind, setKind] = useState<'race' | 'qualy'>('race');
+  const [kind, setKind] = useState<Kind>('race');
 
   const data = q.data;
   const rows = (data?.results ?? []).filter((r) => r.kind === kind);
-  const has = (k: 'race' | 'qualy') => (data?.results ?? []).some((r) => r.kind === k);
+  const has = (k: Kind) => (data?.results ?? []).some((r) => r.kind === k);
+  const kindInfo = KINDS.find((x) => x.k === kind)!;
   const podium = rows.slice(0, 3);
   const fastest = (data?.results ?? []).find((r) => r.kind === 'race' && r.fastest_lap_rank === 1);
   const provisional = rows.some((r) => !r.is_final);
@@ -56,7 +70,7 @@ export default function ResultsPage() {
           <>
             <section className="card rise" style={{ display: 'flex', flexWrap: 'wrap', gap: 24, alignItems: 'center', justifyContent: 'space-between' }}>
               <div>
-                <div className="eyebrow">Этап {data.event.round} · {kind === 'race' ? 'гонка' : 'квалификация'}</div>
+                <div className="eyebrow">Этап {data.event.round} · {kindInfo.t.toLowerCase()}</div>
                 <div className="num" style={{ fontSize: 34, fontWeight: 600, marginTop: 12, letterSpacing: '-.01em' }}>{data.event.name}</div>
                 <div className="mute" style={{ fontSize: 14, marginTop: 8 }}>{data.event.circuit} · {data.event.country}</div>
               </div>
@@ -72,12 +86,15 @@ export default function ResultsPage() {
             </section>
 
             <div className="seg" role="tablist" aria-label="Сессия" style={{ alignSelf: 'flex-start' }}>
-              <button role="tab" type="button" className={kind === 'race' ? 'on' : ''} aria-selected={kind === 'race'} disabled={!has('race')} onClick={() => setKind('race')}>Гонка</button>
-              <button role="tab" type="button" className={kind === 'qualy' ? 'on' : ''} aria-selected={kind === 'qualy'} disabled={!has('qualy')} onClick={() => setKind('qualy')}>Квалификация</button>
+              {KINDS.filter((x) => x.k === 'race' || x.k === 'qualy' || has(x.k)).map((x) => (
+                <button key={x.k} role="tab" type="button" className={kind === x.k ? 'on' : ''} aria-selected={kind === x.k} disabled={!has(x.k)} onClick={() => setKind(x.k)}>
+                  {x.t}
+                </button>
+              ))}
             </div>
 
             {rows.length === 0 ? (
-              <div className="empty-state"><h3>{kind === 'race' ? 'Гонки ещё не было' : 'Квалификации ещё не было'}</h3><p>Результат появится примерно через час после сессии.</p></div>
+              <div className="empty-state"><h3>{kindInfo.empty}</h3><p>Результат появится примерно через час после сессии.</p></div>
             ) : (
               <>
                 <div className="row">
@@ -96,7 +113,7 @@ export default function ResultsPage() {
                   <div role="table" aria-label="Классификация">
                     <div role="row" className="eyebrow" style={{ display: 'grid', gridTemplateColumns: GRID, gap: 14, padding: '0 16px 10px' }}>
                       <span role="columnheader">Место</span><span role="columnheader" /><span role="columnheader">Пилот</span><span role="columnheader">Команда</span>
-                      <span role="columnheader" style={{ textAlign: 'right' }}>Итог</span>
+                      <span role="columnheader" style={{ textAlign: 'right' }}>{kind.startsWith('fp') ? 'Лучший круг / отрыв' : 'Итог'}</span>
                     </div>
                     {rows.map((r) => (
                       <div role="row" key={r.code} className="trow" style={{ display: 'grid', gridTemplateColumns: GRID, gap: 14 }}>

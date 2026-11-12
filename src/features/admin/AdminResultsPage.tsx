@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
-import { adminSetResult, isSiteAdmin } from '@/lib/api/admin';
+import { adminSetResult, adminSetSafetyCar, isSiteAdmin } from '@/lib/api/admin';
 import { predictScreen, scheduleScreen, screenKeys } from '@/lib/api/screens';
 import { serverNow } from '@/lib/time/useServerNow';
 import { DriverTile, Skeleton } from '@/ui/game';
@@ -28,6 +28,11 @@ export default function AdminResultsPage() {
   const [order, setOrder] = useState<string[]>([]);
   const [fastest, setFastest] = useState<string>('');
   const [confirm, setConfirm] = useState(false);
+
+  const sc = useMutation({
+    mutationFn: (value: boolean) => adminSetSafetyCar(ev!.id, value),
+    onSuccess: () => void qc.invalidateQueries({ queryKey: ['screen'] }),
+  });
 
   const save = useMutation({
     mutationFn: () => adminSetResult(ev!.id, session, order, session === 'race' ? fastest || null : null),
@@ -76,8 +81,21 @@ export default function AdminResultsPage() {
           </div>
         </section>
 
+        <section className="card rise" style={{ ['--i' as string]: 1, display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 14 }}>
+          <div>
+            <h2 className="h">Safety car в гонке</h2>
+            <div className="mute" style={{ fontSize: 13, marginTop: 4 }}>Если OpenF1 не дал данных. Считается только настоящий SC, не VSC. Ручной ввод главнее синхронизации.</div>
+          </div>
+          <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+            <button type="button" className={`${b.cta} ${b.sm} ${b.ghost}`} disabled={!ev || sc.isPending} onClick={() => sc.mutate(true)}>Был</button>
+            <button type="button" className={`${b.cta} ${b.sm} ${b.ghost}`} disabled={!ev || sc.isPending} onClick={() => sc.mutate(false)}>Не было</button>
+            {sc.isSuccess && <span className="chip green">Сохранено: {sc.variables ? 'был' : 'не было'}</span>}
+            {sc.error && <span className="chip red">{sc.error.message}</span>}
+          </div>
+        </section>
+
         <div className="row" style={{ alignItems: 'flex-start' }}>
-          <section className="card rise" style={{ ['--i' as string]: 1, flex: '2 1 640px', minWidth: 0 }}>
+          <section className="card rise" style={{ ['--i' as string]: 2, flex: '2 1 640px', minWidth: 0 }}>
             <h2 className="h">Пилоты</h2>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6,minmax(0,1fr))', gap: 10, marginTop: 16 }}>
               {drivers.map((d) => {

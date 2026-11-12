@@ -7,7 +7,9 @@
 //   • результаты квалификации и гонки — после сессии каждые 10 минут, пока их нет;
 //     потом раз в час до 50 часов после старта гонки (штрафы), затем фиксирует (is_final);
 //   • таблицу чемпионата (пилоты и команды) — раз в 3 часа;
-//   • погоду на дни текущего этапа (Open-Meteo, CC BY 4.0) — раз в 3 часа.
+//   • погоду на дни текущего этапа (Open-Meteo, CC BY 4.0) — раз в 3 часа;
+//   • safety car в гонке (OpenF1 race_control) — после клетчатого флага;
+//   • результаты практик (OpenF1 session_result) — только для просмотра, очков не дают.
 
 const JOLPICA = 'https://api.jolpi.ca/ergast/f1';
 const SB_URL = Deno.env.get('SUPABASE_URL')!;
@@ -231,6 +233,81 @@ async function syncResults(report: Json) {
   }
 }
 
+// ── OpenF1: safety car (сообщения дирекции гонки) и практики (только просмотр) ──
+const OPENF1 = 'https://api.openf1.org/v1';
+const OPENF1_NAMES: Record<string, string> = { fp1: 'Practice 1', fp2: 'Practice 2', fp3: 'Practice 3', race: 'Race' };
+
+async function openf1(path: string): Promise<Json[]> {
+  const res = await fetch(`${OPENF1}${path}`, { headers: { 'User-Agent': 'Gridline-sync/1.0 (non-commercial fan project)' } });
+  if (res.status === 404) return [];
+  if (!res.ok) throw new Error(`OpenF1 ${path}: ${res.status}`);
+  const data = await res.json();
+  return Array.isArray(data) ? (data as Json[]) : [];
+}
+
+/** session_key OpenF1 для нашей сессии: то же название и старт в пределах 3 часов. */
+async function openf1Session(year: number, kind: string, startsAt: string): Promise<number | null> {
+  const name = OPENF1_NAMES[kind];
+  if (!name) return null;
+  const list = await openf1(`/sessions?year=${year}&session_name=${encodeURIComponent(name)}`);
+  const at = Date.parse(startsAt);
+  const hit = list.find((s) => Math.abs(Date.parse(String(s.date_start)) - at) < 3 * HOUR);
+  return hit ? Number(hit.session_key) : null;
+}
+
+type ScPending = { season_year: number; round: number; race_at: string };
+
+/** Был ли настоящий safety car в гонке (не VSC и не красный флаг — решение владельца 13.11.2026). */
+async function syncSafetyCar(report: Json) {
+  const pending = await rpc<ScPending[]>('sync_sc_pending');
+  for (const p of pending) {
+    const key = await openf1Session(p.season_year, 'race', p.race_at);
+    if (!key) continue;
+    const msgs = await openf1(`/race_control?session_key=${key}`);
+    // Ждём клетчатый флаг: пока гонка не закончилась, ответ «нет» был бы преждевременным.
+    if (!msgs.some((m) => String(m.flag) === 'CHEQUERED')) continue;
+    const sc = msgs.some((m) => String(m.category) === 'SafetyCar' && /^SAFETY CAR DEPLOYED/.test(String(m.message)));
+    const lines = await rpc<number>('sync_safety_car', { season_year: p.season_year, round: p.round, value: sc });
+    report[`sc-${p.season_year}-${p.round}`] = { safety_car: sc, score_lines: lines };
+  }
+}
+
+type PracticePending = { season_year: number; round: number; kind: string; starts_at: string };
+type EntryNumber = { number: number; driver_id: string; team_id: string };
+
+async function syncPractice(report: Json) {
+  const pending = await rpc<PracticePending[]>('sync_practice_pending');
+  if (!pending.length) return;
+  const byYear = new Map<number, Map<number, EntryNumber>>();
+  for (const p of pending) {
+    if (!byYear.has(p.season_year)) {
+      const list = await rpc<EntryNumber[]>('sync_entries_numbers', { season_year: p.season_year });
+      byYear.set(p.season_year, new Map(list.map((e) => [Number(e.number), e])));
+    }
+    const numbers = byYear.get(p.season_year)!;
+    const key = await openf1Session(p.season_year, p.kind, p.starts_at);
+    if (!key) continue;
+    const rows = (await openf1(`/session_result?session_key=${key}`))
+      .filter((r) => r.position != null && numbers.has(Number(r.driver_number)))
+      .map((r) => {
+        const e = numbers.get(Number(r.driver_number))!;
+        const best = typeof r.duration === 'number' ? r.duration : null;
+        const gap = typeof r.gap_to_leader === 'number' ? r.gap_to_leader : null;
+        return {
+          driver_id: e.driver_id,
+          team_id: e.team_id,
+          position: r.position,
+          laps: r.number_of_laps ?? '',
+          best_ms: best != null ? Math.round(best * 1000) : '',
+          gap_ms: gap != null ? Math.round(gap * 1000) : '',
+        };
+      });
+    if (!rows.length) continue;
+    const n = await rpc<number>('sync_practice', { season_year: p.season_year, round: p.round, session: p.kind, rows });
+    report[`${p.kind}-${p.season_year}-${p.round}`] = n;
+  }
+}
+
 Deno.serve(async () => {
   const report: Json = {};
   try {
@@ -248,6 +325,17 @@ Deno.serve(async () => {
       await rpc('sync_mark', { k: 'entries', ok: true, details: { drivers: report.entries } });
     }
     await syncResults(report);
+    // Бонусы фазы 2: safety car и практики из OpenF1 (бета) — их сбой не мешает остальному.
+    try {
+      await syncSafetyCar(report);
+    } catch (e) {
+      report.safety_car = { error: e instanceof Error ? e.message : String(e) };
+    }
+    try {
+      await syncPractice(report);
+    } catch (e) {
+      report.practice = { error: e instanceof Error ? e.message : String(e) };
+    }
     // Чемпионат и погода — не критичны: их сбой не должен мешать результатам.
     if (Date.now() - (await lastOk('championship')) > 3 * HOUR) {
       try {

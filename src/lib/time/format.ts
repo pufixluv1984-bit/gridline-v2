@@ -69,3 +69,10 @@ export function plural(n: number, one: string, few: string, many: string): strin
   if (m10 >= 2 && m10 <= 4 && (m100 < 12 || m100 > 14)) return few;
   return many;
 }
+
+/** Время круга: 71717 мс → «1:11.717», 59001 → «59.001». */
+export function lapTime(ms: number): string {
+  const m = Math.floor(ms / 60000);
+  const s = ((ms % 60000) / 1000).toFixed(3);
+  return m ? `${m}:${s.padStart(6, '0')}` : s;
+}

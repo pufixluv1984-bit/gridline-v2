@@ -36,7 +36,10 @@ export type Database = {
       };
       predictions: {
         Row: { user_id: string; event_id: number; qualy: string[]; race: string[]; fastest_lap: string | null; submitted_at: string; updated_at: string };
-        Insert: { event_id: number; qualy: string[]; race: string[]; fastest_lap?: string | null };
+        Insert: {
+          event_id: number; qualy: string[]; race: string[]; fastest_lap?: string | null; first_dnf?: string | null;
+          pole_wins?: boolean | null; safety_car?: boolean | null; dnf_many?: boolean | null; boost_block?: string | null;
+        };
         Update: { event_id?: number; qualy?: string[]; race?: string[]; fastest_lap?: string | null };
         Relationships: [];
       };
@@ -99,6 +102,8 @@ export type Database = {
       reset_invite_code: { Args: { league: string }; Returns: string };
       data_updated_at: { Args: Record<string, never>; Returns: string | null };
       is_site_admin: { Args: Record<string, never>; Returns: boolean };
+      breakdown_screen: { Args: { ev?: number; player?: string }; Returns: Json };
+      admin_set_safety_car: { Args: { ev: number; value: boolean }; Returns: number };
       admin_set_result: { Args: { ev: number; session: string; driver_ids: string[]; fastest_lap?: string }; Returns: number };
     };
     Enums: {

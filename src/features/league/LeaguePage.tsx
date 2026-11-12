@@ -9,6 +9,7 @@ import { initialsOf } from '@/lib/initials';
 import { inviteLink } from '@/lib/invite';
 import { plural } from '@/lib/time/format';
 import { Avatar, Skeleton } from '@/ui/game';
+import { LeagueSettings } from './LeagueSettings';
 import { IconWarn } from '@/ui/icons';
 import { Modal } from '@/ui/Modal';
 import { Content, PageTitle, PillLink, Toolbar } from '@/ui/Page';
@@ -142,6 +143,8 @@ export default function LeaguePage() {
 
         <StandingsCard data={data} me={me} />
 
+        {isOwner && league && <LeagueSettings key={JSON.stringify(league.bonus_config)} leagueId={id} config={league.bonus_config} />}
+
         <div className="row">
           <Duels data={data} me={me} />
           <section className="card rise" style={{ ['--i' as string]: 3, flex: '1 1 480px' }} id="members">
@@ -239,7 +242,14 @@ function StandingsCard({ data, me }: { data: LeagueScreen | undefined; me: strin
             <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
               <Avatar nickname={r.nickname} color={r.avatar_color} />
               <div>
-                <div style={{ fontWeight: 600, fontSize: 16 }}>{r.nickname}</div>
+                <div style={{ fontWeight: 600, fontSize: 16 }}>
+                  {r.nickname}
+                  {r.points > 0 && (
+                    <Link to={`/breakdown?player=${r.user_id}`} className="mute" style={{ fontSize: 12, fontWeight: 500, marginLeft: 10, textDecoration: 'underline' }}>
+                      разбор
+                    </Link>
+                  )}
+                </div>
                 <div className="mute" style={{ fontSize: 13, marginTop: 3 }}>
                   точных {r.exact_hits} · этапов выиграно {r.events_won}{r.provisional ? ' · предварительно' : ''}
                 </div>
