@@ -1,42 +1,42 @@
-# Изменения
+# Changelog
 
-Формат: по датам и фазам. Почему принято то или иное решение — в [журнале решений](docs/DECISIONS.md).
+Grouped by date and phase. The reasoning behind each decision is in the [decision log](docs/DECISIONS.md).
 
-## 12 ноября 2026 — полировка после запуска
+## 12 November 2026 — post-launch polish
 
-- **Фэнтези: живые цены (модель v2).** Рейтинг формы, справедливая цена, плавное движение не больше ±0.8 за этап; новичок стартует с 85% цены напарника; в «Рынке» — справедливая цена и график цены. Миграция 0022, тест 0016.
-- **Keep-alive** каждый день, 3 попытки, защита от отключения расписания через 60 дней.
-- **Настройки профиля** — отдельная страница с сохранением.
-- **GIF-аватарки** и **уборка неиспользуемых файлов** аватарок на сервере (миграция 0021).
-- **Фото профиля**: загрузка, кадрирование, аватар из букв, один компонент аватара на весь сайт (миграция 0020).
-- **Лейаут без рамки**, закреплённое меню с подписями при наведении.
-- **Большие экраны**: плавный масштаб, закреплённое меню и больше колонок на 4K, без пустых полей по бокам.
-- Главная: карточка победителя по макету; «Правила» в меню ведут на правила фэнтези; крупнее логотипы команд за пилотами.
+- **Fantasy: live prices (model v2).** Form rating, fair price, smooth movement capped at ±0.8 per race; rookies start at 85% of their teammate's price; the Market shows the fair price and a price chart. Migration 0022, test 0016.
+- **Keep-alive** runs daily, retries 3 times and keeps its schedule from being disabled after 60 days.
+- **Profile settings** on a dedicated page with a Save button.
+- **GIF avatars** and **server-side cleanup of unused avatar files** (migration 0021).
+- **Profile pictures**: upload, cropping, letter avatar, one shared avatar component across the site (migration 0020).
+- **Frameless layout** and a fixed sidebar with labels on hover.
+- **Large screens**: smooth scaling, pinned sidebar and more grid columns on 4K, no empty side gaps.
+- Home: last-race winner card matches the design; "Rules" in the sidebar opens the fantasy rules; larger team logos behind drivers.
 
-## 12 ноября 2026 — фаза 5
+## 12 November 2026 — Phase 5
 
-- Дедлайны прогноза по блокам и спринт (с Гран-при Катара 2026).
-- Автопереход на новый сезон и перенос лиги.
-- Окна и ошибки по макетам; доступность WCAG AA на всех экранах (axe).
-- Supabase отдельным файлом сборки (кеш не сбрасывается при правках сайта).
+- Per-block prediction deadlines and sprints (from the 2026 Qatar GP).
+- Automatic season rollover and league carry-over.
+- Dialogs and error states from the design; WCAG AA accessibility on every screen (axe).
+- Supabase split into its own bundle (stays cached when the site changes).
 
-## 12 ноября 2026 — фаза 4: фэнтези
+## 12 November 2026 — Phase 4: fantasy
 
-- База фэнтези: составы, очки, цены, экраны (RPC), тесты.
-- Экраны: состав, рынок, лидерборд, результаты этапа, аналитика, правила.
+- Fantasy core: squads, scoring, prices, screen RPCs, tests.
+- Screens: my squad, market, leaderboard, race results, analytics, rules.
 
-## 12 ноября 2026 — фазы 2 и 3
+## 12 November 2026 — Phases 2 and 3
 
-- Бонусы, бустер ×2, разбор этапа, результаты практик; перенос сессии, тост сохранения.
-- Профиль игрока, звания сезона, таблица лиги, каталог пилотов, поулы.
+- Bonuses, ×2 booster, race breakdown, practice results; session rescheduling, save toast.
+- Player profile, season titles, league table, driver catalogue, pole positions.
 
-## 11–12 ноября 2026 — фаза 1: игра прогнозов
+## 11–12 November 2026 — Phase 1: predictions game
 
-- Данные игры и синхронизация с Jolpica.
-- Экраны прогноза, чемпионат, трассы, погода, комната ожидания, ручной ввод результатов.
+- Game data and sync with Jolpica.
+- Prediction screens, championship, circuits, weather, waiting room, manual result entry.
 
-## 11 ноября 2026 — фаза 0: основа
+## 11 November 2026 — Phase 0: foundation
 
-- Каркас проекта, вход только через Google и Discord, политика конфиденциальности.
-- Выход и удаление аккаунта прямо на сайте.
-- CI, деплой на GitHub Pages, ночной бэкап базы.
+- Project scaffold, sign-in via Google and Discord only, privacy policy.
+- Sign out and account deletion right on the site.
+- CI, deployment to GitHub Pages, nightly database backup.

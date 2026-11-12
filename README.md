@@ -2,169 +2,150 @@
 
 # Gridline
 
-**Прогнозы и фэнтези-лига по Формуле-1 для друзей**
+**Formula 1 predictions and fantasy league for friends**
 
 [![CI](https://github.com/pufixluv1984-bit/gridline-v2/actions/workflows/ci.yml/badge.svg)](https://github.com/pufixluv1984-bit/gridline-v2/actions/workflows/ci.yml)
 [![Deploy](https://github.com/pufixluv1984-bit/gridline-v2/actions/workflows/deploy.yml/badge.svg)](https://github.com/pufixluv1984-bit/gridline-v2/actions/workflows/deploy.yml)
 [![Keep-alive](https://github.com/pufixluv1984-bit/gridline-v2/actions/workflows/keepalive.yml/badge.svg)](https://github.com/pufixluv1984-bit/gridline-v2/actions/workflows/keepalive.yml)
 [![Backup](https://github.com/pufixluv1984-bit/gridline-v2/actions/workflows/backup.yml/badge.svg)](https://github.com/pufixluv1984-bit/gridline-v2/actions/workflows/backup.yml)
 
-**[Открыть сайт →](https://pufixluv1984-bit.github.io/gridline-v2/)**
+**[Open the website →](https://pufixluv1984-bit.github.io/gridline-v2/)**
 
-<img src="docs/screenshots/home.jpg" alt="Главная: чемпионат, следующий этап с таймером и картой трассы, победитель прошлой гонки" width="800">
+<img src="docs/screenshots/home.jpg" alt="Home: championship standings, next race with countdown and track map, last race winner" width="800">
 
 </div>
 
 ---
 
-Gridline — неофициальный некоммерческий сайт, на котором компания друзей играет в две игры по каждому этапу Формулы-1:
+Gridline is an unofficial, non-commercial website where a group of friends plays two games around every Formula 1 race weekend:
 
-1. **Прогнозы.** До квалификации угадываешь топ-3 квалификации, топ-10 гонки и бонусы (быстрый круг, первый сход, safety car). После гонки очки считаются сами, таблица лиги обновляется.
-2. **Фэнтези-лига.** Собираешь состав из 5 пилотов и 2 конструкторов на бюджет $100M. Цены живые: после каждого этапа они сами подстраиваются под форму пилота. Есть трансферы, DRS-множитель и чипы. Правила свои, а не копия официальной F1 Fantasy.
+1. **Predictions.** Before the session starts, predict the qualifying top 3, the race top 10 and bonus picks (fastest lap, first retirement, safety car). After the race the points are scored automatically and the league table updates.
+2. **Fantasy league.** Pick 5 drivers and 2 constructors within a $100M budget. Prices are live: after every race they adjust to each driver's form on their own. Transfers, a DRS multiplier and chips included. The rules are our own, not a copy of the official F1 Fantasy.
 
-Лиги на любое число игроков: создаёшь лобби, зовёшь друзей ссылкой или кодом. Вход — через Google или Discord.
+Leagues can have any number of players: create a lobby and invite friends with a link or a code. Sign-in is via Google or Discord.
 
-## Скриншоты
+> The website interface is in Russian.
+
+## Screenshots
 
 <table>
   <tr>
-    <td><img src="docs/screenshots/drivers.jpg" alt="Каталог пилотов сезона с очками и ценами"></td>
-    <td><img src="docs/screenshots/driver-profile.jpg" alt="Профиль пилота: карьера, победы, поулы"></td>
+    <td><img src="docs/screenshots/drivers.jpg" alt="Season driver catalogue with points and prices"></td>
+    <td><img src="docs/screenshots/driver-profile.jpg" alt="Driver profile: career, wins, poles"></td>
   </tr>
   <tr>
-    <td align="center">Каталог пилотов</td>
-    <td align="center">Профиль пилота</td>
+    <td align="center">Driver catalogue</td>
+    <td align="center">Driver profile</td>
   </tr>
   <tr>
-    <td><img src="docs/screenshots/tracks.jpg" alt="Схемы трасс сезона"></td>
-    <td><img src="docs/screenshots/fantasy-rules.jpg" alt="Правила фэнтези-лиги"></td>
+    <td><img src="docs/screenshots/tracks.jpg" alt="Season circuit maps"></td>
+    <td><img src="docs/screenshots/fantasy-rules.jpg" alt="Fantasy league rules"></td>
   </tr>
   <tr>
-    <td align="center">Трассы сезона</td>
-    <td align="center">Правила фэнтези</td>
+    <td align="center">Season circuits</td>
+    <td align="center">Fantasy rules</td>
   </tr>
 </table>
 
-## Возможности
+## Features
 
-**Игра прогнозов**
-- Прогноз один на этап и общий для всех лиг игрока; лиги отличаются набором включённых бонусов.
-- Дедлайн по блокам (с Гран-при Катара 2026): квалификация закрывается со стартом квалификации, спринт — со стартом спринта, гонка и бонусы — со стартом гонки. Прогноз на гонку делаешь, уже зная квалификацию.
-- Бустер ×2 (один на окно из 5 этапов), бонусы «быстрый круг», «первый сход», «safety car».
-- Чужие прогнозы не видны до дедлайна — это обеспечивает база, а не интерфейс.
-- Разбор очков по каждой строке, таблица лиги со сдвигом мест и формой за 5 этапов, звания сезона («Снайпер», «Лучший этап», «Выживший»).
+**Predictions game**
+- One prediction per race weekend, shared across all of a player's leagues; leagues differ only in which bonuses are enabled.
+- Per-block deadlines (from the 2026 Qatar GP): qualifying closes when qualifying starts, the sprint when the sprint starts, the race and bonuses when the race starts. You make your race prediction already knowing the grid.
+- ×2 booster (one per 5-race window) and bonus picks: fastest lap, first retirement, safety car.
+- Other players' picks stay hidden until the deadline — enforced by the database, not the UI.
+- Line-by-line points breakdown, league table with position changes and 5-race form, season titles ("Sniper", "Best race", "Survivor").
 
-**Фэнтези-лига**
-- Состав 5 + 2, бюджет $100M, бесплатные трансферы (копятся до двух), штраф −10 за лишний.
-- DRS ×2 и шесть чипов: Wildcard, Limitless, Final Fix, Autopilot, No Negative, Extra DRS.
-- **Живые цены:** рейтинг формы (свежие очки, сезон, квалификация и сравнение с напарником, тренд) → справедливая цена → цена проходит 30% пути к ней, не больше ±0.8 за этап. [Формула →](docs/FANTASY-FORMULA.md#4-цены)
-- Рынок с графиком цены и причиной изменения, лидерборд, результаты этапа, аналитика.
-- Пилот не едет — резервист его команды подставляется автоматически.
+**Fantasy league**
+- 5 drivers + 2 constructors, $100M budget, free transfers (bank up to two), −10 for each extra one.
+- DRS ×2 and six chips: Wildcard, Limitless, Final Fix, Autopilot, No Negative, Extra DRS.
+- **Live prices:** a form rating (recent points, season average, qualifying and head-to-head vs teammate, trend) → a fair price → the price moves 30% of the way towards it, capped at ±0.8 per race. [Formula →](docs/FANTASY-FORMULA.md#4-цены)
+- Market with a price chart and the reason for each change, leaderboard, race results, analytics.
+- If a driver doesn't race, their team's reserve driver is substituted automatically.
 
-**Остальное**
-- Календарь с таймером и погодой, результаты (включая практики), схемы трасс, каталог пилотов с карьерой и биографией.
-- Профиль с фото (JPG, PNG, WebP или анимированный GIF, кадрирование в браузере) или аватаром из букв.
-- Автопереход на новый сезон: лиги переносятся, стартовые цены считаются из итогов прошлого чемпионата.
-- Плавное масштабирование под большие экраны: от 1440 до 4K и ультрашироких мониторов.
+**Everything else**
+- Calendar with countdowns and weather, results (including practice sessions), circuit maps, driver catalogue with careers and biographies.
+- Profile picture (JPG, PNG, WebP or animated GIF, cropped in the browser) or a letter avatar.
+- Automatic season rollover: leagues carry over, starting prices come from last season's championship.
+- Smooth scaling for large screens, from 1440 to 4K and ultrawide monitors.
 
-## Как это устроено
+## How it works
 
 ```mermaid
 flowchart LR
-    U["Браузер<br/>React + Vite<br/>GitHub Pages"] -- "публичный ключ,<br/>один запрос на экран" --> DB[("Supabase<br/>Postgres + RLS")]
-    U -- "вход" --> AUTH["Supabase Auth<br/>Google · Discord"]
-    U -- "фото профиля" --> ST["Supabase Storage<br/>avatars"]
-    CRON["pg_cron<br/>каждые 10 минут"] --> FN["Edge Function<br/>sync-f1"]
+    U["Browser<br/>React + Vite<br/>GitHub Pages"] -- "public key,<br/>one request per screen" --> DB[("Supabase<br/>Postgres + RLS")]
+    U -- "sign-in" --> AUTH["Supabase Auth<br/>Google · Discord"]
+    U -- "profile pictures" --> ST["Supabase Storage<br/>avatars"]
+    CRON["pg_cron<br/>every 10 minutes"] --> FN["Edge Function<br/>sync-f1"]
     FN -- "service_role" --> DB
-    FN --> J["Jolpica F1 API<br/>расписание, результаты"]
-    FN --> O["OpenF1<br/>safety car, практики"]
-    FN --> W["Open-Meteo<br/>погода"]
-    DB -- "SQL-функции" --> S["очки прогнозов,<br/>фэнтези, цены"]
+    FN --> J["Jolpica F1 API<br/>schedule, results"]
+    FN --> O["OpenF1<br/>safety car, practice"]
+    FN --> W["Open-Meteo<br/>weather"]
+    DB -- "SQL functions" --> S["prediction points,<br/>fantasy points, prices"]
 ```
 
-- **Браузер никогда не ходит во внешние F1-API.** Данные общие для всех, поэтому их один раз забирает серверная функция `sync-f1` и кладёт в базу.
-- **Очки считает база.** SQL-функции идемпотентны: повторный запуск ничего не дублирует. Интерфейс только показывает готовые строки.
-- **Безопасность — на стороне базы.** Дедлайны, чужие прогнозы, бюджет фэнтези, роли в лиге проверяют RLS-политики и триггеры. В браузере есть только публичный ключ.
-- **Время — серверное.** Таймеры и «закрыто/открыто» считаются от `server_now()`, а не от часов устройства.
+- **The browser never calls external F1 APIs.** The data is the same for everyone, so the `sync-f1` server function fetches it once and stores it in the database.
+- **The database does the scoring.** SQL functions are idempotent: re-running them never duplicates anything. The UI only displays ready-made rows.
+- **Security lives in the database.** Deadlines, hidden picks, the fantasy budget and league roles are enforced by Row Level Security policies and triggers. The browser only has the public key.
+- **Server time.** Countdowns and open/closed states use `server_now()`, not the device clock.
 
-Подробно: [архитектура](docs/ARCHITECTURE.md) · [механика игры](docs/PRODUCT.md) · [формула фэнтези](docs/FANTASY-FORMULA.md) · [дизайн](docs/DESIGN.md).
+More detail (in Russian): [architecture](docs/ARCHITECTURE.md) · [game mechanics](docs/PRODUCT.md) · [fantasy formula](docs/FANTASY-FORMULA.md) · [design](docs/DESIGN.md).
 
-## Стек
+## Tech stack
 
-| Слой | Что используется |
+| Layer | What's used |
 |---|---|
-| Фронтенд | React 19, TypeScript (strict), Vite, TanStack Query, React Router (`HashRouter`), CSS Modules + CSS-переменные |
-| Бэкенд | Supabase: Postgres, Row Level Security, Auth (Google, Discord), Storage, Edge Functions (Deno), `pg_cron` + `pg_net` |
-| Данные F1 | [Jolpica F1 API](https://github.com/jolpica/jolpica-f1), [OpenF1](https://openf1.org), [Open-Meteo](https://open-meteo.com) |
-| Тесты | Vitest + Testing Library (фронт), pgTAP (`supabase test db`: RLS, очки, цены) |
-| Инфраструктура | GitHub Pages, GitHub Actions (CI, деплой, ежедневный keep-alive, ночной зашифрованный бэкап базы) |
+| Frontend | React 19, TypeScript (strict), Vite, TanStack Query, React Router (`HashRouter`), CSS Modules + CSS custom properties |
+| Backend | Supabase: Postgres, Row Level Security, Auth (Google, Discord), Storage, Edge Functions (Deno), `pg_cron` + `pg_net` |
+| F1 data | [Jolpica F1 API](https://github.com/jolpica/jolpica-f1), [OpenF1](https://openf1.org), [Open-Meteo](https://open-meteo.com) |
+| Tests | Vitest + Testing Library (frontend), pgTAP (`supabase test db`: RLS, scoring, prices) |
+| Infrastructure | GitHub Pages, GitHub Actions (CI, deploy, daily keep-alive, nightly encrypted database backup) |
 
-## Качество
+## Quality
 
-- **74** unit-теста и **16** наборов pgTAP-тестов базы гоняются в CI на каждый push.
-- **22** миграции: схема меняется только файлами в `supabase/migrations/`, никаких правок «руками в консоли».
-- Стартовый JS **≈159 КБ** gzip при бюджете 250 КБ (проверка в CI). Экраны грузятся по требованию, шрифты свои, без Google Fonts.
-- Доступность WCAG AA на всех экранах (проверено axe).
+- **74** unit tests and **16** pgTAP database test suites run in CI on every push.
+- **22** migrations: the schema changes only through files in `supabase/migrations/`, never by hand in the console.
+- Initial JS is **≈159 KB** gzipped against a 250 KB budget (checked in CI). Screens load on demand; fonts are self-hosted, no Google Fonts.
+- WCAG AA accessibility on every screen (checked with axe).
 
-## Путь проекта
-
-| Когда | Что сделано |
-|---|---|
-| 11 ноября 2026 | **Фаза 0.** Каркас, вход через Google и Discord, деплой, CI |
-| 11–12 ноября | **Фаза 1.** Игра прогнозов: лиги, прогноз, таймеры, автоматические результаты, очки, таблица |
-| 12 ноября | **Фаза 2.** Бонусы, бустер ×2, разбор этапа, практики |
-| 12 ноября | **Фаза 3.** Профиль, звания, таблица лиги, каталог пилотов |
-| 12 ноября | **Фаза 4.** Фэнтези: составы, очки, цены, рынок, лидерборд, аналитика |
-| 12 ноября | **Фаза 5.** Дедлайны по блокам и спринты, автопереход сезона, окна и ошибки, доступность |
-| 12 ноября | Полировка: лейаут без рамки, меню, фото и GIF профиля, большие экраны, страница настроек, keep-alive, **живые цены фэнтези** |
-
-Все решения с причинами — в [журнале решений](docs/DECISIONS.md), изменения по датам — в [CHANGELOG](CHANGELOG.md).
-
-## Запуск локально
-
-Нужны Node.js 24, pnpm и (для своей базы) Docker с [Supabase CLI](https://supabase.com/docs/guides/cli).
-
-```bash
-pnpm install
-cp .env.example .env.local   # адрес проекта Supabase и публичный (anon) ключ
-pnpm dev                     # http://localhost:5173
-```
-
-Без `.env.local` сайт открывается в режиме каркаса: экраны видны, данных нет.
-
-```bash
-pnpm typecheck && pnpm lint && pnpm test   # проверки фронта
-pnpm build                                 # сборка в dist/
-supabase start && supabase db reset        # локальная база с миграциями и seed
-supabase test db                           # тесты базы (pgTAP)
-```
-
-Что настраивается вручную (проект Supabase, OAuth, секреты GitHub) — в [чек-листе](docs/SETUP-CHECKLIST.md).
-
-## Структура
+## Repository layout
 
 ```
 src/
-  app/          роутер, общий лейаут
-  features/     экраны: home, predict, league, fantasy, drivers, schedule, results, profile, settings, lobby…
-  lib/          API-модули (src/lib/api/*), время, масштаб, аватар, ассеты
-  ui/           общие компоненты: меню, окна, аватар, тосты, карточки
-  styles/       токены и общие стили
+  app/          router, shared layout
+  features/     screens: home, predict, league, fantasy, drivers, schedule, results, profile, settings, lobby…
+  lib/          API modules (src/lib/api/*), time, UI scaling, avatars, assets
+  ui/           shared components: sidebar, dialogs, avatar, toasts, cards
+  styles/       design tokens and shared styles
 supabase/
-  migrations/   схема, RLS, SQL-функции очков и цен
-  functions/    sync-f1 — синхронизация с F1-API по расписанию
+  migrations/   schema, RLS policies, SQL scoring and pricing functions
+  functions/    sync-f1 — scheduled sync with F1 data APIs
   tests/        pgTAP
-docs/           продукт, архитектура, формула фэнтези, дизайн, решения
+docs/           product, architecture, fantasy formula, design, decisions
 ```
 
-## Права
+## Project timeline
 
-Код открыт **только для просмотра**: копировать, переделывать и запускать его у себя без разрешения автора нельзя — см. [LICENSE](LICENSE). Пользоваться самим [сайтом](https://pufixluv1984-bit.github.io/gridline-v2/) может кто угодно: заходи и играй с друзьями.
+| When | What was built |
+|---|---|
+| 11 Nov 2026 | **Phase 0.** Scaffold, Google and Discord sign-in, deployment, CI |
+| 11–12 Nov | **Phase 1.** Predictions game: leagues, predictions, countdowns, automatic results, scoring, league table |
+| 12 Nov | **Phase 2.** Bonuses, ×2 booster, race breakdown, practice sessions |
+| 12 Nov | **Phase 3.** Player profile, season titles, league table, driver catalogue |
+| 12 Nov | **Phase 4.** Fantasy: squads, scoring, prices, market, leaderboard, analytics |
+| 12 Nov | **Phase 5.** Per-block deadlines and sprints, season rollover, dialogs and error states, accessibility |
+| 12 Nov | Polish: frameless layout, sidebar, profile photos and GIFs, large screens, settings page, keep-alive, **live fantasy prices** |
 
-## Дисклеймер
+Every decision and the reasoning behind it is in the [decision log](docs/DECISIONS.md); changes by date are in the [CHANGELOG](CHANGELOG.md).
 
-Неофициальный некоммерческий фан-проект. Не связан с Formula One Group, FIA и командами. Formula 1, F1 и связанные знаки — товарные знаки Formula One Licensing B.V. Фото пилотов и машин, логотипы команд принадлежат их правообладателям и используются только для иллюстрации; их можно заменить на монограммы через один модуль (`src/lib/assets.ts`).
+## Rights
 
-## Автор
+The code is published **for viewing only**: copying, modifying or running it yourself without the author's permission is not allowed — see [LICENSE](LICENSE). Anyone is welcome to use the [website](https://pufixluv1984-bit.github.io/gridline-v2/) itself: come and play with your friends.
+
+## Disclaimer
+
+This is an unofficial, non-commercial fan project. It is not associated with Formula One Group, the FIA or any team. Formula 1, F1 and related marks are trademarks of Formula One Licensing B.V. Driver and car photos and team logos belong to their respective owners and are used for illustration only.
+
+## Author
 
 **pufixluv** · [Telegram](https://t.me/pufixluv) · [X](https://x.com/pufixluv)

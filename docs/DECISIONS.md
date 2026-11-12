@@ -1,57 +1,57 @@
-# Журнал решений
+# Decision log
 
-Ключевые решения проекта: что выбрали, почему и где это в коде. Подробности механики — в [PRODUCT.md](PRODUCT.md), формулы фэнтези — в [FANTASY-FORMULA.md](FANTASY-FORMULA.md), архитектура — в [ARCHITECTURE.md](ARCHITECTURE.md).
+The key project decisions: what was chosen, why, and where it lives in the code. Game mechanics are in [PRODUCT.md](PRODUCT.md), the fantasy formula in [FANTASY-FORMULA.md](FANTASY-FORMULA.md), architecture in [ARCHITECTURE.md](ARCHITECTURE.md) (all in Russian).
 
-## Основа
+## Foundation
 
-| # | Решение | Почему | Где |
+| # | Decision | Why | Where |
 |---|---|---|---|
-| 1 | **Supabase** (Postgres + RLS + Auth + Edge Functions) вместо своего сервера | Бесплатный тариф, правила доступа живут в базе, не нужен свой бэкенд | `supabase/` |
-| 2 | **Очки считает база**, SQL-функции идемпотентны | Один источник правды; повторный пересчёт после правки результата ничего не дублирует | `recompute_event_scores`, миграции 0003, 0010, 0015 |
-| 3 | **Безопасность только на стороне базы**: дедлайны, чужие прогнозы, бюджет, роли — RLS и триггеры | Интерфейс можно обойти, базу — нет | политики во всех миграциях |
-| 4 | **Браузер не ходит во внешние F1-API** | Данные общие для всех; их раз в 10 минут забирает `sync-f1` | `supabase/functions/sync-f1` |
-| 5 | **Время — серверное** (`server_now()`), показ — в поясе игрока | Часы устройства могут врать, а дедлайн один для всех | `src/lib/time/` |
-| 6 | **GitHub Pages + `HashRouter`** | Бесплатный хостинг; без хэша прямые ссылки на Pages дают 404 | `vite.config.ts`, `src/app/App.tsx` |
-| 7 | **CSS Modules + CSS-переменные**, без Tailwind | Макеты сделаны рукописным CSS — так проще повторить их точно | `src/styles/`, `*.module.css` |
-| 8 | **Схема — только миграциями** через Supabase CLI | Воспроизводимость и история изменений | `supabase/migrations/` |
+| 1 | **Supabase** (Postgres + RLS + Auth + Edge Functions) instead of a custom server | Free tier, access rules live in the database, no backend to maintain | `supabase/` |
+| 2 | **The database does the scoring**; SQL functions are idempotent | Single source of truth; re-scoring after a result correction never duplicates anything | `recompute_event_scores`, migrations 0003, 0010, 0015 |
+| 3 | **Security only in the database**: deadlines, hidden picks, budget and roles via RLS and triggers | The UI can be bypassed, the database can't | policies in every migration |
+| 4 | **The browser never calls external F1 APIs** | The data is the same for everyone; `sync-f1` fetches it every 10 minutes | `supabase/functions/sync-f1` |
+| 5 | **Server time** (`server_now()`), displayed in the player's time zone | Device clocks can be wrong, and a deadline is the same for everyone | `src/lib/time/` |
+| 6 | **GitHub Pages + `HashRouter`** | Free hosting; without the hash, deep links on Pages return 404 | `vite.config.ts`, `src/app/App.tsx` |
+| 7 | **CSS Modules + CSS custom properties**, no Tailwind | The design mockups are hand-written CSS — easier to match them exactly | `src/styles/`, `*.module.css` |
+| 8 | **Schema changes only via migrations** through the Supabase CLI | Reproducibility and change history | `supabase/migrations/` |
 
-## Продукт
+## Product
 
-| # | Решение | Дата | Почему |
+| # | Decision | Date | Why |
 |---|---|---|---|
-| 9 | Вход **только через Google или Discord**, без паролей и писем | 11.11.2026 | Нет SMTP, нет сброса паролей, меньше данных и рисков |
-| 10 | **Один прогноз на этап для всех лиг** игрока | концепция | Лиги различаются составом и бонусами, а не прогнозом |
-| 11 | Ручной ввод результата — **только админ сайта** | 11.11.2026 | Результаты общие для всего сайта |
-| 12 | Safety car — только настоящий выезд (не VSC, не красный флаг) по OpenF1 | 13.11.2026 | Однозначное правило, есть в данных |
-| 13 | **Дедлайны по блокам** с Катара 2026: квалификация, спринт, гонка | 12.11.2026 | Прогноз на гонку можно делать, зная квалификацию |
-| 14 | Общего рейтинга сайта нет, только рейтинг лиги | концепция | Игра для своих |
+| 9 | Sign-in **only via Google or Discord**, no passwords or emails | 11 Nov 2026 | No SMTP, no password resets, less data and risk |
+| 10 | **One prediction per race for all of a player's leagues** | concept | Leagues differ by members and bonuses, not by the prediction |
+| 11 | Manual result entry — **site admin only** | 11 Nov 2026 | Results are shared by the whole site |
+| 12 | Safety car counts only for a real deployment (not VSC or red flag), per OpenF1 | 13 Nov 2026 | Unambiguous rule that exists in the data |
+| 13 | **Per-block deadlines** from Qatar 2026: qualifying, sprint, race | 12 Nov 2026 | You can predict the race already knowing qualifying |
+| 14 | No site-wide ranking, only league tables | concept | A game among friends |
 
-## Фэнтези
+## Fantasy
 
-| # | Решение | Дата | Почему |
+| # | Decision | Date | Why |
 |---|---|---|---|
-| 15 | **Свои правила**, а не копия официальной F1 Fantasy | 12.11.2026 | Без шумных показателей (обгоны, голосования); защита от злоупотреблений в [§7](FANTASY-FORMULA.md#7-защита-от-злоупотреблений-кратко) |
-| 16 | Блокировка состава **со стартом первой сессии** уик-энда | 12.11.2026 | Нельзя подстроиться под практику |
-| 17 | Пилот не едет — **резервист той же команды бесплатно** и автоматически | 12.11.2026 | Игрок не теряет очки из-за замены, о которой мог не знать |
-| 18 | **Живые цены, модель v2 «справедливая цена»**: рейтинг формы → цель → 30% пути, не больше ±0.8 | 12.11.2026 | Старая модель (ступеньки по четвертям) слишком медленно догоняла реальную форму. Проверено симуляцией на всём сезоне 2026: Антонелли $14.6M → $24.3M. Откат — настройкой `price_model = "v1"` |
-| 19 | Новичок стартует с **85% цены напарника** | 12.11.2026 | Нижняя цена недооценивает новичка в топ-команде |
-| 20 | Пробный этап фэнтези — Абу-Даби 2026, полноценный старт — сезон 2027 | 12.11.2026 | Проверить механику на реальных результатах до сезона |
+| 15 | **Our own rules**, not a copy of the official F1 Fantasy | 12 Nov 2026 | No noisy metrics (overtakes, fan votes); anti-abuse measures in [§7](FANTASY-FORMULA.md#7-защита-от-злоупотреблений-кратко) |
+| 16 | Squads lock **when the first session of the weekend starts** | 12 Nov 2026 | No adjusting to practice results |
+| 17 | Driver not racing — **their team's reserve, free and automatic** | 12 Nov 2026 | A player doesn't lose points over a substitution they may not know about |
+| 18 | **Live prices, model v2 "fair price"**: form rating → target → 30% of the way, capped at ±0.8 | 12 Nov 2026 | The old model (quartile steps) caught up with real form too slowly. Validated by a simulation over the whole 2026 season: Antonelli $14.6M → $24.3M. Roll back with `price_model = "v1"` |
+| 19 | A rookie starts at **85% of their teammate's price** | 12 Nov 2026 | The floor price undervalues a rookie in a top team |
+| 20 | Fantasy trial round at Abu Dhabi 2026, full start with the 2027 season | 12 Nov 2026 | Test the mechanics on real results before the season |
 
-## Интерфейс
+## Interface
 
-| # | Решение | Дата | Почему |
+| # | Decision | Date | Why |
 |---|---|---|---|
-| 21 | Лейаут **без «окошка»**: меню у края окна, контент на всю ширину | 12.11.2026 | Рамка с отступами выглядела как окно на фоне |
-| 22 | Меню **закреплено** (`position: fixed`), раскрывается при наведении, на сенсорных экранах — по бургеру | 12.11.2026 | Не уезжает при прокрутке, подписи видны по запросу |
-| 23 | Большие экраны: **плавный масштаб** макета 1440 (до ×1.4 на 2K, ×1.7 на 4K), на очень широких — меню раскрыто, без пустых полей | 12.11.2026 | Макеты 2K — это 1440 ×1.4; ступеньки прыгали, растянутые карточки выглядели плохо |
-| 24 | Анимируются **только `transform` и `opacity`** | правило | Плавность и производительность (бюджет: стартовый JS ≤ 250 КБ) |
-| 25 | **Фото профиля** в Supabase Storage: кадрирование и сжатие в браузере (256/512 WebP), GIF — покадрово в 256×256 | 12.11.2026 | Без своего сервера обработки; тип файла проверяется по содержимому, SVG запрещён |
-| 26 | Неиспользуемые файлы аватарок удаляет **`sync-f1` раз в час** | 12.11.2026 | Страховка, если вкладку закрыли посреди сохранения или аккаунт удалён |
-| 27 | Настройки профиля — **отдельная страница с кнопкой «Сохранить»** | 12.11.2026 | Изменения уходят одним запросом, есть отмена и проверка ника |
+| 21 | **Frameless layout**: sidebar at the window edge, content full width | 12 Nov 2026 | The padded rounded frame looked like a window on a background |
+| 22 | **Fixed sidebar** (`position: fixed`), expands on hover, opens with a burger on touch screens | 12 Nov 2026 | Doesn't scroll away; labels shown on demand |
+| 23 | Large screens: **smooth scaling** of the 1440 layout (up to ×1.4 on 2K, ×1.7 on 4K); on very wide windows the sidebar stays open and there are no empty side gaps | 12 Nov 2026 | The 2K mockups are the 1440 layout ×1.4; step scaling jumped and stretched cards looked bad |
+| 24 | Animate **only `transform` and `opacity`** | rule | Smoothness and performance (budget: initial JS ≤ 250 KB) |
+| 25 | **Profile pictures** in Supabase Storage: cropped and compressed in the browser (256/512 WebP); GIFs re-encoded frame by frame to 256×256 | 12 Nov 2026 | No image-processing server needed; file type checked by content, SVG rejected |
+| 26 | Unused avatar files are removed by **`sync-f1` every hour** | 12 Nov 2026 | Safety net if a tab was closed mid-save or an account was deleted |
+| 27 | Profile settings — **a dedicated page with a Save button** | 12 Nov 2026 | Changes go in one request, with cancel and nickname validation |
 
-## Эксплуатация
+## Operations
 
-| # | Решение | Дата | Почему |
+| # | Decision | Date | Why |
 |---|---|---|---|
-| 28 | **Keep-alive** каждый день + повторное включение своего расписания | 12.11.2026 | Бесплатный Supabase засыпает после недели без запросов, а GitHub отключает расписания через 60 дней без коммитов |
-| 29 | **Ночной бэкап** базы, зашифрованный (gpg, AES-256), хранится 14 дней | 11.11.2026 | На бесплатном плане Supabase бэкапов нет, а репозиторий публичный |
+| 28 | **Daily keep-alive** that also re-enables its own schedule | 12 Nov 2026 | Free Supabase projects pause after a week without requests, and GitHub disables schedules after 60 days without commits |
+| 29 | **Nightly database backup**, encrypted (gpg, AES-256), kept for 14 days | 11 Nov 2026 | The free Supabase plan has no backups, and the repository is public |
