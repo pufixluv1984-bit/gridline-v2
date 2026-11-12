@@ -15,7 +15,7 @@ export async function getMyProfile(userId: string): Promise<Profile | null> {
 }
 
 export type TitleKey = 'sniper' | 'best_stage' | 'survivor';
-export type TitleHolder = { user_id: string; nickname: string; avatar_color: string; value: number; event?: string };
+export type TitleHolder = { user_id: string; nickname: string; avatar_color: string; avatar_path?: string | null; avatar_text?: string | null; value: number; event?: string };
 export type LeagueTitles = Partial<Record<TitleKey, TitleHolder | null>>;
 
 export const TITLE_NAMES: Record<TitleKey, string> = {
@@ -28,7 +28,7 @@ export type ProfileScreen = {
   player: {
     id: string;
     nickname: string;
-    avatar_color: string;
+    avatar_color: string; avatar_path?: string | null; avatar_text?: string | null;
     created_at: string;
     nickname_changed_at: string | null;
     fav_driver: { id: string; code: string; name: string; number: number | null; team_name: string | null; team_code: string | null; color: string | null } | null;
@@ -51,7 +51,7 @@ export type ProfileScreen = {
   };
   best_drivers: { id: string; code: string; name: string; points: number; color: string | null; team_code: string | null; number: number | null }[];
   leagues: { id: string; name: string; member_count: number; rank: number | null }[];
-  duel: { rival: { id: string; nickname: string; avatar_color: string }; wins: number; losses: number } | null;
+  duel: { rival: { id: string; nickname: string; avatar_color: string; avatar_path?: string | null; avatar_text?: string | null }; wins: number; losses: number } | null;
   fantasy?: {
     team_name: string | null;
     league: { id: string; name: string; rank: number; members: number; points: number } | null;

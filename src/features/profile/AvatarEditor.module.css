@@ -1,0 +1,214 @@
+/* Окна аватара из макета Overlays: .drop, .crop/.mask, .rng, .frow/.pbar, .avprev, .swr/.sw, .spn. */
+.drop {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  text-align: center;
+  padding: 30px 20px;
+  border-radius: 20px;
+  border: 1.5px dashed rgba(255, 255, 255, 0.2);
+  background: radial-gradient(70% 60% at 50% 0%, rgba(255, 255, 255, 0.05), transparent 70%), #0d0d10;
+  transition: border-color 0.2s;
+}
+.drop b {
+  font-weight: 600;
+  font-size: 15px;
+}
+.over {
+  border-color: rgba(255, 255, 255, 0.5);
+}
+.err {
+  border-color: rgba(255, 90, 80, 0.6);
+  background: rgba(255, 90, 80, 0.05);
+}
+.bigico {
+  width: 52px;
+  height: 52px;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #15151a;
+  border: 1px solid var(--line);
+  color: #fff;
+}
+.red {
+  background: rgba(232, 33, 26, 0.14);
+  border-color: rgba(232, 33, 26, 0.4);
+  color: var(--neg);
+  box-shadow: 0 0 40px rgba(232, 33, 26, 0.25);
+}
+
+/* Загрузка файла */
+.frow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: 16px;
+  background: #0f0f12;
+  border: 1px solid var(--line);
+}
+.sk {
+  width: 46px;
+  height: 46px;
+  border-radius: 12px;
+  flex: none;
+  background: #1c1c22;
+  animation: pulse 1.4s ease-in-out infinite;
+}
+@keyframes pulse {
+  50% {
+    opacity: 0.5;
+  }
+}
+.fname {
+  font-weight: 600;
+  font-size: 14px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.pbar {
+  height: 8px;
+  border-radius: 4px;
+  background: #1e1e24;
+  overflow: hidden;
+}
+.pbar i {
+  display: block;
+  height: 100%;
+  border-radius: 4px;
+  background: var(--accent);
+  transform-origin: left center;
+  transition: transform 0.15s linear;
+}
+
+/* Кадрирование */
+.crop {
+  position: relative;
+  height: 210px;
+  border-radius: 20px;
+  overflow: hidden;
+  background: #0a0a0d;
+  border: 1px solid var(--line);
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+}
+.crop:active {
+  cursor: grabbing;
+}
+.pic {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  max-width: none;
+  pointer-events: none;
+}
+.mask {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 168px;
+  height: 168px;
+  transform: translate(-50%, -50%);
+  border-radius: 44px;
+  box-shadow: 0 0 0 400px rgba(0, 0, 0, 0.62);
+  border: 2px solid #fff;
+  pointer-events: none;
+}
+
+/* Ползунок масштаба (вид .rng из макета) */
+.rng {
+  flex: 1;
+  height: 20px;
+  margin: 0;
+  appearance: none;
+  background: transparent;
+  cursor: pointer;
+}
+.rng::-webkit-slider-runnable-track {
+  height: 6px;
+  border-radius: 3px;
+  background: linear-gradient(90deg, var(--accent) var(--p), #23232a var(--p));
+}
+.rng::-moz-range-track {
+  height: 6px;
+  border-radius: 3px;
+  background: linear-gradient(90deg, var(--accent) var(--p), #23232a var(--p));
+}
+.rng::-webkit-slider-thumb {
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  margin-top: -7px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+  border: 0;
+}
+.rng::-moz-range-thumb {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+  border: 0;
+}
+
+/* Аватар без фото */
+.avprev {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px;
+  border-radius: 18px;
+  background: #0d0d10;
+  border: 1px solid var(--line);
+}
+.swr {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.sw {
+  width: 38px;
+  height: 38px;
+  border-radius: 12px;
+  border: 2px solid transparent;
+  flex: none;
+  padding: 0;
+  cursor: pointer;
+}
+.sw.on {
+  border-color: #fff;
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.14);
+}
+
+/* Сохранение */
+.spn {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: #fff;
+  animation: spin 0.8s linear infinite;
+  flex: none;
+  display: inline-block;
+}
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+.ld:disabled {
+  opacity: 0.85;
+  cursor: progress;
+}
+.dis {
+  opacity: 0.45;
+  pointer-events: none;
+}

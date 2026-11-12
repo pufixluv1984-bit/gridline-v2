@@ -90,7 +90,7 @@ export type ScoreDetail = {
 export type FantasyRow = {
   user_id: string;
   nickname: string;
-  avatar_color: string;
+  avatar_color: string; avatar_path?: string | null; avatar_text?: string | null;
   team_name: string | null;
   points: number;
   events_won: number;
@@ -146,12 +146,12 @@ export type FantasyResultsScreen = {
   drivers?: ResultsAsset[];
   teams?: ResultsAsset[];
   mine?: { total: number; penalty: number; drs: string | null; multiplier: number; details: ScoreDetail[]; provisional: boolean; chip: ChipId | null } | null;
-  league?: { user_id: string; nickname: string; avatar_color: string; team_name: string | null; total: number; drs: string | null; chip: ChipId | null }[];
+  league?: { user_id: string; nickname: string; avatar_color: string; avatar_path?: string | null; avatar_text?: string | null; team_name: string | null; total: number; drs: string | null; chip: ChipId | null }[];
 };
 
 export type AnalyticsScreen = {
   mine: { round: number; name: string; total: number; penalty: number; drs: string | null; chip: ChipId | null }[];
-  league: { user_id: string; nickname: string; avatar_color: string; round: number; total: number }[];
+  league: { user_id: string; nickname: string; avatar_color: string; avatar_path?: string | null; avatar_text?: string | null; round: number; total: number }[];
   drivers: MarketDriver[] | null;
 };
 

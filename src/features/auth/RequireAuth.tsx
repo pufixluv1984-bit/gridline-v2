@@ -73,7 +73,7 @@ function SessionExpired() {
     }
   };
   return (
-    <Frame>
+    <Frame boxed>
       <div style={{ minHeight: 640 }} />
       <Modal
         title="Сессия истекла"

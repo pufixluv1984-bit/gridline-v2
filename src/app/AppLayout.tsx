@@ -5,7 +5,7 @@ import { Welcome } from '@/features/profile/Welcome';
 import { setOffline, useSystemStatus } from '@/lib/systemStatus';
 import { useAuth } from '@/features/auth/authContext';
 import { getMyProfile, profileKeys } from '@/lib/api/profile';
-import { initialsOf } from '@/lib/initials';
+import { Avatar } from '@/ui/Avatar';
 import { Footer } from '@/ui/Footer';
 import { Frame } from '@/ui/Frame';
 import { Rail } from '@/ui/Rail';
@@ -30,7 +30,23 @@ export function AppLayout() {
   };
 
   return (
-    <Frame rail={<Rail initials={auth.status === 'unconfigured' ? 'DV' : initialsOf(profile.data?.nickname)} />}>
+    <Frame
+      rail={
+        <Rail
+          avatar={
+            <Avatar
+              nickname={auth.status === 'unconfigured' ? 'DV' : (profile.data?.nickname ?? '')}
+              color={profile.data?.avatar_color ?? 'var(--gold)'}
+              photo={profile.data?.avatar_path}
+              text={profile.data?.avatar_text}
+              size={44}
+              radius={14}
+              fontSize={15}
+            />
+          }
+        />
+      }
+    >
       {net === 'offline' ? (
         <NetworkErrorPage onRetry={retry} offline={typeof navigator !== 'undefined' && navigator.onLine === false} />
       ) : (

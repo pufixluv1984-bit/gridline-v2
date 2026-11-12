@@ -18,6 +18,7 @@ import { BoostPicker, YesNo } from './Bonus';
 import { Notices, Toast } from '@/ui/Toast';
 import { Modal } from '@/ui/Modal';
 import m from '@/ui/Modal.module.css';
+import { avatarOf } from '@/lib/avatar';
 
 const RACE_RULES = [
   ['Точное место', '+10'],
@@ -392,7 +393,7 @@ export default function PredictPage() {
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginTop: 16 }}>
                     {data.submissions.map((s) => (
                       <div key={s.user_id} className="lrow">
-                        <Avatar nickname={s.nickname} color={s.avatar_color} />
+                        <Avatar {...avatarOf(s)} />
                         <div style={{ flex: 1, fontWeight: 600 }}>{s.nickname}</div>
                         <span className={`chip ${s.submitted ? 'green' : ''}`}>{s.submitted ? 'Отправил' : 'Ждём'}</span>
                       </div>

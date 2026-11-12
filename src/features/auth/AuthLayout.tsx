@@ -82,7 +82,7 @@ function NotConfigured() {
 
 export function AuthLayout({ children, centerFooter = false }: { children: ReactNode; centerFooter?: boolean }) {
   return (
-    <Frame>
+    <Frame boxed>
       <div className={s.stage}>
         <BrandPanel />
         <div className={s.fside}>

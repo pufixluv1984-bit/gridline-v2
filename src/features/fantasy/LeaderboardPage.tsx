@@ -13,6 +13,7 @@ import pg from '@/ui/Page.module.css';
 import { FantasyTabs } from './FantasyTabs';
 import s from './Fantasy.module.css';
 import { lineText } from './lines';
+import { avatarOf } from '@/lib/avatar';
 
 /** Макет Fantasy-Leaderboard: ближайший этап, лидер, лучший этап, таблица лиги с составами и разбором. */
 export default function LeaderboardPage() {
@@ -127,7 +128,7 @@ function Table({ data, onLeague }: { data: LeaderboardScreen; onLeague: (id: str
           <span className="eyebrow">Лидер лиги</span>
           {lead && (
             <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-              <Avatar nickname={lead.nickname} color={lead.avatar_color} />
+              <Avatar {...avatarOf(lead)} />
               <div style={{ minWidth: 0 }}><div className="h">{name(lead)}</div><div className="mute" style={{ fontSize: 13, marginTop: 3 }}>{lead.nickname}</div></div>
               <div className="num" style={{ marginLeft: 'auto', fontSize: 26, fontWeight: 600 }}>{pts(lead.points)}</div>
             </div>
@@ -137,7 +138,7 @@ function Table({ data, onLeague }: { data: LeaderboardScreen; onLeague: (id: str
           <span className="eyebrow">Лучший этап {lastRound ?? ''}</span>
           {bestRow ? (
             <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-              <Avatar nickname={bestRow.nickname} color={bestRow.avatar_color} />
+              <Avatar {...avatarOf(bestRow)} />
               <div style={{ minWidth: 0 }}><div className="h">{name(bestRow)}</div><div className="mute" style={{ fontSize: 13, marginTop: 3 }}>{bestRow.nickname}</div></div>
               <div className="num" style={{ marginLeft: 'auto', fontSize: 26, fontWeight: 600 }}>+{pts(best!.total)}</div>
             </div>
@@ -197,7 +198,7 @@ function Table({ data, onLeague }: { data: LeaderboardScreen; onLeague: (id: str
                     {mv !== null && <span className={`mv ${mv > 0 ? 'up' : mv < 0 ? 'dn' : 'eq'}`}>{mv > 0 ? `▲ ${mv}` : mv < 0 ? `▼ ${-mv}` : '—'}</span>}
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 12, minWidth: 0 }}>
-                    <Avatar nickname={r.nickname} color={r.avatar_color} />
+                    <Avatar {...avatarOf(r)} />
                     <div style={{ minWidth: 0 }}>
                       <div style={{ fontSize: 16, fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{name(r)}</div>
                       <div className="mute" style={{ fontSize: 13, marginTop: 3 }}>{r.nickname}</div>

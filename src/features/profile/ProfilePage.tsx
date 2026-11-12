@@ -4,18 +4,17 @@ import { Link, useParams } from 'react-router-dom';
 import { useAuth } from '@/features/auth/authContext';
 import { teamCar, type TeamCode } from '@/lib/assets';
 import { profileKeys, profileScreen, TITLE_NAMES, updateProfile, type ProfileScreen } from '@/lib/api/profile';
-import { initialsOf } from '@/lib/initials';
 import { plural } from '@/lib/time/format';
 import { serverNow } from '@/lib/time/useServerNow';
 import { Avatar, DriverTile, Skeleton } from '@/ui/game';
 import { Modal } from '@/ui/Modal';
+import { useAvatarEditor } from './useAvatarEditor';
 import { Content, PageTitle, Toolbar, ToolbarDivider } from '@/ui/Page';
 import b from '@/ui/Button.module.css';
 import pg from '@/ui/Page.module.css';
 import s from './Profile.module.css';
+import { avatarOf } from '@/lib/avatar';
 
-/** Цвета аватара без фото (макет Overlays, «Аватар без фото»). */
-const SWATCHES = ['#ffd400', '#e8211a', '#ff8000', '#27f4d2', '#3671c6', '#b66dff', '#ff87bc', '#7fe0a0'];
 const NICK_COOLDOWN_MS = 30 * 24 * 3600 * 1000;
 
 const IconEdit = () => (
@@ -194,7 +193,7 @@ function Hero({ data }: { data: ProfileScreen }) {
   const car = ft ? teamCar(ft.code as TeamCode) : null;
   return (
     <section className={`card rise ${s.hero}`} style={{ ['--i' as string]: 0 }}>
-      <div className={s.avl} style={{ background: p.avatar_color, '--c': p.avatar_color } as CSSProperties}>{initialsOf(p.nickname)}</div>
+      <Avatar {...avatarOf(p)} size={112} fontSize={40} className={s.avl} style={{ '--c': p.avatar_color } as CSSProperties} />
       <div style={{ minWidth: 0 }}>
         <div className="eyebrow">Игрок</div>
         <div className={`num ${s.name}`}>{p.nickname}</div>
@@ -338,12 +337,12 @@ function PredictCard({ data, me }: { data: ProfileScreen | undefined; me: string
         <div style={{ marginTop: 20, paddingTop: 20, borderTop: '1px solid var(--line)' }}>
           <div className="eyebrow">Дуэль с {duel.rival.nickname}</div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 14, margin: '16px 0 12px' }}>
-            <Avatar nickname={p.nickname} color={p.avatar_color} />
+            <Avatar {...avatarOf(p)} />
             <div className="num" style={{ fontSize: 28, fontWeight: 600, flex: 1, textAlign: 'center' }}>
               {duel.wins} <span className="mute">:</span> {duel.losses}
             </div>
             <Link to={duel.rival.id === me ? '/profile' : `/profile/${duel.rival.id}`} aria-label={`Профиль ${duel.rival.nickname}`}>
-              <Avatar nickname={duel.rival.nickname} color={duel.rival.avatar_color} />
+              <Avatar {...avatarOf(duel.rival)} />
             </Link>
           </div>
           <div className={s.duel}>
@@ -401,16 +400,16 @@ function History({ data, season, onSeason }: { data: ProfileScreen | undefined; 
   );
 }
 
-type Dialog = 'nick' | 'avatar' | null;
+type Dialog = 'nick' | null;
 
 function ProfileSettings({ data, userId }: { data: ProfileScreen; userId: string }) {
   const p = data.player!;
   const qc = useQueryClient();
   const [dialog, setDialog] = useState<Dialog>(null);
   const [nick, setNick] = useState(p.nickname);
-  const [color, setColor] = useState(p.avatar_color);
   const [nextNickAt, setNextNickAt] = useState<number | null>(null);
   const [teamName, setTeamName] = useState(data.fantasy?.team_name ?? '');
+  const avatar = useAvatarEditor({ id: p.id, nickname: p.nickname, avatar_color: p.avatar_color, avatar_path: p.avatar_path ?? null, avatar_text: p.avatar_text ?? null });
 
   const save = useMutation({
     mutationFn: (patch: Parameters<typeof updateProfile>[1]) => updateProfile(userId, patch),
@@ -444,9 +443,12 @@ function ProfileSettings({ data, userId }: { data: ProfileScreen; userId: string
         </div>
         <div className="kv">
           <span className="mute">Аватар</span>
-          <button type="button" className={s.fld} onClick={() => { setColor(p.avatar_color); save.reset(); setDialog('avatar'); }}>
-            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 10 }}><i className={s.dotc} style={{ background: p.avatar_color }} />{initialsOf(p.nickname)}</span>
-            <span className="mute">Цвет</span>
+          <button type="button" className={s.fld} onClick={avatar.openPhoto}>
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 10 }}>
+              <Avatar {...avatarOf(p)} size={26} radius={8} fontSize={10} />
+              {p.avatar_path ? 'Фото' : 'Буквы'}
+            </span>
+            <span className="mute">Изменить</span>
           </button>
         </div>
         <div className="kv">
@@ -514,39 +516,7 @@ function ProfileSettings({ data, userId }: { data: ProfileScreen; userId: string
         </Modal>
       )}
 
-      {dialog === 'avatar' && (
-        <Modal
-          title="Аватар без фото"
-          onClose={close}
-          busy={save.isPending}
-          actions={
-            <>
-              <button type="button" className={`${b.cta} ${b.sm} ${b.ghost}`} onClick={close} disabled={save.isPending}>Отмена</button>
-              <button type="button" className={`${b.cta} ${b.sm}`} disabled={color === p.avatar_color || save.isPending} onClick={() => save.mutate({ avatar_color: color })}>
-                {save.isPending ? 'Сохраняем…' : 'Сохранить'}
-              </button>
-            </>
-          }
-        >
-          <div className={s.avprev}>
-            <Avatar nickname={p.nickname} color={color} size={84} />
-            <div>
-              <div style={{ fontWeight: 600 }}>{p.nickname}</div>
-              <div className="mute" style={{ fontSize: 13, marginTop: 4 }}>Так тебя видят в таблице и лобби</div>
-            </div>
-          </div>
-          <div>
-            <span className="lab">Цвет</span>
-            <div className={s.swr} role="radiogroup" aria-label="Цвет аватара">
-              {SWATCHES.map((c) => (
-                <button key={c} type="button" role="radio" aria-checked={c === color} aria-label={c}
-                  className={`${s.sw} ${c === color ? s.on : ''}`} style={{ background: c }} onClick={() => setColor(c)} />
-              ))}
-            </div>
-          </div>
-          {save.error && <div className="alert bad" role="alert">{save.error.message}</div>}
-        </Modal>
-      )}
+      {avatar.element}
     </section>
   );
 }

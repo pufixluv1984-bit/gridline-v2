@@ -23,6 +23,35 @@
   gap: 16px;
   animation: pop 0.25s var(--ease-out) both;
 }
+.w {
+  max-width: 480px;
+}
+.hd {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+.x {
+  width: 36px;
+  height: 36px;
+  border-radius: 12px;
+  border: 1px solid var(--line);
+  background: #131317;
+  color: #9a9aa4;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  padding: 0;
+}
+.x:hover:not(:disabled) {
+  color: #fff;
+}
+.x:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
 .mdl h3 {
   margin: 0;
   font: 600 22px var(--font-num);

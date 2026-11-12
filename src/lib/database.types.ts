@@ -11,6 +11,8 @@ export type Database = {
           id: string;
           nickname: string;
           avatar_color: string;
+          avatar_path: string | null;
+          avatar_text: string | null;
           in_global_ranking: boolean;
           fav_driver: string | null;
           fav_team: string | null;
@@ -20,7 +22,7 @@ export type Database = {
           updated_at: string;
         };
         Insert: never;
-        Update: { nickname?: string; avatar_color?: string; fav_driver?: string | null; fav_team?: string | null; team_name?: string | null };
+        Update: { nickname?: string; avatar_color?: string; avatar_path?: string | null; avatar_text?: string | null; fav_driver?: string | null; fav_team?: string | null; team_name?: string | null };
         Relationships: [];
       };
       leagues: {

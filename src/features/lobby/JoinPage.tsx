@@ -17,6 +17,7 @@ import { Content, PageTitle } from '@/ui/Page';
 import b from '@/ui/Button.module.css';
 import s from './Join.module.css';
 import { LobbyTabs } from './LobbyTabs';
+import { avatarOf } from '@/lib/avatar';
 
 /** Ввод кода вручную (внутри приложения): /lobby/join. */
 export function JoinByCodePage() {
@@ -110,7 +111,7 @@ export default function JoinPage() {
                       <div style={{ display: 'flex' }}>
                         {p.members.map((m, i) => (
                           <span key={i} style={{ marginLeft: i ? -10 : 0, borderRadius: '50%', border: '2px solid #0f0f12', display: 'inline-flex' }}>
-                            <Avatar nickname={m.nickname} color={m.avatar_color} size={38} />
+                            <Avatar {...avatarOf(m)} size={38} />
                           </span>
                         ))}
                       </div>

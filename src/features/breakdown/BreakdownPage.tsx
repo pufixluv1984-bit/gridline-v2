@@ -5,6 +5,7 @@ import { breakdownScreen, screenKeys, type BreakdownScreen, type Driver, type Sc
 import { useServerNow } from '@/lib/time/useServerNow';
 import { Avatar, DriverTile, Skeleton } from '@/ui/game';
 import { Content, PageTitle, PillLink, Toolbar } from '@/ui/Page';
+import { avatarOf } from '@/lib/avatar';
 
 // Разбор этапа: каждое начисление — строка score_lines с причиной (docs/PRODUCT.md §2).
 // Отдельного макета нет — собран из элементов Predict и Results.
@@ -85,7 +86,7 @@ function Body({ d, onEvent }: { d: BreakdownScreen; onEvent: (id: number) => voi
     <>
       <section className="card rise" style={{ display: 'flex', flexWrap: 'wrap', gap: 24, alignItems: 'center', justifyContent: 'space-between' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-          {d.player && <Avatar nickname={d.player.nickname} color={d.player.avatar_color} size={56} />}
+          {d.player && <Avatar {...avatarOf(d.player)} size={56} />}
           <div>
             <div className="eyebrow">Этап {d.event!.round} · {d.player?.nickname}</div>
             <div className="num" style={{ fontSize: 30, fontWeight: 600, marginTop: 10 }}>{d.event!.name}</div>

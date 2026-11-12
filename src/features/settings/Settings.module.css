@@ -31,16 +31,11 @@
   margin-top: 3px;
   line-height: 1.4;
 }
-.ava {
-  width: 64px;
-  height: 64px;
-  border-radius: 20px;
-  flex: none;
+.photoBtns {
   display: flex;
-  align-items: center;
-  justify-content: center;
-  font: 700 24px var(--font-num);
-  color: #0a0a0d;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 14px;
 }
 .who {
   display: flex;

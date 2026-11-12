@@ -12,7 +12,7 @@ export type LeaguePreview =
       start_event: { round: number; name: string } | null;
       member_count: number;
       already_member: boolean;
-      members: { nickname: string; avatar_color: string }[];
+      members: { nickname: string; avatar_color: string; avatar_path?: string | null; avatar_text?: string | null }[];
     };
 
 /** Ошибки RPC лиг → понятный текст (hint задаёт база). */

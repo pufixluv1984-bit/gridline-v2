@@ -12,6 +12,7 @@ import { serverNow } from '@/lib/time/useServerNow';
 import { Content, PageTitle } from '@/ui/Page';
 import b from '@/ui/Button.module.css';
 import { LobbyTabs } from './LobbyTabs';
+import { Avatar } from '@/ui/Avatar';
 
 const MODES = [
   { id: 'predict', t: 'Прогнозы', help: 'Игра прогнозов на этапы: квалификация, топ-10 и бонусы.' },
@@ -160,9 +161,14 @@ export default function CreateLeaguePage() {
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
                   {Array.from({ length: Math.min(count, 8) }, (_, i) =>
                     i === 0 ? (
-                      <span key={i} className="ava" style={{ width: 40, height: 40, background: profile.data?.avatar_color ?? 'var(--gold)' }}>
-                        {initialsOf(owner)}
-                      </span>
+                      <Avatar
+                        key={i}
+                        nickname={owner}
+                        color={profile.data?.avatar_color ?? 'var(--gold)'}
+                        photo={profile.data?.avatar_path}
+                        text={profile.data?.avatar_text}
+                        size={40}
+                      />
                     ) : (
                       <span key={i} className="ava" style={{ width: 40, height: 40, background: 'transparent', border: '1px dashed rgba(255,255,255,.25)', color: '#6d6d77' }}>+</span>
                     ),

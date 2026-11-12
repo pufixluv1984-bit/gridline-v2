@@ -16,6 +16,7 @@ import { TrackMap } from '@/ui/TrackMap';
 import { weatherIcon, weatherText, weekday } from './weather';
 import { Content, PageTitle, PillLink, PrimaryLink, Toolbar, ToolbarDivider } from '@/ui/Page';
 import b from '@/ui/Button.module.css';
+import { avatarOf } from '@/lib/avatar';
 
 /**
  * Главная (макет Main): чемпионат мира (топ-5), следующий этап с таймером и схемой трассы, сезон,
@@ -363,7 +364,7 @@ function LeagueCard({ data, onPick }: { data: HomeScreen; onPick: (id: string) =
         {data.table.map((r) => (
           <div key={r.user_id} className={`trow ${r.user_id === me ? 'me' : r.rank === 1 && r.points > 0 ? 'lead' : ''}`}>
             <span className="num" style={{ width: 30, fontSize: 20, fontWeight: 600 }}>{r.rank}</span>
-            <Avatar nickname={r.nickname} color={r.avatar_color} />
+            <Avatar {...avatarOf(r)} />
             <span style={{ flex: 1, fontWeight: 600 }}>{r.nickname}</span>
             {data.event && (
               <span className={`chip ${sent.get(r.user_id) ? 'green' : ''}`}>{sent.get(r.user_id) ? 'Прогноз отправлен' : 'Ждём прогноз'}</span>

@@ -6,7 +6,8 @@ import { isSiteAdmin } from '@/lib/api/admin';
 import { Link } from 'react-router-dom';
 import { signOut } from '@/lib/api/auth';
 import { getMyProfile, profileKeys } from '@/lib/api/profile';
-import { initialsOf } from '@/lib/initials';
+import { useAvatarEditor } from '@/features/profile/useAvatarEditor';
+import { Avatar } from '@/ui/Avatar';
 import { IconWarn } from '@/ui/icons';
 import { Modal } from '@/ui/Modal';
 import { Card, Content, PageTitle } from '@/ui/Page';
@@ -45,6 +46,7 @@ export default function SettingsPage() {
   const [error, setError] = useState<string | null>(null);
 
   const nickname = profile.data?.nickname ?? '';
+  const avatar = useAvatarEditor(profile.data);
   const providers = ((user?.app_metadata?.providers as string[] | undefined) ?? [])
     .filter((x) => x !== 'email')
     .map((x) => PROVIDER_NAMES[x] ?? x);
@@ -82,10 +84,16 @@ export default function SettingsPage() {
           <Card i={0} className={s.col}>
             <h2 className={p.h}>Аккаунт</h2>
             <div className={s.who}>
-              <span className={s.ava} style={{ background: profile.data?.avatar_color ?? 'var(--gold)' }}>
-                {initialsOf(nickname)}
-              </span>
-              <div>
+              <Avatar
+                nickname={nickname || '··'}
+                color={profile.data?.avatar_color ?? 'var(--gold)'}
+                photo={profile.data?.avatar_path}
+                text={profile.data?.avatar_text}
+                size={84}
+                radius={24}
+                fontSize={30}
+              />
+              <div style={{ minWidth: 0 }}>
                 <div className={s.nick}>{nickname || '…'}</div>
                 <div className={s.chips}>
                   {providers.map((x) => (
@@ -94,6 +102,27 @@ export default function SettingsPage() {
                     </span>
                   ))}
                 </div>
+                <div className={s.photoBtns}>
+                  <button type="button" className={`${b.cta} ${b.sm} ${b.ghost}`} disabled={!profile.data} onClick={avatar.openPhoto}>
+                    Загрузить фото
+                  </button>
+                  <button
+                    type="button"
+                    className={`${b.cta} ${b.sm} ${b.ghost}`}
+                    disabled={!profile.data?.avatar_path || avatar.removing}
+                    onClick={() => void avatar.remove()}
+                  >
+                    {avatar.removing ? 'Убираем…' : 'Убрать'}
+                  </button>
+                </div>
+                <div className="help" style={{ margin: '8px 0 0' }}>
+                  Квадрат от 256 px, до 2 МБ
+                </div>
+                {avatar.removeError && (
+                  <div className="alert bad" role="alert" style={{ marginTop: 10 }}>
+                    {avatar.removeError}
+                  </div>
+                )}
               </div>
             </div>
           </Card>
@@ -197,6 +226,7 @@ export default function SettingsPage() {
           )}
         </Modal>
       )}
+      {avatar.element}
     </>
   );
 }

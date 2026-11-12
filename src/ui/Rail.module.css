@@ -1,19 +1,120 @@
+/* Боковое меню. Свёрнуто: --w (84px, до 1100px — 60px), только иконки. Раскрыто: 240px поверх контента.
+   Раскрытие анимирует только transform и opacity (правило 11): фон — псевдоэлемент шириной 240px, сжатый scaleX,
+   линия справа сдвигается translateX, подписи проявляются opacity. Ширина самой панели меняется мгновенно
+   и невидимо (у неё нет своего фона), поэтому иконки не двигаются. */
 .rail {
-  width: 72px;
-  flex: none;
+  --w: 84px;
+  --x: 48px; /* сторона квадрата иконки */
+  --s: 0.35; /* 84 / 240 */
+  --open: 240px;
+  position: fixed;
+  left: 0;
+  top: 0;
+  z-index: 50;
+  height: 100vh;
+  width: var(--w);
+  padding: 20px calc((var(--w) - var(--x)) / 2);
   display: flex;
   flex-direction: column;
-  align-items: center;
   gap: 8px;
-  padding: 14px 0;
 }
 
-/* Профиль сверху: жёлтая плашка с инициалами. */
+/* Фон панели */
+.rail::before {
+  content: '';
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: var(--open);
+  z-index: -1;
+  background: #0d0d10;
+  transform-origin: left center;
+  transform: scaleX(var(--s));
+  transition: transform 0.2s ease;
+}
+/* Линия справа на всю высоту */
+.rail::after {
+  content: '';
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 1px;
+  background: rgba(255, 255, 255, 0.07);
+  transform: translateX(calc(var(--w) - 1px));
+  transition: transform 0.2s ease;
+  pointer-events: none;
+}
+/* Лёгкая тень в сторону контента — только у раскрытого меню */
+.shade {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: var(--open);
+  z-index: -2;
+  box-shadow: 16px 0 40px rgba(0, 0, 0, 0.45);
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  pointer-events: none;
+}
+
+/* Пункт: квадрат иконки закреплён слева, подпись рядом. */
+.item {
+  flex: none;
+  width: 100%;
+  height: var(--x);
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--mute);
+  border-radius: 16px;
+  text-align: left;
+}
+.ico {
+  flex: none;
+  width: var(--x);
+  height: var(--x);
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid transparent;
+  transition: background 0.25s, color 0.25s;
+}
+.item:hover {
+  color: #fff;
+}
+.item:hover .ico {
+  background: rgba(255, 255, 255, 0.06);
+}
+.on {
+  color: #fff;
+}
+.on .ico,
+.on:hover .ico {
+  background: var(--bg-nav-on);
+  border-color: var(--line-strong);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+}
+
+.label {
+  white-space: nowrap;
+  font-size: 15px;
+  font-weight: 500;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.2s ease, visibility 0s linear 0.2s;
+}
+
+/* Профиль сверху: плашка аватара. */
+.meItem {
+  margin-bottom: 14px;
+  color: var(--text-soft);
+}
 .me {
   width: 44px;
   height: 44px;
   border-radius: 14px;
-  margin-bottom: 14px;
+  overflow: hidden;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -23,41 +124,85 @@
   letter-spacing: 0.02em;
   transition: transform 0.25s;
 }
-.me:hover {
+.meItem:hover .ico {
+  background: none;
+}
+.meItem:hover .me {
   transform: scale(1.04);
 }
-.meOn {
+.meOn .me {
   box-shadow: 0 0 0 3px rgba(255, 212, 0, 0.28), 0 8px 24px rgba(255, 212, 0, 0.2);
 }
 
-.nav {
-  width: 48px;
-  height: 48px;
-  border-radius: 16px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--mute);
-  border: 1px solid transparent;
-  transition: background 0.25s, color 0.25s;
+/* Бургер — только на сенсорных и узких экранах */
+.burger {
+  display: none;
 }
-.nav:hover {
-  color: #fff;
-  background: rgba(255, 255, 255, 0.06);
+
+/* ───────── Раскрытое состояние ───────── */
+.open,
+.rail:has(:focus-visible) {
+  width: var(--open);
 }
-.on {
-  color: #fff;
-  background: var(--bg-nav-on);
-  border-color: var(--line-strong);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+@media (hover: hover) {
+  .rail:hover {
+    width: var(--open);
+  }
+  .rail:hover::before {
+    transform: none;
+  }
+  .rail:hover::after {
+    transform: translateX(calc(var(--open) - 1px));
+  }
+  .rail:hover .shade {
+    opacity: 1;
+  }
+  .rail:hover .label {
+    opacity: 1;
+    visibility: visible;
+    transition: opacity 0.2s ease, visibility 0s;
+  }
+}
+.open::before,
+.rail:has(:focus-visible)::before {
+  transform: none;
+}
+.open::after,
+.rail:has(:focus-visible)::after {
+  transform: translateX(calc(var(--open) - 1px));
+}
+.open .shade,
+.rail:has(:focus-visible) .shade {
+  opacity: 1;
+}
+.open .label,
+.rail:has(:focus-visible) .label {
+  opacity: 1;
+  visibility: visible;
+  transition: opacity 0.2s ease, visibility 0s;
 }
 
 @media (max-width: 1100px) {
   .rail {
-    width: 60px;
+    --w: 60px;
+    --x: 42px;
+    --s: 0.25; /* 60 / 240 */
   }
-  .nav {
-    width: 42px;
-    height: 42px;
+  .me {
+    width: 40px;
+    height: 40px;
+  }
+}
+@media (hover: none), (max-width: 1100px) {
+  .burger {
+    display: flex;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .rail::before,
+  .rail::after,
+  .shade,
+  .label {
+    transition: none;
   }
 }

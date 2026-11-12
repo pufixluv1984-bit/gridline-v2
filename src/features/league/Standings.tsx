@@ -5,6 +5,7 @@ import b from '@/ui/Button.module.css';
 import type { LeagueScreen } from '@/lib/api/screens';
 import { plural } from '@/lib/time/format';
 import { Avatar, Skeleton } from '@/ui/game';
+import { avatarOf } from '@/lib/avatar';
 
 type Period = 'season' | 'stage' | 'all';
 const PERIODS: { id: Period; label: string }[] = [
@@ -137,7 +138,7 @@ export function StandingsCard({ data, me }: { data: LeagueScreen | undefined; me
             <div style={{ display: 'flex', alignItems: 'center', gap: 12, minWidth: 0 }}>
               <button type="button" onClick={() => setCard(r.user_id)} aria-label={`Карточка игрока ${r.nickname}`}
                 style={{ padding: 0, border: 0, background: 'none', cursor: 'pointer', borderRadius: '50%' }}>
-                <Avatar nickname={r.nickname} color={r.avatar_color} />
+                <Avatar {...avatarOf(r)} />
               </button>
               <div style={{ minWidth: 0 }}>
                 <div style={{ fontWeight: 600, fontSize: 16 }}>
@@ -194,7 +195,7 @@ export function StandingsCard({ data, me }: { data: LeagueScreen | undefined; me
                 {x.t ? (
                   <>
                     <b style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                      <Avatar nickname={x.t.nickname} color={x.t.avatar_color} size={28} />
+                      <Avatar {...avatarOf(x.t)} size={28} />
                       {x.t.nickname}
                     </b>
                     <div className="mute" style={{ fontSize: 13, marginTop: 6 }}>
@@ -243,7 +244,7 @@ function PlayerCard({ data, userId, me, byUser, onClose }: {
   return (
     <Modal
       title={r.nickname}
-      icon={<Avatar nickname={r.nickname} color={r.avatar_color} size={64} />}
+      icon={<Avatar {...avatarOf(r)} size={64} />}
       onClose={onClose}
       actions={
         <>

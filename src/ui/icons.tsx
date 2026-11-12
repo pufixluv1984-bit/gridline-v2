@@ -88,6 +88,12 @@ export const IconGrid = (p: P) => (
     <path d="M4 9h16M4 15h16M9 4v16M15 4v16" />
   </Svg>
 );
+/** Бургер — открыть меню на сенсорных экранах. */
+export const IconMenu = (p: P) => (
+  <Svg {...p}>
+    <path d="M4 7h16M4 12h16M4 17h16" />
+  </Svg>
+);
 export const IconFlagBold = (p: P) => (
   <Svg {...p} strokeWidth={2.4}>
     <path d="M5 20V5l14 3-14 4M5 12l14 3-14 5" />

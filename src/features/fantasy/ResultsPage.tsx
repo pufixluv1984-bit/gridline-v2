@@ -10,6 +10,7 @@ import pg from '@/ui/Page.module.css';
 import { FantasyTabs } from './FantasyTabs';
 import { lineText } from './lines';
 import s from './Fantasy.module.css';
+import { avatarOf } from '@/lib/avatar';
 
 /** Макет Fantasy-Results: итог этапа, мой состав по слотам, команды лиги, лучшие пилоты этапа. */
 export default function ResultsPage() {
@@ -62,7 +63,7 @@ export default function ResultsPage() {
                   {(data?.league ?? []).map((r, i) => (
                     <div key={r.user_id} className={`trow ${r.user_id === me ? 'me' : ''}`}>
                       <span className="num" style={{ fontSize: 22, fontWeight: 600, width: 30, color: i === 0 ? 'var(--gold)' : undefined }}>{i + 1}</span>
-                      <Avatar nickname={r.nickname} color={r.avatar_color} />
+                      <Avatar {...avatarOf(r)} />
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <div style={{ fontWeight: 600 }}>{r.team_name || r.nickname}</div>
                         <div className="mute" style={{ fontSize: 13, marginTop: 3 }}>

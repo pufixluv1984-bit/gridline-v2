@@ -17,6 +17,7 @@ import { Content, PageTitle, PillLink, Toolbar } from '@/ui/Page';
 import b from '@/ui/Button.module.css';
 import m from '@/ui/Modal.module.css';
 import pg from '@/ui/Page.module.css';
+import { avatarOf } from '@/lib/avatar';
 
 /** /league без id: открываем выбранную лигу или первую, иначе — пустое состояние. */
 export function LeagueIndexPage() {
@@ -187,7 +188,7 @@ export default function LeaguePage() {
                 const sub = data?.submissions.find((s) => s.user_id === x.user_id);
                 return (
                   <div key={x.user_id} className="lrow">
-                    <Avatar nickname={x.nickname} color={x.avatar_color} />
+                    <Avatar {...avatarOf(x)} />
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <div style={{ fontWeight: 600 }}>{x.nickname}{x.user_id === me ? ' (ты)' : ''}</div>
                       <div className="mute" style={{ fontSize: 13, marginTop: 3 }}>
@@ -287,9 +288,9 @@ function Duels({ data, me }: { data: LeagueScreen | undefined; me: string | unde
           return (
             <div key={d.user_id}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                {meRow && <Avatar nickname={meRow.nickname} color={meRow.avatar_color} />}
+                {meRow && <Avatar {...avatarOf(meRow)} />}
                 <div className="num" style={{ fontSize: 24, fontWeight: 600, flex: 1, textAlign: 'center' }}>{d.a} <span className="mute">:</span> {d.b}</div>
-                <Avatar nickname={d.nickname} color={d.avatar_color} />
+                <Avatar {...avatarOf(d)} />
               </div>
               <div style={{ display: 'flex', height: 8, borderRadius: 4, overflow: 'hidden', background: '#1e1e24', gap: 3, marginTop: 10 }}>
                 <i style={{ display: 'block', width: `${(d.a / total) * 100}%`, background: meRow?.avatar_color }} />

@@ -38,7 +38,7 @@ export type Driver = {
 export type LeagueRow = {
   user_id: string;
   nickname: string;
-  avatar_color: string;
+  avatar_color: string; avatar_path?: string | null; avatar_text?: string | null;
   role: 'owner' | 'member';
   points: number;
   exact_hits: number;
@@ -48,7 +48,7 @@ export type LeagueRow = {
   rank: number;
 };
 
-export type Submission = { user_id: string; nickname: string; avatar_color: string; submitted: boolean };
+export type Submission = { user_id: string; nickname: string; avatar_color: string; avatar_path?: string | null; avatar_text?: string | null; submitted: boolean };
 
 export type SavedPredictionRow = {
   qualy: string[] | null;
@@ -68,7 +68,7 @@ export type ScoreKind =
 
 export type BreakdownScreen = {
   event: EventInfo | null;
-  player: { id: string; nickname: string; avatar_color: string } | null;
+  player: { id: string; nickname: string; avatar_color: string; avatar_path?: string | null; avatar_text?: string | null } | null;
   prediction: (SavedPredictionRow & { updated_at: string }) | null;
   lines: { block: 'qualy' | 'sprint' | 'race' | 'bonus'; kind: ScoreKind; slot: number; driver_id: string | null; points: number; multiplier: number; provisional: boolean }[];
   qualy: string[];
@@ -159,7 +159,7 @@ export type LeagueScreen = {
   archive?: boolean;
   current_season?: number;
   carried_to?: string | null;
-  members: { user_id: string; nickname: string; avatar_color: string; role: 'owner' | 'member'; joined_at: string }[];
+  members: { user_id: string; nickname: string; avatar_color: string; avatar_path?: string | null; avatar_text?: string | null; role: 'owner' | 'member'; joined_at: string }[];
   event: EventInfo | null;
   submissions: Submission[];
 };

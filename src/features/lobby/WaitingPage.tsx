@@ -10,6 +10,7 @@ import { Content, PageTitle } from '@/ui/Page';
 import { TrackMap } from '@/ui/TrackMap';
 import b from '@/ui/Button.module.css';
 import { LobbyTabs } from './LobbyTabs';
+import { avatarOf } from '@/lib/avatar';
 
 /**
  * Макет Lobby-Waiting. Кнопки «Начать игру» и заявок на вступление в продукте нет: лига считает
@@ -84,7 +85,7 @@ export default function WaitingPage() {
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
               {(data?.members ?? []).map((m) => (
                 <div key={m.user_id} className="lrow" style={{ padding: 16 }}>
-                  <Avatar nickname={m.nickname} color={m.avatar_color} size={48} />
+                  <Avatar {...avatarOf(m)} size={48} />
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ fontWeight: 600, fontSize: 16 }}>
                       {m.nickname}

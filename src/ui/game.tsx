@@ -1,7 +1,6 @@
 // Общие игровые элементы экранов: таймер, плитка пилота, аватар игрока.
 import type { CSSProperties } from 'react';
 import { driverPhoto, teamLogo, type TeamCode } from '@/lib/assets';
-import { initialsOf } from '@/lib/initials';
 import { countdownParts } from '@/lib/time/format';
 import { useServerNow } from '@/lib/time/useServerNow';
 
@@ -63,14 +62,8 @@ export function DriverTile({
   );
 }
 
-/** Круглый аватар игрока: инициалы на цвете профиля. */
-export function Avatar({ nickname, color, size = 36 }: { nickname: string; color: string; size?: number }) {
-  return (
-    <span className="ava" style={{ background: color, width: size, height: size, fontSize: size * 0.34 }} aria-hidden="true">
-      {initialsOf(nickname)}
-    </span>
-  );
-}
+/** Аватар игрока (фото или буквы на цвете профиля) — общий компонент из ./Avatar. */
+export { Avatar } from './Avatar';
 
 /** Скелет-заглушка на время загрузки. */
 export function Skeleton({ h = 18, w = '100%' }: { h?: number; w?: number | string }) {

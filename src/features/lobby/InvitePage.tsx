@@ -10,6 +10,7 @@ import { IconCheck } from '@/ui/icons';
 import { Content, PageTitle } from '@/ui/Page';
 import b from '@/ui/Button.module.css';
 import { LobbyTabs } from './LobbyTabs';
+import { avatarOf } from '@/lib/avatar';
 
 /** Макет Lobby-Invite: ссылка и код, «отправить в», сброс ссылки, кто уже в лобби. */
 export default function InvitePage() {
@@ -135,7 +136,7 @@ export default function InvitePage() {
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
               {(q.data?.members ?? []).map((m) => (
                 <div key={m.user_id} className="lrow">
-                  <Avatar nickname={m.nickname} color={m.avatar_color} size={40} />
+                  <Avatar {...avatarOf(m)} size={40} />
                   <div style={{ flex: 1, minWidth: 0, fontWeight: 600 }}>{m.nickname}</div>
                   <span className={`chip ${m.role === 'owner' ? 'gold' : 'green'}`}>{m.role === 'owner' ? 'Хозяин' : 'В лобби'}</span>
                 </div>
