@@ -351,27 +351,48 @@ const raceName = (race: Json | undefined) => {
   return GP[circuit]?.name ?? (race.raceName as string);
 };
 
-async function wikiBio(enUrl: string): Promise<{ bio: string | null; bio_url: string | null }> {
-  const title = decodeURIComponent(enUrl.split('/wiki/')[1] ?? '');
-  if (!title) return { bio: null, bio_url: null };
-  const ll = await fetch(
-    `https://en.wikipedia.org/w/api.php?action=query&prop=langlinks&lllang=ru&redirects=1&format=json&formatversion=2&titles=${encodeURIComponent(title)}`,
-    { headers: WIKI_UA },
-  );
-  if (!ll.ok) return { bio: null, bio_url: null };
-  const ru = ((await ll.json()) as { query?: { pages?: { langlinks?: { title: string }[] }[] } }).query?.pages?.[0]?.langlinks?.[0]?.title;
-  if (!ru) return { bio: null, bio_url: null };
-  // Вступление статьи простым текстом (несколько абзацев), без знаков ударения.
+type Bio = { text: string; url: string } | null;
+
+// Вступление статьи простым текстом (несколько абзацев), без знаков ударения.
+async function wikiExtract(lang: 'ru' | 'uk' | 'en', title: string): Promise<Bio> {
   const ex = await fetch(
-    `https://ru.wikipedia.org/w/api.php?action=query&prop=extracts&exintro=1&explaintext=1&redirects=1&format=json&formatversion=2&titles=${encodeURIComponent(ru)}`,
+    `https://${lang}.wikipedia.org/w/api.php?action=query&prop=extracts&exintro=1&explaintext=1&redirects=1&format=json&formatversion=2&titles=${encodeURIComponent(title)}`,
     { headers: WIKI_UA },
   );
-  if (!ex.ok) return { bio: null, bio_url: null };
+  if (!ex.ok) return null;
   const page = ((await ex.json()) as { query?: { pages?: { title: string; extract?: string }[] } }).query?.pages?.[0];
   const text = (page?.extract ?? '').replace(/́/g, '').replace(/\n{2,}/g, '\n').trim();
-  if (!text) return { bio: null, bio_url: null };
-  const bio = text.length > 4000 ? `${text.slice(0, 3990).replace(/\s\S*$/, '')}…` : text;
-  return { bio, bio_url: `https://ru.wikipedia.org/wiki/${encodeURIComponent((page?.title ?? ru).replaceAll(' ', '_'))}` };
+  // Скрытые даты из шаблонов («1985(19850107)») — убираем служебную часть.
+  const clean = text.replace(/(\d{4})\(\d{8}\)/g, '$1');
+  if (!clean) return null;
+  return {
+    text: clean.length > 4000 ? `${clean.slice(0, 3990).replace(/\s\S*$/, '')}…` : clean,
+    url: `https://${lang}.wikipedia.org/wiki/${encodeURIComponent((page?.title ?? title).replaceAll(' ', '_'))}`,
+  };
+}
+
+/** Биографии на трёх языках: английская статья из Jolpica, русская и украинская — по межъязыковым ссылкам. */
+async function wikiBio(enUrl: string): Promise<Json> {
+  const title = decodeURIComponent(enUrl.split('/wiki/')[1] ?? '');
+  const none = { bio: null, bio_url: null, bio_uk: null, bio_url_uk: null, bio_en: null, bio_url_en: null };
+  if (!title) return none;
+  const ll = await fetch(
+    `https://en.wikipedia.org/w/api.php?action=query&prop=langlinks&lllimit=max&redirects=1&format=json&formatversion=2&titles=${encodeURIComponent(title)}`,
+    { headers: WIKI_UA },
+  );
+  if (!ll.ok) return none;
+  const page = ((await ll.json()) as { query?: { pages?: { title: string; langlinks?: { lang: string; title: string }[] }[] } }).query?.pages?.[0];
+  const link = (lang: string) => page?.langlinks?.find((x) => x.lang === lang)?.title;
+  const [ru, uk, en] = await Promise.all([
+    link('ru') ? wikiExtract('ru', link('ru')!) : null,
+    link('uk') ? wikiExtract('uk', link('uk')!) : null,
+    wikiExtract('en', page?.title ?? title),
+  ]);
+  return {
+    bio: ru?.text ?? null, bio_url: ru?.url ?? null,
+    bio_uk: uk?.text ?? null, bio_url_uk: uk?.url ?? null,
+    bio_en: en?.text ?? null, bio_url_en: en?.url ?? null,
+  };
 }
 
 type CareerSeason = { year: number; position: number | null; points: number; wins: number; final: boolean; teams: { id: string; name: string }[] };

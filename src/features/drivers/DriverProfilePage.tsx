@@ -2,13 +2,13 @@ import { useQuery } from '@tanstack/react-query';
 import { type CSSProperties, type MouseEvent } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { teamLogo, type TeamCode } from '@/lib/assets';
-import { countryOf, driverKeys, driverScreen, type CareerSeason, type DriverScreen } from '@/lib/api/drivers';
+import { careerBio, countryOf, driverKeys, driverScreen, type CareerSeason, type DriverScreen } from '@/lib/api/drivers';
 import { DriverTile, Skeleton } from '@/ui/game';
 import { Content, PageTitle, PillLink, Toolbar, ToolbarDivider } from '@/ui/Page';
 import b from '@/ui/Button.module.css';
 import pg from '@/ui/Page.module.css';
 import s from './Drivers.module.css';
-import { intlLocale, t } from '@/i18n';
+import { currentLocale, intlLocale, t } from '@/i18n';
 
 const fmt = (n: number) => n.toLocaleString(intlLocale(), { maximumFractionDigits: 1 });
 
@@ -70,6 +70,7 @@ export default function DriverProfilePage() {
   const teamNames = [...new Set(seasons.flatMap((x) => x.teams.map((t) => teamOf(t, teamsDict).name)))];
   const logo = d?.team_code ? teamLogo(d.team_code as TeamCode) : null;
   const country = countryOf(c?.nationality);
+  const bio = careerBio(c, currentLocale());
 
   return (
     <>
@@ -150,12 +151,14 @@ export default function DriverProfilePage() {
           </>
         )}
 
-        {c?.bio && (
+        {bio && (
           <section className={`card rise ${s.bio}`} style={{ ['--i' as string]: 5 }} id="bio">
             <h2 className="h" style={{ marginBottom: 16 }}>{t('drv.bio')}</h2>
-            {c.bio.split('\n').filter(Boolean).map((p, i) => <p key={i}>{p}</p>)}
+            <div lang={bio.lang}>
+              {bio.text.split('\n').filter(Boolean).map((p, i) => <p key={i}>{p}</p>)}
+            </div>
             <span className={s.bt}>
-              {t('drv.text')} {c.bio_url ? <a href={c.bio_url} target="_blank" rel="noreferrer">{t('drv.wiki')}</a> : t('drv.wiki')} · CC BY-SA 4.0
+              {t('drv.text')} {bio.url ? <a href={bio.url} target="_blank" rel="noreferrer">{t('drv.wiki')}</a> : t('drv.wiki')} · CC BY-SA 4.0
             </span>
           </section>
         )}

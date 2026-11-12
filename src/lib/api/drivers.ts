@@ -1,5 +1,6 @@
 import { getSupabase } from '../supabase';
 import { regionName } from '@/i18n/region';
+import type { Locale } from '@/i18n/locale';
 
 export type CatalogDriver = {
   id: string;
@@ -59,6 +60,10 @@ export type DriverScreen = {
     titles: number[];
     bio: string | null;
     bio_url: string | null;
+    bio_uk?: string | null;
+    bio_url_uk?: string | null;
+    bio_en?: string | null;
+    bio_url_en?: string | null;
     updated_at: string;
   } | null;
   teams: Record<string, { code: string; name: string; color: string }>;
@@ -92,4 +97,18 @@ export function countryOf(nationality: string | null | undefined): string | null
   if (!nationality) return null;
   const code = COUNTRY[nationality];
   return code ? regionName(code) : nationality;
+}
+
+type Career = NonNullable<DriverScreen['career']>;
+const BIO_ORDER: Record<Locale, Locale[]> = { uk: ['uk', 'en', 'ru'], ru: ['ru', 'en', 'uk'], en: ['en', 'ru', 'uk'] };
+
+/** Биография на языке сайта; если статьи на нём нет — на ближайшем из остальных. */
+export function careerBio(c: Career | null | undefined, l: Locale): { text: string; url: string | null; lang: Locale } | null {
+  if (!c) return null;
+  for (const x of BIO_ORDER[l]) {
+    const text = x === 'ru' ? c.bio : x === 'uk' ? c.bio_uk : c.bio_en;
+    const url = x === 'ru' ? c.bio_url : x === 'uk' ? c.bio_url_uk : c.bio_url_en;
+    if (text) return { text, url: url ?? null, lang: x };
+  }
+  return null;
 }

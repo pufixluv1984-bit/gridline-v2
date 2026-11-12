@@ -25,84 +25,256 @@
   b { color: var(--text); }
   a { color: #fff; }
   .foot { color: var(--mute); font-size: 13px; margin-top: 32px; }
+  .top { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+  .langs { display: flex; gap: 4px; padding: 4px; border: 1px solid var(--line); border-radius: 999px; background: var(--card); }
+  .langs a { color: var(--mute); text-decoration: none; font-size: 13px; font-weight: 600; padding: 5px 12px; border-radius: 999px; }
+  .langs a[aria-current] { background: rgba(255,255,255,.08); color: var(--text); }
+  [hidden] { display: none !important; }
 </style>
 </head>
 <body>
 <main>
+  <div class="top">
   <a class="brand" href="./">
     <span class="mark" aria-hidden="true"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 20V5l14 3-14 4M5 12l14 3-14 5"/></svg></span>
     Gridline
   </a>
+  <nav class="langs" aria-label="Language · Мова · Язык">
+    <a href="?lang=uk" lang="uk" data-l="uk">UA</a>
+    <a href="?lang=ru" lang="ru" data-l="ru">RU</a>
+    <a href="?lang=en" lang="en" data-l="en">EN</a>
+  </nav>
+  </div>
 
-  <h1>Политика конфиденциальности</h1>
-  <p class="date">Действует с 11 ноября 2026 года</p>
+  <article lang="ru" data-l="ru">
+    <h1>Политика конфиденциальности</h1>
+    <p class="date">Действует с 11 ноября 2026 года</p>
 
-  <section>
-    <h2>Кто мы</h2>
-    <p>Gridline — некоммерческий фан-проект о Формуле-1: игра прогнозов и фэнтези-лига для друзей. Сайт сделал и поддерживает <b>pufixluv</b>. Связаться: <a href="https://t.me/pufixluv">Telegram @pufixluv</a>.</p>
-    <p>Gridline не связан с Formula 1, FIA и командами.</p>
-  </section>
+    <section>
+      <h2>Кто мы</h2>
+      <p>Gridline — некоммерческий фан-проект о Формуле-1: игра прогнозов и фэнтези-лига для друзей. Сайт сделал и поддерживает <b>pufixluv</b>. Связаться: <a href="https://t.me/pufixluv">Telegram @pufixluv</a>.</p>
+      <p>Gridline не связан с Formula 1, FIA и командами.</p>
+    </section>
 
-  <section>
-    <h2>Какие данные мы получаем</h2>
-    <p>Вход на сайт возможен только через Google или Discord. При входе сервис, который ты выбрал, передаёт нам:</p>
-    <ul>
-      <li>адрес электронной почты;</li>
-      <li>имя или имя пользователя;</li>
-      <li>ссылку на аватар;</li>
-      <li>идентификатор аккаунта в Google или Discord.</li>
-    </ul>
-    <p>Пароль от Google или Discord мы не видим и не храним. Своих паролей на сайте нет.</p>
-    <p>В игре мы храним то, что ты сам вводишь: ник, цвет аватара, лиги, в которых ты состоишь, твои прогнозы и начисленные очки.</p>
-  </section>
+    <section>
+      <h2>Какие данные мы получаем</h2>
+      <p>Вход на сайт возможен только через Google или Discord. При входе сервис, который ты выбрал, передаёт нам:</p>
+      <ul>
+        <li>адрес электронной почты;</li>
+        <li>имя или имя пользователя;</li>
+        <li>ссылку на аватар;</li>
+        <li>идентификатор аккаунта в Google или Discord.</li>
+      </ul>
+      <p>Пароль от Google или Discord мы не видим и не храним. Своих паролей на сайте нет.</p>
+      <p>В игре мы храним то, что ты сам вводишь: ник, цвет аватара, лиги, в которых ты состоишь, твои прогнозы и начисленные очки.</p>
+    </section>
 
-  <section>
-    <h2>Зачем</h2>
-    <ul>
-      <li>чтобы ты мог войти и видеть свой аккаунт;</li>
-      <li>чтобы вести игру: принимать прогнозы, считать очки и показывать рейтинг твоей лиги.</li>
-    </ul>
-    <p>Мы <b>не</b> показываем рекламу, <b>не</b> подключаем счётчики и трекеры, <b>не</b> продаём и не передаём данные для маркетинга и <b>не</b> присылаем писем.</p>
-  </section>
+    <section>
+      <h2>Зачем</h2>
+      <ul>
+        <li>чтобы ты мог войти и видеть свой аккаунт;</li>
+        <li>чтобы вести игру: принимать прогнозы, считать очки и показывать рейтинг твоей лиги.</li>
+      </ul>
+      <p>Мы <b>не</b> показываем рекламу, <b>не</b> подключаем счётчики и трекеры, <b>не</b> продаём и не передаём данные для маркетинга и <b>не</b> присылаем писем.</p>
+    </section>
 
-  <section>
-    <h2>Кто видит твои данные</h2>
-    <ul>
-      <li>Участники твоих лиг видят твой ник, аватар, очки и место в рейтинге. Твои прогнозы на этап они видят только после закрытия приёма прогнозов.</li>
-      <li>Твою почту другие игроки не видят.</li>
-      <li>Игроки, с которыми у тебя нет общей лиги, не видят ничего из перечисленного.</li>
-    </ul>
-  </section>
+    <section>
+      <h2>Кто видит твои данные</h2>
+      <ul>
+        <li>Участники твоих лиг видят твой ник, аватар, очки и место в рейтинге. Твои прогнозы на этап они видят только после закрытия приёма прогнозов.</li>
+        <li>Твою почту другие игроки не видят.</li>
+        <li>Игроки, с которыми у тебя нет общей лиги, не видят ничего из перечисленного.</li>
+      </ul>
+    </section>
 
-  <section>
-    <h2>Где хранятся данные</h2>
-    <ul>
-      <li>База данных и вход — сервис <a href="https://supabase.com/privacy">Supabase</a>, серверы в Европе (Стокгольм). Supabase ведёт технические журналы входов, в них есть IP-адрес и тип браузера.</li>
-      <li>Сайт размещён на <a href="https://docs.github.com/site-policy/privacy-policies/github-general-privacy-statement">GitHub Pages</a>; GitHub может записывать IP-адреса посетителей в технические журналы.</li>
-      <li>Резервные копии базы делаются раз в сутки, шифруются и хранятся 14 дней.</li>
-    </ul>
-    <p>Чтобы ты оставался в аккаунте, браузер хранит ключ сессии в локальном хранилище. Других cookie и данных для отслеживания сайт не использует.</p>
-  </section>
+    <section>
+      <h2>Где хранятся данные</h2>
+      <ul>
+        <li>База данных и вход — сервис <a href="https://supabase.com/privacy">Supabase</a>, серверы в Европе (Стокгольм). Supabase ведёт технические журналы входов, в них есть IP-адрес и тип браузера.</li>
+        <li>Сайт размещён на <a href="https://docs.github.com/site-policy/privacy-policies/github-general-privacy-statement">GitHub Pages</a>; GitHub может записывать IP-адреса посетителей в технические журналы.</li>
+        <li>Резервные копии базы делаются раз в сутки, шифруются и хранятся 14 дней.</li>
+      </ul>
+      <p>Чтобы ты оставался в аккаунте, браузер хранит ключ сессии в локальном хранилище. Других cookie и данных для отслеживания сайт не использует.</p>
+    </section>
 
-  <section>
-    <h2>Данные из Google</h2>
-    <p>Gridline запрашивает у Google только адрес почты и основные сведения профиля и использует их только для входа на сайт. Использование и передача информации, полученной через API Google, соответствуют <a href="https://developers.google.com/terms/api-services-user-data-policy">Google API Services User Data Policy</a>, включая требования об ограниченном использовании (Limited Use).</p>
-  </section>
+    <section>
+      <h2>Данные из Google</h2>
+      <p>Gridline запрашивает у Google только адрес почты и основные сведения профиля и использует их только для входа на сайт. Использование и передача информации, полученной через API Google, соответствуют <a href="https://developers.google.com/terms/api-services-user-data-policy">Google API Services User Data Policy</a>, включая требования об ограниченном использовании (Limited Use).</p>
+    </section>
 
-  <section>
-    <h2>Как удалить аккаунт</h2>
-    <p>Сам, в любой момент: <b>Настройки → Опасная зона → Удалить аккаунт</b>. Аккаунт, профиль, прогнозы и лиги, где ты единственный участник, удаляются из базы сразу. Если ты владелец лиги, где есть другие игроки, сначала передай её кому-то из них.</p>
-    <p>Из резервных копий данные исчезнут сами, когда истечёт их срок хранения (14 дней).</p>
-    <p>Если не получается войти на сайт, напиши в <a href="https://t.me/pufixluv">Telegram @pufixluv</a> — удалим вручную.</p>
-    <p>Доступ сайта к аккаунту можно в любой момент отозвать и сам: в настройках Google (раздел «Сторонние приложения и сервисы») или Discord («Авторизованные приложения»).</p>
-  </section>
+    <section>
+      <h2>Как удалить аккаунт</h2>
+      <p>Сам, в любой момент: <b>Настройки → Опасная зона → Удалить аккаунт</b>. Аккаунт, профиль, прогнозы и лиги, где ты единственный участник, удаляются из базы сразу. Если ты владелец лиги, где есть другие игроки, сначала передай её кому-то из них.</p>
+      <p>Из резервных копий данные исчезнут сами, когда истечёт их срок хранения (14 дней).</p>
+      <p>Если не получается войти на сайт, напиши в <a href="https://t.me/pufixluv">Telegram @pufixluv</a> — удалим вручную.</p>
+      <p>Доступ сайта к аккаунту можно в любой момент отозвать и сам: в настройках Google (раздел «Сторонние приложения и сервисы») или Discord («Авторизованные приложения»).</p>
+    </section>
 
-  <section>
-    <h2>Изменения</h2>
-    <p>Если политика изменится, новая версия появится на этой странице с новой датой.</p>
-  </section>
+    <section>
+      <h2>Изменения</h2>
+      <p>Если политика изменится, новая версия появится на этой странице с новой датой.</p>
+    </section>
 
-  <p class="foot"><a href="./">← На главную Gridline</a></p>
+    <p class="foot"><a href="./">← На главную Gridline</a></p>
+  </article>
+  <article lang="uk" data-l="uk" hidden>
+    <h1>Політика конфіденційності</h1>
+    <p class="date">Діє з 11 листопада 2026 року</p>
+
+    <section>
+      <h2>Хто ми</h2>
+      <p>Gridline — некомерційний фан-проєкт про Формулу-1: гра прогнозів і фентезі-ліга для друзів. Сайт зробив і підтримує <b>pufixluv</b>. Зв’язатися: <a href="https://t.me/pufixluv">Telegram @pufixluv</a>.</p>
+      <p>Gridline не пов’язаний із Formula 1, FIA та командами.</p>
+    </section>
+
+    <section>
+      <h2>Які дані ми отримуємо</h2>
+      <p>Увійти на сайт можна лише через Google або Discord. Під час входу сервіс, який ти обрав, передає нам:</p>
+      <ul>
+        <li>адресу електронної пошти;</li>
+        <li>ім’я або ім’я користувача;</li>
+        <li>посилання на аватар;</li>
+        <li>ідентифікатор акаунта в Google або Discord.</li>
+      </ul>
+      <p>Пароль від Google або Discord ми не бачимо й не зберігаємо. Власних паролів на сайті немає.</p>
+      <p>У грі ми зберігаємо те, що ти сам вводиш: нік, колір аватара, ліги, у яких ти береш участь, твої прогнози та нараховані очки.</p>
+    </section>
+
+    <section>
+      <h2>Навіщо</h2>
+      <ul>
+        <li>щоб ти міг увійти й бачити свій акаунт;</li>
+        <li>щоб вести гру: приймати прогнози, рахувати очки й показувати рейтинг твоєї ліги.</li>
+      </ul>
+      <p>Ми <b>не</b> показуємо рекламу, <b>не</b> підключаємо лічильники й трекери, <b>не</b> продаємо й не передаємо дані для маркетингу та <b>не</b> надсилаємо листів.</p>
+    </section>
+
+    <section>
+      <h2>Хто бачить твої дані</h2>
+      <ul>
+        <li>Учасники твоїх ліг бачать твій нік, аватар, очки й місце в рейтингу. Твої прогнози на етап вони бачать лише після закриття прийому прогнозів.</li>
+        <li>Твою пошту інші гравці не бачать.</li>
+        <li>Гравці, з якими в тебе немає спільної ліги, не бачать нічого з переліченого.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>Де зберігаються дані</h2>
+      <ul>
+        <li>База даних і вхід — сервіс <a href="https://supabase.com/privacy">Supabase</a>, сервери в Європі (Стокгольм). Supabase веде технічні журнали входів, у них є IP-адреса й тип браузера.</li>
+        <li>Сайт розміщено на <a href="https://docs.github.com/site-policy/privacy-policies/github-general-privacy-statement">GitHub Pages</a>; GitHub може записувати IP-адреси відвідувачів у технічні журнали.</li>
+        <li>Резервні копії бази робляться раз на добу, шифруються й зберігаються 14 днів.</li>
+      </ul>
+      <p>Щоб ти залишався в акаунті, браузер зберігає ключ сесії в локальному сховищі. Інших cookie та даних для відстеження сайт не використовує.</p>
+    </section>
+
+    <section>
+      <h2>Дані з Google</h2>
+      <p>Gridline запитує в Google лише адресу пошти й основні відомості профілю та використовує їх лише для входу на сайт. Використання й передавання інформації, отриманої через API Google, відповідають <a href="https://developers.google.com/terms/api-services-user-data-policy">Google API Services User Data Policy</a>, зокрема вимогам щодо обмеженого використання (Limited Use).</p>
+    </section>
+
+    <section>
+      <h2>Як видалити акаунт</h2>
+      <p>Сам, будь-коли: <b>Налаштування → Небезпечна зона → Видалити акаунт</b>. Акаунт, профіль, прогнози та ліги, де ти єдиний учасник, видаляються з бази одразу. Якщо ти власник ліги, де є інші гравці, спершу передай її комусь із них.</p>
+      <p>Із резервних копій дані зникнуть самі, коли мине строк їх зберігання (14 днів).</p>
+      <p>Якщо не вдається увійти на сайт, напиши в <a href="https://t.me/pufixluv">Telegram @pufixluv</a> — видалимо вручну.</p>
+      <p>Доступ сайту до акаунта можна будь-коли відкликати й самому: у налаштуваннях Google (розділ «Сторонні додатки та сервіси») або Discord («Авторизовані програми»).</p>
+    </section>
+
+    <section>
+      <h2>Зміни</h2>
+      <p>Якщо політика зміниться, нова версія з’явиться на цій сторінці з новою датою.</p>
+    </section>
+
+    <p class="foot"><a href="./">← На головну Gridline</a></p>
+  </article>
+  <article lang="en" data-l="en" hidden>
+    <h1>Privacy policy</h1>
+    <p class="date">Effective from 11 November 2026</p>
+
+    <section>
+      <h2>Who we are</h2>
+      <p>Gridline is a non-commercial Formula 1 fan project: a prediction game and a fantasy league for friends. The site is made and maintained by <b>pufixluv</b>. Contact: <a href="https://t.me/pufixluv">Telegram @pufixluv</a>.</p>
+      <p>Gridline is not associated with Formula 1, the FIA or any team.</p>
+    </section>
+
+    <section>
+      <h2>What data we receive</h2>
+      <p>You can only sign in with Google or Discord. When you sign in, the service you chose sends us:</p>
+      <ul>
+        <li>your email address;</li>
+        <li>your name or username;</li>
+        <li>a link to your avatar;</li>
+        <li>your Google or Discord account ID.</li>
+      </ul>
+      <p>We never see or store your Google or Discord password. The site has no passwords of its own.</p>
+      <p>In the game we store what you enter yourself: your nickname, avatar colour, the leagues you’re in, your predictions and the points you’ve earned.</p>
+    </section>
+
+    <section>
+      <h2>Why</h2>
+      <ul>
+        <li>so you can sign in and see your account;</li>
+        <li>to run the game: accept predictions, calculate points and show your league’s standings.</li>
+      </ul>
+      <p>We do <b>not</b> show ads, do <b>not</b> use analytics or trackers, do <b>not</b> sell or share data for marketing, and do <b>not</b> send emails.</p>
+    </section>
+
+    <section>
+      <h2>Who sees your data</h2>
+      <ul>
+        <li>Members of your leagues see your nickname, avatar, points and standings position. They see your predictions for a race only after predictions close.</li>
+        <li>Other players can’t see your email.</li>
+        <li>Players who don’t share a league with you see none of the above.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>Where the data is stored</h2>
+      <ul>
+        <li>The database and sign-in run on <a href="https://supabase.com/privacy">Supabase</a>, with servers in Europe (Stockholm). Supabase keeps technical sign-in logs that include your IP address and browser type.</li>
+        <li>The site is hosted on <a href="https://docs.github.com/site-policy/privacy-policies/github-general-privacy-statement">GitHub Pages</a>; GitHub may record visitors’ IP addresses in technical logs.</li>
+        <li>Database backups are made once a day, encrypted and kept for 14 days.</li>
+      </ul>
+      <p>To keep you signed in, your browser stores a session key in local storage. The site uses no other cookies or tracking data.</p>
+    </section>
+
+    <section>
+      <h2>Data from Google</h2>
+      <p>Gridline requests only your email address and basic profile information from Google and uses them only to sign you in. Gridline’s use and transfer of information received from Google APIs adheres to the <a href="https://developers.google.com/terms/api-services-user-data-policy">Google API Services User Data Policy</a>, including the Limited Use requirements.</p>
+    </section>
+
+    <section>
+      <h2>How to delete your account</h2>
+      <p>Yourself, at any time: <b>Settings → Danger zone → Delete account</b>. Your account, profile, predictions and leagues where you’re the only member are deleted from the database immediately. If you own a league with other players, hand it over to one of them first.</p>
+      <p>The data disappears from backups on its own once their retention period (14 days) ends.</p>
+      <p>If you can’t sign in to the site, message <a href="https://t.me/pufixluv">Telegram @pufixluv</a> and we’ll delete it manually.</p>
+      <p>You can also revoke the site’s access to your account at any time yourself: in your Google settings (“Third-party apps &amp; services”) or in Discord (“Authorized Apps”).</p>
+    </section>
+
+    <section>
+      <h2>Changes</h2>
+      <p>If this policy changes, the new version will appear on this page with a new date.</p>
+    </section>
+
+    <p class="foot"><a href="./">← Back to Gridline</a></p>
+  </article>
 </main>
+<script>
+  // Язык страницы: ?lang=…, иначе выбранный на сайте (тот же домен — то же хранилище), иначе язык браузера.
+  (function () {
+    var ok = { uk: 1, ru: 1, en: 1 }, l = new URLSearchParams(location.search).get('lang');
+    if (!ok[l]) { try { l = localStorage.getItem('gridline:locale'); } catch (e) { l = null; } }
+    if (!ok[l]) {
+      var b = (navigator.language || '').toLowerCase();
+      l = b.indexOf('uk') === 0 ? 'uk' : /^(ru|be|kk)/.test(b) ? 'ru' : 'en';
+    }
+    var titles = { uk: 'Політика конфіденційності — Gridline', ru: 'Политика конфиденциальности — Gridline', en: 'Privacy policy — Gridline' };
+    document.querySelectorAll('article[data-l]').forEach(function (a) { a.hidden = a.getAttribute('data-l') !== l; });
+    document.querySelectorAll('.langs a').forEach(function (a) { if (a.getAttribute('data-l') === l) a.setAttribute('aria-current', 'true'); });
+    document.documentElement.lang = l;
+    document.title = titles[l];
+  })();
+</script>
 </body>
 </html>
