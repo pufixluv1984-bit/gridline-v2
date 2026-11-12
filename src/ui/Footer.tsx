@@ -69,7 +69,8 @@ export function Footer() {
           </div>
           <div className={s.col}>
             <div className={s.colHead}>Проект</div>
-            <Link to="/settings">Профиль и настройки</Link>
+            <Link to="/drivers">Пилоты</Link>
+            <Link to="/profile">Профиль и настройки</Link>
             <Link to="/lobby/create">Создать лобби</Link>
             <a href={TELEGRAM} target="_blank" rel="noreferrer">
               Предложить идею или сообщить о баге

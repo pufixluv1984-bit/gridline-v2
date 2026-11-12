@@ -33,6 +33,13 @@ export const IconTarget = (p: P) => (
     <circle cx="12" cy="12" r="1" />
   </Svg>
 );
+/** Шлем — «Пилоты» (макет Drivers). */
+export const IconHelmet = (p: P) => (
+  <Svg {...p}>
+    <path d="M4 16a8 8 0 0 1 16 0v3H4z" />
+    <path d="M4 14h16M9 10h6" />
+  </Svg>
+);
 export const IconBars = (p: P) => (
   <Svg {...p}>
     <path d="M5 20V11M12 20V4M19 20v-6" />

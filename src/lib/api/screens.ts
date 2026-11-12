@@ -1,4 +1,5 @@
 import { getSupabase } from '../supabase';
+import type { LeagueTitles } from './profile';
 
 // Типы ответов RPC экранов (миграция 0008). Один запрос на экран (правило 11).
 
@@ -140,6 +141,11 @@ export type LeagueScreen = {
   };
   table: LeagueRow[];
   per_event: { user_id: string; round: number; points: number }[];
+  /** Места до последнего этапа лиги (для стрелок сдвига); пусто, пока этапов меньше двух. */
+  prev_ranks?: { user_id: string; rank: number }[];
+  rounds?: { round: number; name: string }[];
+  all_time?: { user_id: string; points: number; exact_hits: number }[];
+  titles?: LeagueTitles;
   members: { user_id: string; nickname: string; avatar_color: string; role: 'owner' | 'member'; joined_at: string }[];
   event: EventInfo | null;
   submissions: Submission[];

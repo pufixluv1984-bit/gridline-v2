@@ -1,7 +1,9 @@
 /* Корпус страницы из макетов: .root → .ambient → .frame → (.rail) + .inner */
 .root {
   position: relative;
+  /* clip, а не hidden: свечение шире экрана, и hidden-контейнер можно сдвинуть вбок прокруткой к элементу */
   overflow: hidden;
+  overflow: clip;
   min-height: 100vh;
   background: var(--bg-page);
   color: var(--text);

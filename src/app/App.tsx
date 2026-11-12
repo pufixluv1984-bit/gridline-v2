@@ -11,6 +11,9 @@ const HomePage = lazy(() => import('@/features/home/HomePage'));
 const LoginPage = lazy(() => import('@/features/auth/LoginPage'));
 const NotFoundPage = lazy(() => import('@/features/errors/NotFoundPage'));
 const SettingsPage = lazy(() => import('@/features/settings/SettingsPage'));
+const ProfilePage = lazy(() => import('@/features/profile/ProfilePage'));
+const DriversPage = lazy(() => import('@/features/drivers/DriversPage'));
+const DriverProfilePage = lazy(() => import('@/features/drivers/DriverProfilePage'));
 const CreateLeaguePage = lazy(() => import('@/features/lobby/CreateLeaguePage'));
 const InvitePage = lazy(() => import('@/features/lobby/InvitePage'));
 const JoinPage = lazy(() => import('@/features/lobby/JoinPage'));
@@ -60,7 +63,10 @@ export function App() {
                 <Route index element={<HomePage />} />
                 <Route path="settings" element={<SettingsPage />} />
                 {/* Экран профиля со статистикой — фаза 3; пока аватар в панели ведёт в настройки. */}
-                <Route path="profile" element={<Navigate to="/settings" replace />} />
+                <Route path="profile" element={<ProfilePage />} />
+                <Route path="profile/:id" element={<ProfilePage />} />
+                <Route path="drivers" element={<DriversPage />} />
+                <Route path="drivers/:id" element={<DriverProfilePage />} />
                 <Route path="predict" element={<PredictPage />} />
                 <Route path="league" element={<LeagueIndexPage />} />
                 <Route path="league/:id" element={<LeaguePage />} />

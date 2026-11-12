@@ -12,11 +12,14 @@ export type Database = {
           nickname: string;
           avatar_color: string;
           in_global_ranking: boolean;
+          fav_driver: string | null;
+          fav_team: string | null;
+          nickname_changed_at: string | null;
           created_at: string;
           updated_at: string;
         };
         Insert: never;
-        Update: { nickname?: string; avatar_color?: string };
+        Update: { nickname?: string; avatar_color?: string; fav_driver?: string | null; fav_team?: string | null };
         Relationships: [];
       };
       leagues: {
@@ -103,6 +106,10 @@ export type Database = {
       data_updated_at: { Args: Record<string, never>; Returns: string | null };
       is_site_admin: { Args: Record<string, never>; Returns: boolean };
       breakdown_screen: { Args: { ev?: number; player?: string }; Returns: Json };
+      profile_screen: { Args: { player?: string; season_year?: number }; Returns: Json };
+      league_titles: { Args: { league: string }; Returns: Json };
+      drivers_screen: { Args: Record<string, never>; Returns: Json };
+      driver_screen: { Args: { driver: string }; Returns: Json };
       admin_set_safety_car: { Args: { ev: number; value: boolean }; Returns: number };
       admin_set_result: { Args: { ev: number; session: string; driver_ids: string[]; fastest_lap?: string }; Returns: number };
     };

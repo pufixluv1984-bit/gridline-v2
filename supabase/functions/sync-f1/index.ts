@@ -9,7 +9,8 @@
 //   • таблицу чемпионата (пилоты и команды) — раз в 3 часа;
 //   • погоду на дни текущего этапа (Open-Meteo, CC BY 4.0) — раз в 3 часа;
 //   • safety car в гонке (OpenF1 race_control) — после клетчатого флага;
-//   • результаты практик (OpenF1 session_result) — только для просмотра, очков не дают.
+//   • результаты практик (OpenF1 session_result) — только для просмотра, очков не дают;
+//   • карьеры пилотов (Jolpica) и биографии (русская Википедия) — по два пилота за запуск, раз в неделю.
 
 const JOLPICA = 'https://api.jolpi.ca/ergast/f1';
 const SB_URL = Deno.env.get('SUPABASE_URL')!;
@@ -308,6 +309,133 @@ async function syncPractice(report: Json) {
   }
 }
 
+// ── Карьеры пилотов (фаза 3): Jolpica + биография из русской Википедии ─────
+// За запуск — до двух пилотов; законченные сезоны берутся из базы, так что повторно это ≈9 запросов на пилота (с паузой).
+const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+const WIKI_UA = { 'User-Agent': 'Gridline-sync/1.0 (non-commercial fan project)' };
+
+async function jolpicaSlow(path: string): Promise<Json | null> {
+  await sleep(350);
+  return jolpica(path);
+}
+const mr = (x: Json | null) => (x?.MRData ?? {}) as Json;
+const totalOf = async (path: string) => Number(mr(await jolpicaSlow(`${path}.json?limit=1`)).total ?? 0);
+const raceName = (race: Json | undefined) => {
+  if (!race) return null;
+  const circuit = ((race.Circuit as Json | undefined)?.circuitId as string | undefined) ?? '';
+  return GP[circuit]?.name ?? (race.raceName as string);
+};
+
+async function wikiBio(enUrl: string): Promise<{ bio: string | null; bio_url: string | null }> {
+  const title = decodeURIComponent(enUrl.split('/wiki/')[1] ?? '');
+  if (!title) return { bio: null, bio_url: null };
+  const ll = await fetch(
+    `https://en.wikipedia.org/w/api.php?action=query&prop=langlinks&lllang=ru&redirects=1&format=json&formatversion=2&titles=${encodeURIComponent(title)}`,
+    { headers: WIKI_UA },
+  );
+  if (!ll.ok) return { bio: null, bio_url: null };
+  const ru = ((await ll.json()) as { query?: { pages?: { langlinks?: { title: string }[] }[] } }).query?.pages?.[0]?.langlinks?.[0]?.title;
+  if (!ru) return { bio: null, bio_url: null };
+  // Вступление статьи простым текстом (несколько абзацев), без знаков ударения.
+  const ex = await fetch(
+    `https://ru.wikipedia.org/w/api.php?action=query&prop=extracts&exintro=1&explaintext=1&redirects=1&format=json&formatversion=2&titles=${encodeURIComponent(ru)}`,
+    { headers: WIKI_UA },
+  );
+  if (!ex.ok) return { bio: null, bio_url: null };
+  const page = ((await ex.json()) as { query?: { pages?: { title: string; extract?: string }[] } }).query?.pages?.[0];
+  const text = (page?.extract ?? '').replace(/́/g, '').replace(/\n{2,}/g, '\n').trim();
+  if (!text) return { bio: null, bio_url: null };
+  const bio = text.length > 4000 ? `${text.slice(0, 3990).replace(/\s\S*$/, '')}…` : text;
+  return { bio, bio_url: `https://ru.wikipedia.org/wiki/${encodeURIComponent((page?.title ?? ru).replaceAll(' ', '_'))}` };
+}
+
+type CareerSeason = { year: number; position: number | null; points: number; wins: number; final: boolean; teams: { id: string; name: string }[] };
+
+async function syncCareers(year: number): Promise<Json> {
+  const pending = await rpc<{ driver_id: string; need_bio: boolean; seasons: CareerSeason[] | null }[]>('sync_careers_pending', { n: 2 });
+  if (!pending.length) return { drivers: 0 };
+  // Сколько этапов в текущем сезоне — чтобы не засчитать титул до последнего этапа.
+  const seasonRaces = Number(mr(await jolpicaSlow(`/${year}.json?limit=1`)).total ?? 0);
+  let budget = 10; // запросов таблиц по сезонам за запуск; остальное — в следующий
+  const done: string[] = [];
+  const partial: string[] = [];
+  for (const p of pending) {
+    const id = p.driver_id;
+    try {
+      const d = ((mr(await jolpicaSlow(`/drivers/${id}.json`)).DriverTable as Json | undefined)?.Drivers as Json[] | undefined)?.[0];
+      if (!d) continue;
+      // Таблица чемпионата в Jolpica — только по сезону. Законченные сезоны уже лежат в базе, их не перезапрашиваем.
+      const years = (((mr(await jolpicaSlow(`/drivers/${id}/seasons.json?limit=100`)).SeasonTable as Json | undefined)?.Seasons ??
+        []) as Json[]).map((x) => Number(x.season));
+      const known = new Map((p.seasons ?? []).filter((x) => x.final).map((x) => [x.year, x]));
+      const seasons: CareerSeason[] = [];
+      let incomplete = false;
+      for (const y of years) {
+        const k = known.get(y);
+        if (k) {
+          seasons.push(k);
+          continue;
+        }
+        if (budget <= 0) {
+          incomplete = true;
+          continue;
+        }
+        budget--;
+        const l = (((mr(await jolpicaSlow(`/${y}/drivers/${id}/driverStandings.json`)).StandingsTable as Json | undefined)
+          ?.StandingsLists ?? []) as Json[])[0];
+        const st = ((l?.DriverStandings as Json[] | undefined) ?? [])[0];
+        if (!l || !st) continue;
+        seasons.push({
+          year: y,
+          position: Number(st.position ?? st.positionText) || null,
+          points: Number(st.points ?? 0),
+          wins: Number(st.wins ?? 0),
+          final: y < year || (seasonRaces > 0 && Number(l.round) >= seasonRaces),
+          teams: ((st.Constructors as Json[]) ?? []).map((c) => ({ id: c.constructorId as string, name: c.name as string })),
+        });
+      }
+      if (incomplete) {
+        // Сохраняем готовые сезоны; пилот останется в очереди и догрузится в следующий запуск.
+        await rpc('sync_driver_career', { driver: id, data: { partial: true, seasons } });
+        partial.push(id);
+        break;
+      }
+      const firstRes = mr(await jolpicaSlow(`/drivers/${id}/results.json?limit=1`));
+      const debut = ((firstRes.RaceTable as Json | undefined)?.Races as Json[] | undefined)?.[0];
+      const winsRes = mr(await jolpicaSlow(`/drivers/${id}/results/1.json?limit=1`));
+      const firstWin = (((winsRes.RaceTable as Json | undefined)?.Races ?? []) as Json[])[0];
+      const wins = Number(winsRes.total ?? 0);
+      const data: Json = {
+        born: d.dateOfBirth ?? null,
+        nationality: d.nationality ?? null,
+        debut_year: debut ? Number(debut.season) : null,
+        debut_race: raceName(debut),
+        first_win_year: firstWin ? Number(firstWin.season) : null,
+        first_win_race: raceName(firstWin),
+        starts: Number(firstRes.total ?? 0),
+        wins,
+        podiums: wins + (await totalOf(`/drivers/${id}/results/2`)) + (await totalOf(`/drivers/${id}/results/3`)),
+        poles: await totalOf(`/drivers/${id}/qualifying/1`),
+        fastest_laps: await totalOf(`/drivers/${id}/fastest/1/results`),
+        seasons,
+      };
+      if (p.need_bio && typeof d.url === 'string') {
+        try {
+          Object.assign(data, await wikiBio(d.url));
+        } catch {
+          /* Википедия недоступна — биография подтянется в следующий раз */
+        }
+      }
+      await rpc('sync_driver_career', { driver: id, data });
+      done.push(id);
+    } catch (e) {
+      // Лимит Jolpica (429) или сбой — остальное подождёт следующего запуска.
+      return { drivers: done.length, ids: done, partial, error: e instanceof Error ? e.message : String(e) };
+    }
+  }
+  return { drivers: done.length, ids: done, partial };
+}
+
 Deno.serve(async () => {
   const report: Json = {};
   try {
@@ -353,6 +481,12 @@ Deno.serve(async () => {
       } catch (e) {
         report.weather = { error: e instanceof Error ? e.message : String(e) };
       }
+    }
+    // Карьеры пилотов для каталога и профиля пилота — по два за запуск, раз в неделю на пилота.
+    try {
+      report.careers = await syncCareers(year);
+    } catch (e) {
+      report.careers = { error: e instanceof Error ? e.message : String(e) };
     }
     await rpc('sync_mark', { k: 'run', ok: true, details: report });
     return Response.json(report);

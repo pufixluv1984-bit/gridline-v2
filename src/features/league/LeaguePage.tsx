@@ -10,6 +10,7 @@ import { inviteLink } from '@/lib/invite';
 import { plural } from '@/lib/time/format';
 import { Avatar, Skeleton } from '@/ui/game';
 import { LeagueSettings } from './LeagueSettings';
+import { StandingsCard } from './Standings';
 import { IconWarn } from '@/ui/icons';
 import { Modal } from '@/ui/Modal';
 import { Content, PageTitle, PillLink, Toolbar } from '@/ui/Page';
@@ -214,58 +215,6 @@ export default function LeaguePage() {
         </Modal>
       )}
     </>
-  );
-}
-
-function StandingsCard({ data, me }: { data: LeagueScreen | undefined; me: string | undefined }) {
-  const rows = data?.table ?? [];
-  const leader = rows[0]?.points ?? 0;
-  return (
-    <section className="card rise" style={{ ['--i' as string]: 1 }}>
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 14, alignItems: 'center', justifyContent: 'space-between', marginBottom: 18 }}>
-        <div className="seg" role="tablist" aria-label="Игра">
-          <button role="tab" type="button" disabled title="Фэнтези-лига — к сезону 2027">Фэнтези</button>
-          <button role="tab" type="button" className="on" aria-selected="true">Прогнозы</button>
-        </div>
-        <div className="mute" style={{ fontSize: 13 }}>При равенстве: точные попадания → выигранные этапы → последний этап</div>
-      </div>
-      <div role="table" aria-label="Таблица лиги">
-        <div role="row" className="eyebrow" style={{ display: 'grid', gridTemplateColumns: '70px minmax(200px,1.2fr) 140px 140px 140px', gap: 14, padding: '0 16px 10px' }}>
-          <span role="columnheader">Место</span><span role="columnheader">Игрок</span>
-          <span role="columnheader" style={{ textAlign: 'right' }}>Очки сезона</span>
-          <span role="columnheader" style={{ textAlign: 'right' }}>Последний этап</span>
-          <span role="columnheader" style={{ textAlign: 'right' }}>Отрыв</span>
-        </div>
-        {rows.map((r) => (
-          <div role="row" key={r.user_id} className={`trow ${r.user_id === me ? 'me' : ''}`} style={{ display: 'grid', gridTemplateColumns: '70px minmax(200px,1.2fr) 140px 140px 140px', gap: 14 }}>
-            <div className="num" style={{ fontSize: 22, fontWeight: 600, color: r.rank === 1 && r.points > 0 ? 'var(--gold)' : undefined }}>{r.rank}</div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-              <Avatar nickname={r.nickname} color={r.avatar_color} />
-              <div>
-                <div style={{ fontWeight: 600, fontSize: 16 }}>
-                  {r.nickname}
-                  {r.points > 0 && (
-                    <Link to={`/breakdown?player=${r.user_id}`} className="mute" style={{ fontSize: 12, fontWeight: 500, marginLeft: 10, textDecoration: 'underline' }}>
-                      разбор
-                    </Link>
-                  )}
-                </div>
-                <div className="mute" style={{ fontSize: 13, marginTop: 3 }}>
-                  точных {r.exact_hits} · этапов выиграно {r.events_won}{r.provisional ? ' · предварительно' : ''}
-                </div>
-              </div>
-            </div>
-            <div className="num" style={{ textAlign: 'right', fontSize: 20, fontWeight: 600 }}>{r.points}</div>
-            <div className="num mute" style={{ textAlign: 'right', fontSize: 16 }}>+{r.last_points}</div>
-            <div className="num" style={{ textAlign: 'right', fontSize: 15 }}>{r.points === leader ? '—' : `−${leader - r.points}`}</div>
-          </div>
-        ))}
-        {!data && <Skeleton h={120} />}
-        {data && rows.every((r) => r.points === 0) && (
-          <div className="mute" style={{ fontSize: 14, padding: '14px 16px 0' }}>Очки появятся после первого этапа лиги — примерно через час после финиша гонки.</div>
-        )}
-      </div>
-    </section>
   );
 }
 

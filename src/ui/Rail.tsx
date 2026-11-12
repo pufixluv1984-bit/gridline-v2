@@ -1,17 +1,18 @@
 import type { ComponentType } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
-import { IconBars, IconBook, IconCalendar, IconFlag, IconHome, IconLayers, IconTarget, IconUsers } from './icons';
+import { IconBars, IconBook, IconCalendar, IconFlag, IconHelmet, IconHome, IconLayers, IconTarget, IconUsers } from './icons';
 import s from './Rail.module.css';
 
 type Item = { to: string; label: string; Icon: ComponentType<{ size?: number }> };
 
-// Порядок и подписи — как в макете Main.dc.html. «Рейтинг» и «Лига друзей» в макете ведут
+// Порядок и подписи — как в макете Main.dc.html (+ «Пилоты» из макета Drivers). «Рейтинг» и «Лига друзей» в макете ведут
 // на один экран League; подсвечивается первый из них.
 const ITEMS: Item[] = [
   { to: '/', label: 'Главная', Icon: IconHome },
   { to: '/predict', label: 'Прогноз', Icon: IconTarget },
   { to: '/league', label: 'Рейтинг', Icon: IconBars },
   { to: '/results', label: 'Результаты', Icon: IconFlag },
+  { to: '/drivers', label: 'Пилоты', Icon: IconHelmet },
   { to: '/schedule', label: 'Календарь', Icon: IconCalendar },
   { to: '/fantasy', label: 'Фэнтези-лига', Icon: IconLayers },
   { to: '/league#friends', label: 'Лига друзей', Icon: IconUsers },
@@ -25,7 +26,7 @@ export function Rail({ initials }: { initials: string }) {
   return (
     <aside className={s.rail} aria-label="Навигация">
       <NavLink
-        to="/settings"
+        to="/profile"
         aria-label="Профиль"
         title="Профиль"
         className={({ isActive }) => `${s.me} ${isActive ? s.meOn : ''}`}

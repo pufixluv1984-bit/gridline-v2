@@ -557,3 +557,34 @@ select.in {
 .toggle:disabled {
   opacity: 0.6;
 }
+
+/* Макет League: сдвиг места за этап */
+.mv {
+  font-size: 12px;
+  font-weight: 600;
+  font-family: var(--font-num);
+}
+.mv.up {
+  color: var(--pos);
+}
+.mv.dn {
+  color: #ff7a70;
+}
+.mv.eq {
+  color: var(--mute);
+}
+/* Макет Profile: плитка со значением */
+.tile {
+  flex: 1 1 150px;
+  padding: 12px 14px;
+  border-radius: 16px;
+  background: #0d0d10;
+  border: 1px solid var(--line);
+}
+.tile b {
+  display: block;
+  margin-top: 8px;
+  font-family: var(--font-num);
+  font-size: 22px;
+  font-weight: 600;
+}
