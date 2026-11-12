@@ -415,7 +415,8 @@ async function syncCareers(year: number): Promise<Json> {
         starts: Number(firstRes.total ?? 0),
         wins,
         podiums: wins + (await totalOf(`/drivers/${id}/results/2`)) + (await totalOf(`/drivers/${id}/results/3`)),
-        poles: await totalOf(`/drivers/${id}/qualifying/1`),
+        // Фильтр Jolpica /qualifying/1 врёт (отдаёт не только поулы), поэтому считаем старты с первого места.
+        poles: await totalOf(`/drivers/${id}/grid/1/results`),
         fastest_laps: await totalOf(`/drivers/${id}/fastest/1/results`),
         seasons,
       };

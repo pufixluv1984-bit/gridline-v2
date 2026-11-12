@@ -137,7 +137,7 @@ export default function DriverProfilePage() {
                   <b>{c.wins}</b>
                   <small>{c.first_win_year ? `первая — ${c.first_win_year}` : 'пока без побед'}</small>
                 </div>
-                <div className={s.sc}><span className="eyebrow">Поулы</span><b>{c.poles}</b><small>за карьеру</small></div>
+                <div className={s.sc}><span className="eyebrow">Поулы</span><b>{c.poles}</b><small>старты с первого места</small></div>
                 <div className={s.sc}><span className="eyebrow">Подиумы</span><b>{c.podiums}</b><small>из {c.starts} {plural(c.starts, 'гонки', 'гонок', 'гонок')}</small></div>
                 <div className={s.sc}><span className="eyebrow">Быстрые круги</span><b>{c.fastest_laps}</b><small>за карьеру</small></div>
               </div>
@@ -227,7 +227,7 @@ function Achievements({ data, seasons }: { data: DriverScreen; seasons: CareerSe
   else if (best) items.push({ badge: `P${best.position}`, title: 'Лучшее место в чемпионате', text: `${best.year}${mainTeam(best) ? `, ${teamOf(mainTeam(best)!, data.teams).name}` : ''}` });
   if (c.wins) items.push({ badge: `${c.wins}`, title: `${c.wins} ${plural(c.wins, 'победа', 'победы', 'побед')} в Гран-при`, text: `Первая — ${c.first_win_year}${c.first_win_race ? `, ${c.first_win_race}` : ''}` });
   if (winSeasons > 1) items.push({ badge: `${winSeasons}`, title: `${plural(winSeasons, 'Сезон', 'Сезона', 'Сезонов')} с победами`, text: `из ${seasons.length} в Формуле-1` });
-  if (c.poles) items.push({ badge: `${c.poles}`, title: `${c.poles} ${plural(c.poles, 'поул', 'поула', 'поулов')}`, text: 'Первое место в квалификации' });
+  if (c.poles) items.push({ badge: `${c.poles}`, title: `${c.poles} ${plural(c.poles, 'поул', 'поула', 'поулов')}`, text: 'Старты с первого места' });
   if (c.podiums) items.push({ badge: `${c.podiums}`, title: `${c.podiums} ${plural(c.podiums, 'подиум', 'подиума', 'подиумов')}`, text: `${Math.round((100 * c.podiums) / Math.max(1, c.starts))}% гонок в первой тройке` });
   items.push({ badge: `${seasons.length}`, title: `${seasons.length} ${plural(seasons.length, 'сезон', 'сезона', 'сезонов')} в Формуле-1`, text: `${c.starts} ${plural(c.starts, 'гонка', 'гонки', 'гонок')} с ${c.debut_year} года` });
   return (
