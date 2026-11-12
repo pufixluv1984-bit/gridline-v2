@@ -58,7 +58,7 @@
   font-size: 12px;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: var(--mute-3);
+  color: #8a8a94; /* макет: #6c6c76 — поднято до контраста 4.5:1 (WCAG AA) */
   font-weight: 600;
   margin-bottom: 2px;
 }

@@ -117,17 +117,17 @@ export default function ResultsPage() {
                     </div>
                     {rows.map((r) => (
                       <div role="row" key={r.code} className="trow" style={{ display: 'grid', gridTemplateColumns: GRID, gap: 14 }}>
-                        <div className="num" style={{ fontSize: 20, fontWeight: 600 }}>{r.position}</div>
-                        <DriverTile driver={driverOf(r)} size={40} />
-                        <div style={{ fontSize: 16, fontWeight: 600 }}>
+                        <div role="cell" className="num" style={{ fontSize: 20, fontWeight: 600 }}>{r.position}</div>
+                        <div role="cell"><DriverTile driver={driverOf(r)} size={40} /></div>
+                        <div role="cell" style={{ fontSize: 16, fontWeight: 600 }}>
                           {r.name}
                           {r.fastest_lap_rank === 1 && kind === 'race' && <span className="chip" style={{ marginLeft: 10 }}>Быстрый круг</span>}
                         </div>
-                        <div className="mute" style={{ fontSize: 15, display: 'flex', alignItems: 'center', gap: 8 }}>
+                        <div role="cell" className="mute" style={{ fontSize: 15, display: 'flex', alignItems: 'center', gap: 8 }}>
                           <i style={{ width: 8, height: 8, borderRadius: '50%', background: r.color ?? '#555', display: 'inline-block' }} />
                           {r.team_name}
                         </div>
-                        <div className="num" style={{ textAlign: 'right', fontSize: 15 }}>{outcome(r)}</div>
+                        <div role="cell" className="num" style={{ textAlign: 'right', fontSize: 15 }}>{outcome(r)}</div>
                       </div>
                     ))}
                   </div>

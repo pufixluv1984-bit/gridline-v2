@@ -64,7 +64,7 @@ function NextEvent({ data }: { data: LeaderboardScreen }) {
             </div>
           )}
         </div>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,minmax(0,1fr))', gap: 8 }} aria-label="Прогноз погоды на уик-энд">
+        <div role="group" style={{ display: 'grid', gridTemplateColumns: 'repeat(3,minmax(0,1fr))', gap: 8 }} aria-label="Прогноз погоды на уик-энд">
           {(data.weather ?? []).slice(0, 3).map((w) => (
             <div key={w.day} className={s.wx}>
               <span aria-hidden="true">{weatherIcon(w.code)}</span>

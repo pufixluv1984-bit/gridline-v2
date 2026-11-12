@@ -84,14 +84,14 @@ export default function SchedulePage() {
               const done = st.t === 'Завершён';
               return (
                 <div role="row" key={e.id} className={`trow ${e.id === cur?.id ? 'lead' : ''}`} style={{ display: 'grid', gridTemplateColumns: GRID, gap: 14, opacity: done ? 0.6 : 1 }}>
-                  <div className="num" style={{ fontSize: 20, fontWeight: 600, color: e.id === cur?.id ? 'var(--accent)' : undefined }}>{e.round}</div>
-                  <div style={{ fontSize: 16, fontWeight: 600 }}>
+                  <div role="cell" className="num" style={{ fontSize: 20, fontWeight: 600, color: e.id === cur?.id ? 'var(--accent)' : undefined }}>{e.round}</div>
+                  <div role="cell" style={{ fontSize: 16, fontWeight: 600 }}>
                     {done ? <Link to={`/results/${e.id}`}>{e.name}</Link> : e.name}
                     {e.is_sprint && <span className="chip" style={{ marginLeft: 10 }}>Спринт</span>}
                   </div>
-                  <div className="mute" style={{ fontSize: 15 }}>{e.circuit}</div>
-                  <div className="num" style={{ fontSize: 15 }}>{first && last ? formatRange(first, last) : '—'}</div>
-                  <div style={{ textAlign: 'right' }}><span className={`chip ${st.cls}`}>{st.t}</span></div>
+                  <div role="cell" className="mute" style={{ fontSize: 15 }}>{e.circuit}</div>
+                  <div role="cell" className="num" style={{ fontSize: 15 }}>{first && last ? formatRange(first, last) : '—'}</div>
+                  <div role="cell" style={{ textAlign: 'right' }}><span className={`chip ${st.cls}`}>{st.t}</span></div>
                 </div>
               );
             })}

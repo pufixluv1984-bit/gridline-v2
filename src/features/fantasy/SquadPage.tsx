@@ -170,7 +170,7 @@ function SquadEditor({ data }: { data: SquadScreen }) {
         )}
 
         <div className="row">
-          <section className="card rise" style={{ ['--i' as string]: 1, flex: '0 0 auto', display: 'flex', flexDirection: 'column', gap: 14 }}>
+          <section className="card rise" style={{ ['--i' as string]: 1, flex: '0 0 auto', minWidth: 340, display: 'flex', flexDirection: 'column', gap: 14 }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
               <span className="eyebrow">{locked ? 'Составы закрыты' : 'Дедлайн'} · {eventName}</span>
               {!locked && <span className="live-dot" style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--accent)', boxShadow: '0 0 12px var(--accent)' }} />}
