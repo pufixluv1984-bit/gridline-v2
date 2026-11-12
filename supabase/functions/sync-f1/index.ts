@@ -4,7 +4,8 @@
 //
 // Что делает за запуск:
 //   • расписание сезона и заявку (кто за кого едет) — раз в 6 часов;
-//   • результаты квалификации и гонки — после сессии каждые 10 минут, пока их нет;
+//   • результаты квалификации, спринта и гонки — после сессии каждые 10 минут, пока их нет;
+//   • фэнтези: блокировка составов со стартом первой сессии уик-энда (автокопия, DRS);
 //     потом раз в час до 50 часов после старта гонки (штрафы), затем фиксирует (is_final);
 //   • таблицу чемпионата (пилоты и команды) — раз в 3 часа;
 //   • погоду на дни текущего этапа (Open-Meteo, CC BY 4.0) — раз в 3 часа;
@@ -193,7 +194,7 @@ async function syncWeather() {
 }
 
 // ── Результаты ──────────────────────────────────────────────────────────
-type Pending = { season_year: number; round: number; kind: 'qualy' | 'race'; starts_at: string; has_results: boolean; is_final: boolean };
+type Pending = { season_year: number; round: number; kind: 'qualy' | 'race' | 'sprint'; starts_at: string; has_results: boolean; is_final: boolean };
 
 async function syncResults(report: Json) {
   const pending = await rpc<Pending[]>('sync_pending');
@@ -203,10 +204,11 @@ async function syncResults(report: Json) {
     // Пока результата нет — каждый запуск; потом перепроверка раз в час.
     if (p.has_results && Date.now() - (await lastOk(key)) < HOUR) continue;
 
-    const path = p.kind === 'qualy' ? 'qualifying' : 'results';
+    const path = p.kind === 'qualy' ? 'qualifying' : p.kind === 'sprint' ? 'sprint' : 'results';
+    const listKey = p.kind === 'qualy' ? 'QualifyingResults' : p.kind === 'sprint' ? 'SprintResults' : 'Results';
     const data = await jolpica(`/${p.season_year}/${p.round}/${path}.json`);
     const race = (((data?.MRData as Json)?.RaceTable as Json)?.Races as Json[] | undefined)?.[0];
-    const list = (race?.[p.kind === 'qualy' ? 'QualifyingResults' : 'Results'] as Json[]) ?? [];
+    const list = (race?.[listKey] as Json[]) ?? [];
     if (!list.length) {
       report[key] = 'нет данных';
       continue;
@@ -219,6 +221,8 @@ async function syncResults(report: Json) {
       laps: x.laps ?? '',
       status: x.status ?? null,
       fastest_lap_rank: ((x.FastestLap as Json)?.rank as string) ?? '',
+      // Докуда дошёл в квалификации (бонус конструктора в фэнтези): есть время Q3 → 3, Q2 → 2.
+      q_reached: p.kind === 'qualy' ? (x.Q3 ? 3 : x.Q2 ? 2 : 1) : '',
     }));
     // Гонка фиксируется через 50 часов после старта (48 ч на штрафы + сама гонка).
     const final = p.kind === 'race' && Date.now() - Date.parse(p.starts_at) > 50 * HOUR;
@@ -453,6 +457,12 @@ Deno.serve(async () => {
     if (Date.now() - (await lastOk('entries')) > 6 * HOUR) {
       report.entries = await syncEntries(year);
       await rpc('sync_mark', { k: 'entries', ok: true, details: { drivers: report.entries } });
+    }
+    // Фэнтези: блокировка составов со стартом первой сессии (автокопия, DRS) — до результатов этапа.
+    try {
+      report.fantasy_lock = await rpc<number>('fantasy_lock_due');
+    } catch (e) {
+      report.fantasy_lock = { error: e instanceof Error ? e.message : String(e) };
     }
     await syncResults(report);
     // Бонусы фазы 2: safety car и практики из OpenF1 (бета) — их сбой не мешает остальному.
