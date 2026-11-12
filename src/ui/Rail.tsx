@@ -6,7 +6,7 @@ import s from './Rail.module.css';
 type Item = { to: string; label: string; Icon: ComponentType<{ size?: number }> };
 
 // Порядок и подписи — как в макете Main.dc.html (+ «Пилоты» из макета Drivers). «Рейтинг» и «Лига друзей» в макете ведут
-// на один экран League; подсвечивается первый из них.
+// на один экран League; подсвечивается первый из них. «Правила» — экран правил фэнтези (макет Fantasy-Rules).
 const ITEMS: Item[] = [
   { to: '/', label: 'Главная', Icon: IconHome },
   { to: '/predict', label: 'Прогноз', Icon: IconTarget },
@@ -16,7 +16,7 @@ const ITEMS: Item[] = [
   { to: '/schedule', label: 'Календарь', Icon: IconCalendar },
   { to: '/fantasy', label: 'Фэнтези-лига', Icon: IconLayers },
   { to: '/league#friends', label: 'Лига друзей', Icon: IconUsers },
-  { to: '/rules', label: 'Правила', Icon: IconBook },
+  { to: '/fantasy/rules', label: 'Правила', Icon: IconBook },
 ];
 
 /**
@@ -26,7 +26,10 @@ const ITEMS: Item[] = [
  */
 export function Rail({ avatar }: { avatar: ReactNode }) {
   const { pathname } = useLocation();
-  const activeTo = ITEMS.find((i) => (i.to === '/' ? pathname === '/' : pathname.startsWith(i.to.split('#')[0]!)))?.to;
+  // Подсвечивается самый точный пункт: на /fantasy/rules — «Правила», а не «Фэнтези-лига».
+  const activeTo = ITEMS.filter((i) => (i.to === '/' ? pathname === '/' : pathname.startsWith(i.to.split('#')[0]!))).sort(
+    (a, b) => b.to.split('#')[0]!.length - a.to.split('#')[0]!.length,
+  )[0]?.to;
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLElement>(null);
 
@@ -85,7 +88,7 @@ export function Rail({ avatar }: { avatar: ReactNode }) {
             to={to.split('#')[0]!}
             aria-label={label}
             title={label}
-            aria-current={on ? 'page' : undefined}
+            aria-current={on ? 'page' : false}
             className={`${s.item} ${on ? s.on : ''}`}
           >
             <span className={s.ico}>

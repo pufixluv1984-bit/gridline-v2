@@ -54,11 +54,15 @@
   object-position: bottom center;
 }
 .dc :global(.ph .tl) {
+  /* Крупный логотип команды за пилотом: квадрат по ширине карточки (у логотипов широкие поля),
+     чтобы он читался по бокам от фото. В макете был 46%×70% — на широких карточках выходил мелким. */
   left: 50%;
   top: 50%;
-  width: 46%;
-  height: 70%;
+  width: min(72%, 250px); /* 250: щит Ferrari (63% высоты файла) ещё влезает в 170px */
+  height: auto;
+  aspect-ratio: 1;
   transform: translate(-50%, -50%);
+  opacity: 0.22;
 }
 .nm {
   font-weight: 600;

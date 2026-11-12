@@ -2,7 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '@/features/auth/authContext';
-import { teamCar, type TeamCode } from '@/lib/assets';
+import { driverPhoto, teamCar, teamLogo, type TeamCode } from '@/lib/assets';
 import { StageSummary } from './StageSummary';
 import { homeScreen, screenKeys, type HomeScreen, nextDeadline } from '@/lib/api/screens';
 import { getCurrentLeague, setCurrentLeague } from '@/lib/currentLeague';
@@ -201,6 +201,8 @@ function LastWinner({ data }: { data: HomeScreen }) {
   const w = data.last_race?.podium?.[0];
   if (!w) return null;
   const car = teamCar(w.team_code as TeamCode);
+  const logo = teamLogo(w.team_code as TeamCode);
+  const photo = driverPhoto(w.code);
   return (
     <section className="card rise" style={{ ['--i' as string]: 1, flex: '1 1 300px', minWidth: 0, display: 'flex', flexDirection: 'column', gap: 18 }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -208,7 +210,16 @@ function LastWinner({ data }: { data: HomeScreen }) {
         <span className="chip red">Победитель</span>
       </div>
       <div style={{ position: 'relative', height: 230, borderRadius: 20, overflow: 'hidden', background: `radial-gradient(90% 80% at 50% 100%, color-mix(in srgb, ${w.color} 40%, transparent), transparent 70%), linear-gradient(180deg,#17171c,#0e0e11)`, border: '1px solid rgba(255,255,255,.1)', display: 'flex', alignItems: 'flex-end', justifyContent: 'center' }}>
-        <DriverTile driver={{ code: w.code, number: null, color: w.color, team_code: w.team_code, name: w.name }} size={200} className="hero" />
+        {/* Макет Main: логотип команды и фото прямо в блоке, без отдельной плитки. */}
+        {logo && (
+          <img src={logo} alt="" loading="lazy" decoding="async"
+            style={{ position: 'absolute', left: '50%', top: '50%', width: '56%', height: '72%', transform: 'translate(-50%,-50%)', objectFit: 'contain', opacity: 0.16 }} />
+        )}
+        {photo ? (
+          <img src={photo} alt={w.name} loading="lazy" decoding="async" style={{ position: 'relative', zIndex: 1, height: '100%', width: 'auto', objectFit: 'contain' }} />
+        ) : (
+          <span style={{ position: 'relative', zIndex: 1, alignSelf: 'center', font: '700 96px var(--font-num)', color: 'rgba(255,255,255,.92)', textShadow: '0 2px 8px rgba(0,0,0,.55)' }}>{w.code}</span>
+        )}
       </div>
       <div>
         <div style={{ fontSize: 24, fontWeight: 600, letterSpacing: '-.01em' }}>{w.name}</div>
