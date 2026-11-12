@@ -151,7 +151,7 @@ export default function CreateLeaguePage() {
                 </div>
               </div>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-                <span className="chip red">Прогнозы</span>
+                <span className="chip red">{MODES.find((m) => m.id === mode)?.t}</span>
                 <span className="chip">По ссылке</span>
                 <span className="chip">{startLabel}</span>
               </div>
@@ -172,7 +172,7 @@ export default function CreateLeaguePage() {
             </div>
             <div className="step"><b>1</b><div><div style={{ fontWeight: 600 }}>Создай лобби</div><div className="mute" style={{ fontSize: 13, marginTop: 4, lineHeight: 1.45 }}>Название и лимит можно изменить потом</div></div></div>
             <div className="step"><b>2</b><div><div style={{ fontWeight: 600 }}>Позови друзей</div><div className="mute" style={{ fontSize: 13, marginTop: 4, lineHeight: 1.45 }}>Ссылкой или кодом</div></div></div>
-            <div className="step"><b>3</b><div><div style={{ fontWeight: 600 }}>Играйте</div><div className="mute" style={{ fontSize: 13, marginTop: 4, lineHeight: 1.45 }}>Прогнозы с ближайшего этапа</div></div></div>
+            <div className="step"><b>3</b><div><div style={{ fontWeight: 600 }}>Играйте</div><div className="mute" style={{ fontSize: 13, marginTop: 4, lineHeight: 1.45 }}>{mode === 'predict' ? 'Прогнозы' : mode === 'fantasy' ? 'Фэнтези-составы' : 'Прогнозы и составы'} с ближайшего этапа</div></div></div>
           </section>
         </div>
       </Content>

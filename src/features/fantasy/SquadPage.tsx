@@ -170,7 +170,7 @@ function SquadEditor({ data }: { data: SquadScreen }) {
         )}
 
         <div className="row">
-          <section className="card rise" style={{ ['--i' as string]: 1, flex: '1 1 300px', display: 'flex', flexDirection: 'column', gap: 14 }}>
+          <section className="card rise" style={{ ['--i' as string]: 1, flex: '0 0 auto', display: 'flex', flexDirection: 'column', gap: 14 }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
               <span className="eyebrow">{locked ? 'Составы закрыты' : 'Дедлайн'} · {eventName}</span>
               {!locked && <span className="live-dot" style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--accent)', boxShadow: '0 0 12px var(--accent)' }} />}
@@ -182,7 +182,7 @@ function SquadEditor({ data }: { data: SquadScreen }) {
             )}
           </section>
 
-          <section className="card rise" style={{ ['--i' as string]: 2, flex: '2 1 400px', display: 'flex', flexDirection: 'column', gap: 14 }}>
+          <section className="card rise" style={{ ['--i' as string]: 2, flex: '1 1 320px', display: 'flex', flexDirection: 'column', gap: 14 }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
               <span className="eyebrow">Бюджет{limitless ? ' · Limitless' : ''}</span>
               <span className="num" style={{ fontSize: 14 }}>
@@ -198,7 +198,7 @@ function SquadEditor({ data }: { data: SquadScreen }) {
             </div>
           </section>
 
-          <section className="card rise" style={{ ['--i' as string]: 3, flex: '2 1 400px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+          <section className="card rise" style={{ ['--i' as string]: 3, flex: '1 1 320px', display: 'flex', flexDirection: 'column', gap: 12 }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
               <span className="eyebrow">Замены</span>
               <span className={`chip ${penalty ? 'red' : 'green'}`}>{first ? 'Первая сборка' : freeTransfers ? 'Без штрафа' : penalty ? `−${penalty} очков` : 'Без штрафа'}</span>

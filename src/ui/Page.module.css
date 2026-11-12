@@ -63,8 +63,16 @@
   animation: cta 3.2s ease-in-out infinite;
   pointer-events: none;
 }
-.btn:hover {
+.btn:hover:not(:disabled) {
   transform: translateY(-1px);
+}
+.btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.25);
+}
+.btn:disabled::after {
+  animation: none;
 }
 @keyframes cta {
   50% {

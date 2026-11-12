@@ -32,7 +32,6 @@ export default function MarketPage() {
     : 0;
   const budget = data?.rules.budget ?? 100;
   const outs = data?.market.drivers.filter((d) => d.out && d.sub && squad?.drivers.includes(d.id)) ?? [];
-  const lastRound = data?.event ? data.event.round - 1 : null;
 
   return (
     <>
@@ -92,7 +91,7 @@ export default function MarketPage() {
               <div className="eyebrow" style={{ display: 'grid', gridTemplateColumns: COLS, gap: 14, padding: '0 16px 10px' }}>
                 <span /><span>{kind === 'drivers' ? 'Пилот' : 'Конструктор'}</span>
                 <span style={{ textAlign: 'right' }}>Цена</span><span style={{ textAlign: 'right' }}>Изменение</span>
-                <span style={{ textAlign: 'right' }}>Очки сезона</span><span style={{ textAlign: 'right' }}>{lastRound ? `Этап ${lastRound}` : 'Прошлый этап'}</span>
+                <span style={{ textAlign: 'right' }}>Очки сезона</span><span style={{ textAlign: 'right' }}>Прошлый этап</span>
                 <span style={{ textAlign: 'right' }}>В лиге</span><span />
               </div>
               {rows.map((r) => {
