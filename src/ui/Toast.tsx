@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom';
 import { SESSION_NAMES, formatDateTime } from '@/lib/time/format';
 import { IconCheck, IconClock, IconWarn } from './icons';
 import s from './Toast.module.css';
+import { t } from '@/i18n';
 
 type Tone = 'g' | 'y' | 'r';
 const ICON: Record<Tone, ReactNode> = { g: <IconCheck size={16} />, y: <IconClock size={16} />, r: <IconWarn size={16} /> };
@@ -50,11 +51,11 @@ export function Notices({ notices }: { notices: Notice[] | undefined }) {
         <ToastCard
           key={n.session}
           tone="y"
-          title={`${SESSION_NAMES[n.session] ?? n.session}: перенос`}
+          title={t('notice.moved', { session: SESSION_NAMES[n.session] ?? n.session })}
           text={
             <>
-              Было {formatDateTime(n.old_at)}, стало {formatDateTime(n.new_at)} — по твоему времени.
-              {n.session === 'qualy' ? ' Приём прогнозов закроется по новому времени.' : ''}
+              {t('notice.movedText', { old: formatDateTime(n.old_at), new: formatDateTime(n.new_at) })}
+              {n.session === 'qualy' ? t('notice.movedQualy') : ''}
             </>
           }
         />

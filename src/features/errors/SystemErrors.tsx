@@ -2,6 +2,7 @@ import { Component, type ErrorInfo, type ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import a from '@/features/auth/Auth.module.css';
 import s from './NotFound.module.css';
+import { t } from '@/i18n';
 
 const IconWifiOff = () => (
   <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden="true">
@@ -22,23 +23,23 @@ export function NetworkErrorPage({ onRetry, offline }: { onRetry: () => void; of
       <div className={`${s.center} rise`}>
         <span className="bigico red"><IconWifiOff /></span>
         <div>
-          <div className="eyebrow" style={{ color: '#ff7a70' }}>Нет связи</div>
-          <h1 className={s.title} style={{ marginTop: 12 }}>Не удалось загрузить данные</h1>
+          <div className="eyebrow" style={{ color: '#ff7a70' }}>{t('errNet.eyebrow')}</div>
+          <h1 className={s.title} style={{ marginTop: 12 }}>{t('errNet.title')}</h1>
         </div>
         <div className="mute" style={{ fontSize: 16, lineHeight: 1.5, maxWidth: 460 }}>
-          {offline ? 'Похоже, пропал интернет. Как только связь вернётся, данные загрузятся сами.' : 'Сервер не ответил. Проверь интернет или попробуй чуть позже — это не из-за тебя.'}
+          {offline ? t('errNet.offline') : t('errNet.server')}
         </div>
         <div style={{ width: '100%', maxWidth: 480, textAlign: 'left', padding: '6px 20px', borderRadius: 22, background: '#0f0f12', border: '1px solid var(--line)' }}>
-          <div className="kv"><span>Сайт<span className="mute" style={{ display: 'block', fontSize: 13, marginTop: 3 }}>Gridline</span></span><span className="sbadge g">Работает</span></div>
+          <div className="kv"><span>{t('errNet.site')}<span className="mute" style={{ display: 'block', fontSize: 13, marginTop: 3 }}>Gridline</span></span><span className="sbadge g">{t('errNet.works')}</span></div>
           <div className="kv">
-            <span>{offline ? 'Интернет' : 'База данных'}<span className="mute" style={{ display: 'block', fontSize: 13, marginTop: 3 }}>{offline ? 'На этом устройстве' : 'Прогнозы, составы, лобби'}</span></span>
-            <span className="sbadge r">{offline ? 'Нет сети' : 'Нет ответа'}</span>
+            <span>{offline ? t('errNet.internet') : t('errNet.database')}<span className="mute" style={{ display: 'block', fontSize: 13, marginTop: 3 }}>{offline ? t('errNet.thisDevice') : t('errNet.databaseSub')}</span></span>
+            <span className="sbadge r">{offline ? t('errNet.noNetwork') : t('errNet.noAnswer')}</span>
           </div>
-          <div className="kv"><span>Данные F1<span className="mute" style={{ display: 'block', fontSize: 13, marginTop: 3 }}>Результаты и календарь</span></span><span className="sbadge y">Ждут связи</span></div>
+          <div className="kv"><span>{t('errNet.f1data')}<span className="mute" style={{ display: 'block', fontSize: 13, marginTop: 3 }}>{t('errNet.f1dataSub')}</span></span><span className="sbadge y">{t('errNet.waiting')}</span></div>
         </div>
         <div className={s.actions}>
-          <button type="button" className={a.cta} style={{ width: 'auto', padding: '0 32px' }} onClick={onRetry}>Повторить</button>
-          <Link className={`${a.cta} ${a.ghost}`} to="/" style={{ width: 'auto', padding: '0 26px' }} onClick={onRetry}>На главную</Link>
+          <button type="button" className={a.cta} style={{ width: 'auto', padding: '0 32px' }} onClick={onRetry}>{t('common.retry')}</button>
+          <Link className={`${a.cta} ${a.ghost}`} to="/" style={{ width: 'auto', padding: '0 26px' }} onClick={onRetry}>{t('common.toHome')}</Link>
         </div>
       </div>
     </div>
@@ -52,13 +53,13 @@ export function CrashPage({ onRetry }: { onRetry: () => void }) {
       <div className={`${s.center} rise`}>
         <span className="bigico yel"><IconBolt /></span>
         <div>
-          <div className="eyebrow" style={{ color: 'var(--gold)' }}>Ошибка</div>
-          <h1 className={s.title} style={{ marginTop: 12 }}>Что-то сломалось на нашей стороне</h1>
+          <div className="eyebrow" style={{ color: 'var(--gold)' }}>{t('errCrash.eyebrow')}</div>
+          <h1 className={s.title} style={{ marginTop: 12 }}>{t('errCrash.title')}</h1>
         </div>
-        <div className="mute" style={{ fontSize: 16, lineHeight: 1.5, maxWidth: 460 }}>Попробуй через минуту. Прогнозы и составы в безопасности.</div>
+        <div className="mute" style={{ fontSize: 16, lineHeight: 1.5, maxWidth: 460 }}>{t('errCrash.text')}</div>
         <div className={s.actions}>
-          <button type="button" className={a.cta} style={{ width: 'auto', padding: '0 32px' }} onClick={onRetry}>Повторить</button>
-          <a className={`${a.cta} ${a.ghost}`} href="#/" style={{ width: 'auto', padding: '0 26px' }} onClick={onRetry}>На главную</a>
+          <button type="button" className={a.cta} style={{ width: 'auto', padding: '0 32px' }} onClick={onRetry}>{t('common.retry')}</button>
+          <a className={`${a.cta} ${a.ghost}`} href="#/" style={{ width: 'auto', padding: '0 26px' }} onClick={onRetry}>{t('common.toHome')}</a>
         </div>
       </div>
     </div>

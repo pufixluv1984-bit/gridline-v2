@@ -16,8 +16,12 @@ import b from '@/ui/Button.module.css';
 import m from '@/ui/Modal.module.css';
 import p from '@/ui/Page.module.css';
 import s from './Settings.module.css';
+import { t } from '@/i18n';
+import { LanguageSwitch } from '@/ui/LanguageSwitch';
+import { updateProfile, type Profile } from '@/lib/api/profile';
+import type { Locale } from '@/i18n/locale';
 
-const PROVIDER_NAMES: Record<string, string> = { google: 'Google', discord: 'Discord', email: 'Почта' };
+const PROVIDER_NAMES: Record<string, string> = { google: 'Google', discord: 'Discord' };
 
 const IconLogout = () => (
   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -58,6 +62,13 @@ export default function SettingsPage() {
     .filter((x) => x !== 'email')
     .map((x) => PROVIDER_NAMES[x] ?? x);
 
+  // Язык в профиль: сначала кэш (экран пересоздаётся раньше, чем ответит база), потом база.
+  const saveLocale = (l: Locale) => {
+    if (!user) return;
+    qc.setQueryData<Profile | null>(profileKeys.me(user.id), (pr) => (pr ? { ...pr, locale: l } : pr));
+    void updateProfile(user.id, { locale: l }).catch(() => undefined);
+  };
+
   const close = useCallback(() => {
     setDialog(null);
     setConfirm('');
@@ -85,7 +96,7 @@ export default function SettingsPage() {
 
   return (
     <>
-      <PageTitle title="Профиль" sub="Настройки" />
+      <PageTitle title={t('settings.title')} sub={t('settings.sub')} />
       <Content>
         <div className={s.row}>
           {screen.data?.player && user ? (
@@ -99,9 +110,9 @@ export default function SettingsPage() {
             />
           ) : (
             <Card i={0} className={`${s.col} ${s.wide}`}>
-              <h2 className={p.h}>Профиль</h2>
+              <h2 className={p.h}>{t('settings.profile')}</h2>
               {screen.error ? (
-                <div className="alert bad" role="alert" style={{ marginTop: 16 }}>Не получилось загрузить профиль. Обнови страницу.</div>
+                <div className="alert bad" role="alert" style={{ marginTop: 16 }}>{t('settings.loadFailed')}</div>
               ) : (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginTop: 16 }}>
                   <Skeleton h={84} w={84} />
@@ -113,36 +124,43 @@ export default function SettingsPage() {
           )}
 
           <div className={s.side}>
+            <Card i={1}>
+              <h2 className={p.h}>{t('lang.title')}</h2>
+              <div style={{ marginTop: 16 }}>
+                <LanguageSwitch onChange={saveLocale} />
+              </div>
+              <div className="help" style={{ marginTop: 10 }}>{t('lang.help')}</div>
+            </Card>
           {admin.data && (
             <Card i={1} className={s.col}>
-              <h2 className={p.h}>Админ сайта</h2>
+              <h2 className={p.h}>{t('settings.admin')}</h2>
               <div className={s.kvr}>
                 <div>
-                  <div className={s.t}>Ввести результат вручную</div>
-                  <div className={s.s}>Если Jolpica не отдала квалификацию или гонку</div>
+                  <div className={s.t}>{t('settings.adminManual')}</div>
+                  <div className={s.s}>{t('settings.adminManualSub')}</div>
                 </div>
-                <Link className={`${b.cta} ${b.sm} ${b.ghost}`} to="/admin/results">Открыть</Link>
+                <Link className={`${b.cta} ${b.sm} ${b.ghost}`} to="/admin/results">{t('common.open')}</Link>
               </div>
             </Card>
           )}
           <Card i={2} className={`${s.col} ${s.danger}`}>
-            <h2 className={p.h}>Опасная зона</h2>
+            <h2 className={p.h}>{t('settings.danger')}</h2>
             <div className={s.kvr}>
               <div>
-                <div className={s.t}>Выйти из аккаунта</div>
-                <div className={s.s}>На этом устройстве. Прогнозы и лиги сохранятся.</div>
+                <div className={s.t}>{t('settings.logout')}</div>
+                <div className={s.s}>{t('settings.logoutSub')}</div>
               </div>
               <button type="button" className={`${b.cta} ${b.sm} ${b.ghost}`} onClick={() => setDialog('logout')}>
-                Выйти
+                {t('settings.logoutBtn')}
               </button>
             </div>
             <div className={s.kvr}>
               <div>
-                <div className={s.t}>Удалить аккаунт</div>
-                <div className={s.s}>Профиль, прогнозы и лиги, где ты один, исчезнут без восстановления</div>
+                <div className={s.t}>{t('settings.delete')}</div>
+                <div className={s.s}>{t('settings.deleteSub')}</div>
               </div>
               <button type="button" className={`${b.cta} ${b.sm} ${b.dng}`} onClick={() => setDialog('delete')}>
-                Удалить
+                {t('settings.deleteBtn')}
               </button>
             </div>
           </Card>
@@ -152,35 +170,35 @@ export default function SettingsPage() {
 
       {dialog === 'logout' && (
         <Modal
-          title="Выйти из аккаунта?"
+          title={t('settings.logoutConfirm')}
           icon={<IconLogout />}
           onClose={close}
           busy={busy}
           actions={
             <>
               <button type="button" className={`${b.cta} ${b.sm} ${b.ghost}`} onClick={close} disabled={busy}>
-                Отмена
+                {t('common.cancel')}
               </button>
               <button type="button" className={`${b.cta} ${b.sm}`} onClick={doLogout} disabled={busy}>
-                {busy ? 'Выходим…' : 'Выйти'}
+                {busy ? t('settings.loggingOut') : t('settings.logoutBtn')}
               </button>
             </>
           }
         >
-          <p className={m.text}>Прогнозы и лиги сохранятся. Чтобы вернуться, войди через Google или Discord.</p>
+          <p className={m.text}>{t('settings.logoutText')}</p>
         </Modal>
       )}
 
       {dialog === 'delete' && (
         <Modal
-          title="Удалить аккаунт?"
+          title={t('settings.deleteConfirm')}
           icon={<IconWarn size={24} />}
           onClose={close}
           busy={busy}
           actions={
             <>
               <button type="button" className={`${b.cta} ${b.sm} ${b.ghost}`} onClick={close} disabled={busy}>
-                Отмена
+                {t('common.cancel')}
               </button>
               <button
                 type="button"
@@ -188,20 +206,19 @@ export default function SettingsPage() {
                 onClick={doDelete}
                 disabled={busy || !nickname || confirm.trim() !== nickname}
               >
-                {busy ? 'Удаляем…' : 'Удалить навсегда'}
+                {busy ? t('settings.deleting') : t('settings.deleteForever')}
               </button>
             </>
           }
         >
           <p className={m.text}>
-            Профиль и прогнозы исчезнут без восстановления. Лиги, где ты владелец и есть другие игроки, нужно сначала
-            передать. Чтобы подтвердить, введи свой ник: <b style={{ color: '#fff' }}>{nickname}</b>
+            {t('settings.deleteText')} <b style={{ color: '#fff' }}>{nickname}</b>
           </p>
           <input
             className={s.in}
             type="text"
             placeholder={nickname}
-            aria-label="Твой ник для подтверждения"
+            aria-label={t('settings.deleteNickAria')}
             autoComplete="off"
             value={confirm}
             onChange={(e) => setConfirm(e.target.value)}
@@ -213,7 +230,7 @@ export default function SettingsPage() {
           )}
         </Modal>
       )}
-      {savedToast && <Toast tone="g" title="Профиль сохранён" onDone={() => setSavedToast(false)} />}
+      {savedToast && <Toast tone="g" title={t('settings.saved')} onDone={() => setSavedToast(false)} />}
     </>
   );
 }

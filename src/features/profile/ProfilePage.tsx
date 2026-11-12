@@ -11,6 +11,7 @@ import b from '@/ui/Button.module.css';
 import pg from '@/ui/Page.module.css';
 import s from './Profile.module.css';
 import { avatarOf } from '@/lib/avatar';
+import { intlLocale } from '@/i18n';
 
 const IconEdit = () => (
   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -28,7 +29,7 @@ function scrollTo(id: string) {
 const pct = (hit: number, total: number) => (total > 0 ? Math.round((100 * hit) / total) : null);
 /** «ноября 2026»: родительный падеж берём из формата с днём и убираем день. */
 const monthYear = (iso: string) =>
-  new Intl.DateTimeFormat('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' })
+  new Intl.DateTimeFormat(intlLocale(), { day: 'numeric', month: 'long', year: 'numeric' })
     .format(new Date(iso))
     .replace(/^\d+\s/, '')
     .replace(' г.', '');
@@ -118,7 +119,7 @@ export default function ProfilePage() {
           )}
           <section className={`card rise ${s.stat}`} style={{ ['--i' as string]: 2 }}>
             <div className="eyebrow">Очки сезона</div>
-            <div className={`num ${s.big}`}>{total.toLocaleString('ru-RU')}</div>
+            <div className={`num ${s.big}`}>{total.toLocaleString(intlLocale())}</div>
             <div className={s.note}>{last ? `+${last.points} за этап ${last.round}` : 'Очки появятся после первого этапа'}</div>
           </section>
           <section className={`card rise ${s.stat}`} style={{ ['--i' as string]: 3 }}>

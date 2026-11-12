@@ -3,11 +3,16 @@ import { createRoot } from 'react-dom/client';
 import { App } from './app/App';
 import './styles/global.css';
 import { installUiScale } from './lib/uiScale';
+import { loadLocale } from './i18n';
+import { detectLocale } from './i18n/locale';
 
 installUiScale();
 
-createRoot(document.getElementById('root')!).render(
-  <StrictMode>
-    <App />
-  </StrictMode>,
-);
+// Словарь языка грузится до первого рендера, чтобы не мигал другой язык.
+void loadLocale(detectLocale()).finally(() => {
+  createRoot(document.getElementById('root')!).render(
+    <StrictMode>
+      <App />
+    </StrictMode>,
+  );
+});

@@ -3,6 +3,7 @@ import { signInWithProvider, type OAuthProvider } from '@/lib/api/auth';
 import { env } from '@/lib/env';
 import { IconWarn } from '@/ui/icons';
 import s from './Auth.module.css';
+import { t } from '@/i18n';
 
 export function ErrorAlert({ title, children }: { title: string; children?: ReactNode }) {
   return (
@@ -33,11 +34,11 @@ export function SocialButtons({ onError }: { onError: (msg: string) => void }) {
     <div className={s.socr}>
       <button type="button" className={s.soc} disabled={disabled} onClick={() => go('google')}>
         <b aria-hidden="true">G</b>
-        {busy === 'google' ? 'Открываем…' : 'Google'}
+        {busy === 'google' ? t('common.opening') : 'Google'}
       </button>
       <button type="button" className={s.soc} disabled={disabled} onClick={() => go('discord')}>
         <b aria-hidden="true">D</b>
-        {busy === 'discord' ? 'Открываем…' : 'Discord'}
+        {busy === 'discord' ? t('common.opening') : 'Discord'}
       </button>
     </div>
   );

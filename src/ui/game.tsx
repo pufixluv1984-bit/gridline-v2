@@ -3,19 +3,20 @@ import type { CSSProperties } from 'react';
 import { driverPhoto, teamLogo, type TeamCode } from '@/lib/assets';
 import { countdownParts } from '@/lib/time/format';
 import { useServerNow } from '@/lib/time/useServerNow';
+import { t } from '@/i18n';
 
 /** Таймер «ставки закроются через…» от серверного времени. */
 export function Countdown({ to, small = false, seconds = true }: { to: string; small?: boolean; seconds?: boolean }) {
   const now = useServerNow();
   const c = countdownParts(Date.parse(to) - now);
   const cells: [string, string][] = [
-    [c.d, small ? 'ДН' : 'ДНЕЙ'],
-    [c.h, small ? 'ЧАС' : 'ЧАСОВ'],
-    [c.m, 'МИН'],
+    [c.d, small ? t('countdown.daysShort') : t('countdown.days')],
+    [c.h, small ? t('countdown.hoursShort') : t('countdown.hours')],
+    [c.m, t('countdown.minutes')],
   ];
-  if (seconds) cells.push([c.s, 'СЕК']);
+  if (seconds) cells.push([c.s, t('countdown.seconds')]);
   return (
-    <div className={`tcells ${small ? 'sm' : ''}`} style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }} role="timer" aria-label="До закрытия приёма прогнозов">
+    <div className={`tcells ${small ? 'sm' : ''}`} style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }} role="timer" aria-label={t('countdown.aria')}>
       {cells.map(([v, l], i) => (
         <div key={l} className={`tcell ${i === cells.length - 1 && !c.done ? 'live' : ''}`}>
           <b>{v}</b>

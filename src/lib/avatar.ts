@@ -1,6 +1,7 @@
 // Фото профиля: проверка файла, кадрирование и сжатие в браузере, адрес картинки.
 // Хранение — корзина Supabase Storage `avatars` (миграция 0020): <user_id>/<stamp>-256 и -512.
 import { env } from './env';
+import { intlLocale, t } from '@/i18n';
 
 export const AVATAR_MAX_BYTES = 2 * 1024 * 1024;
 export const AVATAR_MIN_SIDE = 256;
@@ -27,7 +28,7 @@ export function sniffImage(head: Uint8Array): ImageKind | null {
 }
 
 export function formatMb(bytes: number): string {
-  return `${(bytes / 1024 / 1024).toLocaleString('ru-RU', { maximumFractionDigits: 1, minimumFractionDigits: 1 })} МБ`;
+  return t('avatar.mb', { n: (bytes / 1024 / 1024).toLocaleString(intlLocale(), { maximumFractionDigits: 1, minimumFractionDigits: 1 }) });
 }
 
 export type FileProblem =
@@ -39,13 +40,13 @@ export type FileProblem =
 export function problemText(p: FileProblem): { title: string; text: string } {
   switch (p.kind) {
     case 'too_big':
-      return { title: 'Файл слишком большой', text: `${formatMb(p.size)} — максимум 2 МБ. Сожми фото или выбери другое.` };
+      return { title: t('avatar.tooBig'), text: t('avatar.tooBigText', { size: formatMb(p.size) }) };
     case 'format':
-      return { title: 'Неподдерживаемый формат', text: 'Подойдёт JPG, PNG, WebP или GIF.' };
+      return { title: t('avatar.format'), text: t('avatar.formatText') };
     case 'too_small':
-      return { title: 'Фото слишком маленькое', text: `${p.width}×${p.height} px — нужно от 256 px по меньшей стороне.` };
+      return { title: t('avatar.tooSmall'), text: t('avatar.tooSmallText', { w: p.width, h: p.height }) };
     case 'broken':
-      return { title: 'Не получилось открыть фото', text: 'Файл повреждён или это не картинка. Выбери другой.' };
+      return { title: t('avatar.broken'), text: t('avatar.brokenText') };
   }
 }
 

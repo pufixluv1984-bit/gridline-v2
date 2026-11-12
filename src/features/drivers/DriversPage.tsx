@@ -8,8 +8,9 @@ import { DriverTile, Skeleton } from '@/ui/game';
 import { Content, PageTitle, Toolbar, ToolbarDivider } from '@/ui/Page';
 import pg from '@/ui/Page.module.css';
 import s from './Drivers.module.css';
+import { intlLocale } from '@/i18n';
 
-const fmt = (n: number) => n.toLocaleString('ru-RU', { maximumFractionDigits: 1 });
+const fmt = (n: number) => n.toLocaleString(intlLocale(), { maximumFractionDigits: 1 });
 
 /** Макет Drivers: каталог пилотов сезона с поиском, фильтром по команде и видом «Все времена». */
 export default function DriversPage() {
@@ -21,7 +22,7 @@ export default function DriversPage() {
   const teams = useMemo(() => {
     const seen = new Map<string, string>();
     for (const d of drivers) seen.set(d.team_id, d.team_name);
-    return [...seen].sort((a, b) => a[1].localeCompare(b[1], 'ru'));
+    return [...seen].sort((a, b) => a[1].localeCompare(b[1], intlLocale()));
   }, [drivers]);
 
   const shown = useMemo(() => {

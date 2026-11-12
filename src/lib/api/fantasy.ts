@@ -1,5 +1,6 @@
 import { getSupabase } from '../supabase';
 import type { EventInfo } from './screens';
+import { intlLocale } from '@/i18n';
 
 export type ChipId = 'wildcard' | 'limitless' | 'final_fix' | 'autopilot' | 'no_negative' | 'extra_drs';
 
@@ -194,4 +195,4 @@ export async function finalFix(ev: number, outDriver: string, inDriver: string) 
 }
 
 export const money = (n: number | null | undefined) => (n == null ? '—' : `$${Number(n).toFixed(1)}M`);
-export const pts = (n: number | null | undefined) => (n == null ? '—' : Number(n).toLocaleString('ru-RU', { maximumFractionDigits: 1 }));
+export const pts = (n: number | null | undefined) => (n == null ? '—' : Number(n).toLocaleString(intlLocale(), { maximumFractionDigits: 1 }));

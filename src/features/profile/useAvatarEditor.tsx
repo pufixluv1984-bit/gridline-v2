@@ -12,6 +12,7 @@ import {
 import { initialsOf } from '@/lib/initials';
 import { Toast } from '@/ui/Toast';
 import { CropWindow, LettersWindow, PickWindow, type Me, type Save, type Step } from './AvatarWindows';
+import { t } from '@/i18n';
 
 const ACCEPT = 'image/jpeg,image/png,image/webp,image/gif';
 
@@ -64,7 +65,7 @@ export function useAvatarEditor(me: Me | null | undefined) {
     setSave({
       k: 'error',
       network: e instanceof AvatarNetworkError,
-      message: e instanceof AvatarNetworkError ? 'Нет связи с сервером. Фото не сохранено — проверь интернет и повтори.' : (e as Error).message,
+      message: e instanceof AvatarNetworkError ? t('avatar.netError') : (e as Error).message,
     });
 
   // ── Файл: тип по содержимому → размер → чтение с прогрессом → картинка → минимальная сторона ──
@@ -116,7 +117,7 @@ export function useAvatarEditor(me: Me | null | undefined) {
     try {
       await removeAvatarPhoto(me.id);
       if (me) patchAvatarEverywhere(qc, me.id, { avatar_color: me.avatar_color, avatar_text: me.avatar_text, avatar_path: null });
-      setToast('Фото убрано');
+      setToast(t('avatar.removed'));
     } catch (e) {
       setToast(null);
       setSave({ k: 'error', network: e instanceof AvatarNetworkError, message: (e as Error).message });
@@ -177,7 +178,7 @@ export function useAvatarEditor(me: Me | null | undefined) {
                 [s512, s256] = await Promise.all([renderAvatar(step.bmp, rect, 512), renderAvatar(step.bmp, rect, 256)]);
               }
               const path = await saveAvatarPhoto(me.id, { s256, s512 });
-              done({ avatar_color: me.avatar_color, avatar_text: me.avatar_text, avatar_path: path }, 'Фото обновлено');
+              done({ avatar_color: me.avatar_color, avatar_text: me.avatar_text, avatar_path: path }, t('avatar.updated'));
             } catch (e) {
               fail(e);
             }
@@ -195,7 +196,7 @@ export function useAvatarEditor(me: Me | null | undefined) {
             const text = letters && letters !== initialsOf(me.nickname) ? letters : null;
             try {
               await saveAvatarLetters(me.id, color, text);
-              done({ avatar_color: color, avatar_text: text, avatar_path: null }, 'Аватар обновлён');
+              done({ avatar_color: color, avatar_text: text, avatar_path: null }, t('avatar.lettersUpdated'));
             } catch (e) {
               fail(e);
             }

@@ -3,6 +3,7 @@
 // Модуль грузится только когда выбран GIF (динамический import в useAvatarEditor).
 import { decompressFrames, parseGIF } from 'gifuct-js';
 import { applyPalette, GIFEncoder, quantize } from 'gifenc';
+import { t } from '@/i18n';
 
 /** Готовый GIF не больше этого (корзина avatars принимает до 2 МБ). */
 export const GIF_MAX_BYTES = 1.9 * 1024 * 1024;
@@ -11,7 +12,7 @@ export const GIF_MAX_FRAMES = 150;
 
 export class GifTooHeavyError extends Error {
   constructor() {
-    super('GIF получается слишком тяжёлым даже после сжатия. Возьми GIF покороче или поменьше.');
+    super(t('avatar.gifTooHeavy'));
   }
 }
 

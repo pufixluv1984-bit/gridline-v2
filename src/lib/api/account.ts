@@ -1,6 +1,7 @@
 import { getSupabase } from '../supabase';
 import { markSignedOutByUser } from './auth';
 import { removeAllAvatarFiles } from './avatar';
+import { t } from '@/i18n';
 
 /**
  * Удаляет аккаунт вошедшего игрока (RPC delete_my_account, миграция 0002) и выходит на этом устройстве.
@@ -12,9 +13,9 @@ export async function deleteMyAccount(): Promise<void> {
   const { error } = await sb.rpc('delete_my_account');
   if (error) {
     if (error.hint === 'owns_leagues_with_members') {
-      throw new Error('Ты владелец лиги, в которой есть другие игроки. Сначала передай её кому-то из них.');
+      throw new Error(t('settings.deleteOwnsLeagues'));
     }
-    throw new Error('Не получилось удалить аккаунт. Попробуй ещё раз.');
+    throw new Error(t('settings.deleteFailed'));
   }
   // Файлы фото удаляются через Storage API (из SQL их удалять нельзя) — токен сессии ещё действует.
   if (uid) await removeAllAvatarFiles(uid);

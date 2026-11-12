@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Modal } from '@/ui/Modal';
 import b from '@/ui/Button.module.css';
+import { intlLocale } from '@/i18n';
 
 export type Summary = {
   event_id: number;
@@ -21,7 +22,7 @@ const readSeen = () => {
     return null;
   }
 };
-const fmt = (n: number) => Number(n).toLocaleString('ru-RU', { maximumFractionDigits: 1 });
+const fmt = (n: number) => Number(n).toLocaleString(intlLocale(), { maximumFractionDigits: 1 });
 
 /** Макет Overlays, «Итоги этапа»: показывается один раз после того, как этап посчитан. */
 export function StageSummary({ summary }: { summary: Summary | null | undefined }) {

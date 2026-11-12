@@ -104,6 +104,15 @@
   flex-direction: column;
   gap: 18px;
 }
+/* В колонке карточки по высоте содержимого (у .col flex-basis — это ширина в ряду, а не высота). */
+.side > * {
+  flex: none;
+}
+/* Кнопка в строке настройки не сжимается и не переносится («Sign out»). */
+.kvr > :last-child {
+  flex: none;
+  white-space: nowrap;
+}
 .form {
   display: flex;
   flex-direction: column;

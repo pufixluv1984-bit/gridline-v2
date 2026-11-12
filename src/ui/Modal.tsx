@@ -1,6 +1,7 @@
 import { useEffect, useId, useRef, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 import s from './Modal.module.css';
+import { t } from '@/i18n';
 
 type Props = {
   title: string;
@@ -47,7 +48,7 @@ export function Modal({ title, icon, children, actions, onClose, busy = false, w
         {closeButton ? (
           <div className={s.hd}>
             <h3 id={titleId}>{title}</h3>
-            <button type="button" className={s.x} aria-label="Закрыть" title="Закрыть" onClick={onClose} disabled={busy}>
+            <button type="button" className={s.x} aria-label={t('common.close')} title={t('common.close')} onClick={onClose} disabled={busy}>
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
                 <path d="M6 6l12 12M18 6 6 18" />
               </svg>

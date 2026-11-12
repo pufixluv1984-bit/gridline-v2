@@ -6,6 +6,7 @@ import { getSupabase } from '@/lib/supabase';
 import { Modal } from '@/ui/Modal';
 import b from '@/ui/Button.module.css';
 import m from '@/ui/Modal.module.css';
+import { t } from '@/i18n';
 
 const DONE_KEY = 'gridline.welcome.done';
 const readDone = () => {
@@ -56,20 +57,20 @@ export function Welcome({ profile }: { profile: Profile | null | undefined }) {
 
   return (
     <Modal
-      title={`Добро пожаловать, ${profile!.nickname}`}
+      title={t('welcome.title', { name: profile!.nickname })}
       onClose={finish}
       busy={save.isPending}
       actions={
         <>
-          <button type="button" className={`${b.cta} ${b.sm} ${b.ghost}`} onClick={finish} disabled={save.isPending}>Позже</button>
+          <button type="button" className={`${b.cta} ${b.sm} ${b.ghost}`} onClick={finish} disabled={save.isPending}>{t('common.later')}</button>
           <button type="button" className={`${b.cta} ${b.sm}`} disabled={!chosen || save.isPending} onClick={() => chosen && save.mutate(chosen)}>
-            {save.isPending ? 'Сохраняем…' : 'Готово'}
+            {save.isPending ? t('common.saving') : t('common.done')}
           </button>
         </>
       }
     >
-      <p className={m.text}>Выбери любимую команду: от неё зависит цвет профиля и плитки в таблице. Потом можно поменять в профиле.</p>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,minmax(0,1fr))', gap: 8 }} role="radiogroup" aria-label="Любимая команда">
+      <p className={m.text}>{t('welcome.text')}</p>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,minmax(0,1fr))', gap: 8 }} role="radiogroup" aria-label={t('welcome.teamAria')}>
         {(teams.data ?? []).map((t) => {
           const logo = teamLogo(t.code as TeamCode);
           const on = pick === t.id;

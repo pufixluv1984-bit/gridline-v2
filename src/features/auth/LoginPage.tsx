@@ -4,6 +4,7 @@ import { PRIVACY_URL } from '@/ui/Footer';
 import { AuthLayout } from './AuthLayout';
 import { ErrorAlert, SocialButtons } from './fields';
 import s from './Auth.module.css';
+import { t } from '@/i18n';
 
 /**
  * Вход. По решению владельца (11.11.2026) только Google и Discord: без паролей, писем и SMTP.
@@ -16,18 +17,18 @@ export default function LoginPage() {
   return (
     <AuthLayout>
       <div>
-        <div className="eyebrow">Добро пожаловать</div>
-        <h1>Войти в Gridline</h1>
+        <div className="eyebrow">{t('auth.welcome')}</div>
+        <h1>{t('auth.title')}</h1>
         <div className={s.lead}>
-          Входи через Google или Discord. При первом входе аккаунт создастся сам, ник можно будет поменять в профиле.
+          {t('auth.lead')}
         </div>
       </div>
-      {error && <ErrorAlert title="Не получилось войти">{error}</ErrorAlert>}
+      {error && <ErrorAlert title={t('auth.failed')}>{error}</ErrorAlert>}
       <SocialButtons onError={setError} />
       <div className={s.foot}>
-        Пароль не нужен. Входя, ты соглашаешься с{' '}
+        {t('auth.consent')}{' '}
         <a className={s.lnk} href={PRIVACY_URL}>
-          политикой конфиденциальности
+          {t('auth.consentLink')}
         </a>
         .
       </div>

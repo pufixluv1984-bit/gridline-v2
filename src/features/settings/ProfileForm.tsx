@@ -7,6 +7,8 @@ import { Avatar } from '@/ui/Avatar';
 import b from '@/ui/Button.module.css';
 import p from '@/ui/Page.module.css';
 import s from './Settings.module.css';
+import { intlLocale } from '@/i18n';
+import { t as tr } from '@/i18n';
 
 const NICK_COOLDOWN_MS = 30 * 24 * 3600 * 1000;
 // Те же правила, что в базе (миграции 0001, 0015): база всё равно проверит, здесь — подсказка сразу.
@@ -26,19 +28,19 @@ function initial(data: ProfileScreen): Values {
 
 function nickProblem(v: string): string | null {
   const t = v.trim();
-  if (t.length < 2 || t.length > 20) return 'От 2 до 20 символов.';
-  if (!NICK_RE.test(t)) return 'Только буквы, цифры, пробел, точка, дефис и подчёркивание.';
+  if (t.length < 2 || t.length > 20) return tr('nick.length');
+  if (!NICK_RE.test(t)) return tr('nick.chars');
   return null;
 }
 
 function teamNameProblem(v: string): string | null {
   const t = v.trim();
   if (!t) return null;
-  if (t.length < 2 || t.length > 24) return 'От 2 до 24 символов.';
+  if (t.length < 2 || t.length > 24) return tr('teamName.length');
   return null;
 }
 
-const dayMonth = (ms: number) => new Intl.DateTimeFormat('ru-RU', { day: 'numeric', month: 'long' }).format(ms);
+const dayMonth = (ms: number) => new Intl.DateTimeFormat(intlLocale(), { day: 'numeric', month: 'long' }).format(ms);
 
 /**
  * Карточка «Профиль» экрана настроек (макет Settings): аватар, ник, любимые команда и пилот,
@@ -103,17 +105,17 @@ export function ProfileForm({
 
   return (
     <section className={`card rise ${s.col} ${s.wide}`} style={{ ['--i' as string]: 0 }}>
-      <h2 className={p.h}>Профиль</h2>
+      <h2 className={p.h}>{tr('settings.profile')}</h2>
       <form className={s.form} onSubmit={submit} noValidate>
         <div className={s.who}>
           <Avatar nickname={pl.nickname} color={pl.avatar_color} photo={pl.avatar_path} text={pl.avatar_text} size={84} radius={24} fontSize={30} />
           <div style={{ minWidth: 0 }}>
             <div className={s.photoBtns} style={{ marginTop: 0 }}>
               <button type="button" className={`${b.cta} ${b.sm} ${b.ghost}`} onClick={avatar.openPhoto}>
-                Загрузить фото
+                {tr('settings.uploadPhoto')}
               </button>
               <button type="button" className={`${b.cta} ${b.sm} ${b.ghost}`} onClick={avatar.openLetters}>
-                Буквы и цвет
+                {tr('settings.lettersColor')}
               </button>
               <button
                 type="button"
@@ -121,11 +123,11 @@ export function ProfileForm({
                 disabled={!pl.avatar_path || avatar.removing}
                 onClick={() => void avatar.remove()}
               >
-                {avatar.removing ? 'Убираем…' : 'Убрать'}
+                {avatar.removing ? tr('settings.removing') : tr('settings.remove')}
               </button>
             </div>
             <div className="help" style={{ margin: '8px 0 0' }}>
-              JPG, PNG или GIF, квадрат от 256 px, до 2 МБ
+              {tr('settings.photoHint')}
             </div>
             {avatar.removeError && (
               <div className="alert bad" role="alert" style={{ marginTop: 10 }}>
@@ -137,7 +139,7 @@ export function ProfileForm({
 
         <div className={s.grid2}>
           <div>
-            <label className="lab" htmlFor="set-nick">Ник</label>
+            <label className="lab" htmlFor="set-nick">{tr('settings.nick')}</label>
             <input
               id="set-nick"
               className={`in ${nickErr ? 'err' : ''}`}
@@ -150,55 +152,55 @@ export function ProfileForm({
               onChange={set('nickname')}
             />
             <div id="set-nick-help" className={`help ${nickErr ? 'err' : ''}`}>
-              {nickErr ?? (nextNickAt ? `Ник уже меняли недавно. Следующая смена — с ${dayMonth(nextNickAt)}.` : 'Его видят игроки лиги. Менять можно раз в 30 дней.')}
+              {nickErr ?? (nextNickAt ? tr('settings.nickNext', { date: dayMonth(nextNickAt) }) : tr('settings.nickHelp'))}
             </div>
           </div>
 
           <div>
-            <label className="lab" htmlFor="set-team-name">Название фэнтези-команды</label>
+            <label className="lab" htmlFor="set-team-name">{tr('settings.teamName')}</label>
             <input
               id="set-team-name"
               className={`in ${teamErr ? 'err' : ''}`}
               value={v.team_name}
               maxLength={24}
-              placeholder="Для фэнтези-лиги"
+              placeholder={tr('settings.teamNamePlaceholder')}
               aria-invalid={!!teamErr}
               aria-describedby="set-team-help"
               onChange={set('team_name')}
             />
             <div id="set-team-help" className={`help ${teamErr ? 'err' : ''}`}>
-              {teamErr ?? 'Показывается в таблице фэнтези-лиги.'}
+              {teamErr ?? tr('settings.teamNameHelp')}
             </div>
           </div>
 
           <div>
-            <label className="lab" htmlFor="set-fav-team">Любимая команда</label>
+            <label className="lab" htmlFor="set-fav-team">{tr('settings.favTeam')}</label>
             <select id="set-fav-team" className="in" value={v.fav_team} onChange={set('fav_team')}>
-              <option value="">Не выбрана</option>
+              <option value="">{tr('settings.notSelectedF')}</option>
               {(data.options?.teams ?? []).map((t) => (
                 <option key={t.id} value={t.id}>{t.name}</option>
               ))}
             </select>
-            <div className="help">Показывается в профиле.</div>
+            <div className="help">{tr('settings.shownInProfile')}</div>
           </div>
 
           <div>
-            <label className="lab" htmlFor="set-fav-driver">Любимый пилот</label>
+            <label className="lab" htmlFor="set-fav-driver">{tr('settings.favDriver')}</label>
             <select id="set-fav-driver" className="in" value={v.fav_driver} onChange={set('fav_driver')}>
-              <option value="">Не выбран</option>
+              <option value="">{tr('settings.notSelectedM')}</option>
               {(data.options?.drivers ?? []).map((d) => (
                 <option key={d.id} value={d.id}>{d.name} · {d.team_name}</option>
               ))}
             </select>
-            <div className="help">Показывается в профиле.</div>
+            <div className="help">{tr('settings.shownInProfile')}</div>
           </div>
         </div>
 
         <div>
-          <span className="lab">Вход</span>
+          <span className="lab">{tr('settings.signIn')}</span>
           <div className={s.signin}>
             {providers.map((x) => (
-              <span key={x} className={s.chip}>Через {x}</span>
+              <span key={x} className={s.chip}>{tr('settings.via', { provider: x })}</span>
             ))}
             {email && <span className="mute" style={{ fontSize: 14 }}>{email}</span>}
           </div>
@@ -215,10 +217,10 @@ export function ProfileForm({
             {save.isPending ? (
               <>
                 <i className={s.spn} aria-hidden="true" />
-                Сохраняем…
+                {tr('common.saving')}
               </>
             ) : (
-              'Сохранить'
+              tr('common.save')
             )}
           </button>
           {dirty && (
@@ -231,11 +233,11 @@ export function ProfileForm({
                 setV(saved);
               }}
             >
-              Отменить изменения
+              {tr('settings.discard')}
             </button>
           )}
           <span className="mute" style={{ fontSize: 13 }} aria-live="polite">
-            {dirty ? 'Есть несохранённые изменения' : ''}
+            {dirty ? tr('settings.unsaved') : ''}
           </span>
         </div>
       </form>

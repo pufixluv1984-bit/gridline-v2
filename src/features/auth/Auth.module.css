@@ -89,11 +89,18 @@
 }
 
 .fside {
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 48px 32px;
   background: var(--bg-inner);
+}
+/* Выбор языка до входа — в правом верхнем углу формы. */
+.lang {
+  position: absolute;
+  top: 24px;
+  right: 24px;
 }
 .fcard {
   width: 100%;

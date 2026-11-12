@@ -1,5 +1,6 @@
 import { getSupabase } from '../supabase';
 import type { Database } from '../database.types';
+import { t } from '@/i18n';
 
 export type Profile = Database['public']['Tables']['profiles']['Row'];
 
@@ -18,11 +19,10 @@ export type TitleKey = 'sniper' | 'best_stage' | 'survivor';
 export type TitleHolder = { user_id: string; nickname: string; avatar_color: string; avatar_path?: string | null; avatar_text?: string | null; value: number; event?: string };
 export type LeagueTitles = Partial<Record<TitleKey, TitleHolder | null>>;
 
-export const TITLE_NAMES: Record<TitleKey, string> = {
-  sniper: 'Снайпер',
-  best_stage: 'Лучший этап',
-  survivor: 'Выживший',
-};
+/** Названия званий на языке сайта. */
+export const TITLE_NAMES: Record<TitleKey, string> = new Proxy({} as Record<TitleKey, string>, {
+  get: (_, k) => (k === 'sniper' || k === 'best_stage' || k === 'survivor' ? t(`title.${k}`) : undefined),
+});
 
 export type ProfileScreen = {
   player: {
@@ -79,9 +79,9 @@ export async function profileScreen(player?: string, season?: number): Promise<P
 export async function updateProfile(userId: string, patch: Database['public']['Tables']['profiles']['Update']): Promise<void> {
   const { error } = await getSupabase().from('profiles').update(patch).eq('id', userId);
   if (error) {
-    if (error.hint === 'nick_cooldown') throw new Error('Ник можно менять раз в 30 дней.');
-    if (error.code === '23514' && 'team_name' in patch) throw new Error('Название команды: от 2 до 24 символов, без пробелов по краям.');
-    if (error.code === '23514') throw new Error('Ник: от 2 до 20 символов — буквы, цифры, пробел, точка, дефис, подчёркивание.');
+    if (error.hint === 'nick_cooldown') throw new Error(t('nick.cooldown'));
+    if (error.code === '23514' && 'team_name' in patch) throw new Error(t('teamName.invalid'));
+    if (error.code === '23514') throw new Error(t('nick.invalid'));
     throw error;
   }
 }

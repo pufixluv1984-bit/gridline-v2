@@ -6,6 +6,7 @@ import { Modal } from '@/ui/Modal';
 import b from '@/ui/Button.module.css';
 import m from '@/ui/Modal.module.css';
 import { useAuth, useSessionExpired } from './authContext';
+import { t } from '@/i18n';
 
 // Куда вернуть игрока после входа. Вход через Google/Discord уводит со страницы, поэтому
 // state роутера теряется — путь запоминаем в sessionStorage (например, ссылку-приглашение /join/КОД).
@@ -76,22 +77,22 @@ function SessionExpired() {
     <Frame boxed>
       <div style={{ minHeight: 640 }} />
       <Modal
-        title="Сессия истекла"
+        title={t('auth.sessionExpired')}
         icon={<span className="bigico yel" style={{ width: 52, height: 52, borderRadius: 16 }}><IconClockBig /></span>}
         onClose={() => undefined}
         busy
         actions={
           <>
             <button type="button" className={`${b.cta} ${b.sm} ${b.ghost}`} disabled={!!busy} onClick={() => go('discord')}>
-              {busy === 'discord' ? 'Открываем…' : 'Войти через Discord'}
+              {busy === 'discord' ? t('common.opening') : t('auth.signInWith', { provider: 'Discord' })}
             </button>
             <button type="button" className={`${b.cta} ${b.sm}`} disabled={!!busy} onClick={() => go('google')}>
-              {busy === 'google' ? 'Открываем…' : 'Войти через Google'}
+              {busy === 'google' ? t('common.opening') : t('auth.signInWith', { provider: 'Google' })}
             </button>
           </>
         }
       >
-        <p className={m.text}>Для безопасности мы вышли из аккаунта. Прогнозы и составы сохранены — войди снова, чтобы продолжить с того же места.</p>
+        <p className={m.text}>{t('auth.sessionExpiredText')}</p>
         {error && <div className="alert bad" role="alert">{error}</div>}
       </Modal>
     </Frame>

@@ -1,6 +1,7 @@
 import type { QueryClient } from '@tanstack/react-query';
 import { getSupabase } from '../supabase';
 import { profileKeys, type Profile } from './profile';
+import { t } from '@/i18n';
 
 // Корзина и правила доступа — миграция 0020: писать и удалять можно только в папке <user_id>/.
 const BUCKET = 'avatars';
@@ -13,9 +14,9 @@ export class AvatarNetworkError extends Error {}
 
 function fail(e: unknown): never {
   const msg = e instanceof Error ? e.message : String(e);
-  if (typeof navigator !== 'undefined' && navigator.onLine === false) throw new AvatarNetworkError('Нет связи с сервером.');
-  if (/fetch|network|load failed|timeout/i.test(msg)) throw new AvatarNetworkError('Нет связи с сервером.');
-  throw new Error('Не получилось сохранить аватар. Попробуй ещё раз.');
+  if (typeof navigator !== 'undefined' && navigator.onLine === false) throw new AvatarNetworkError(t('common.noConnection'));
+  if (/fetch|network|load failed|timeout/i.test(msg)) throw new AvatarNetworkError(t('common.noConnection'));
+  throw new Error(t('avatar.saveFailed'));
 }
 
 /** Удаляет из своей папки всё, кроме текущего фото (старые и брошенные файлы). Ошибки не мешают сохранению. */

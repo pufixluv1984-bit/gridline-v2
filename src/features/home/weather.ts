@@ -1,5 +1,6 @@
 // Погода уик-энда: коды WMO (Open-Meteo) → значок и подпись по-русски.
 // Значки — символы Юникода, без картинок (в макете — контурные иконки погоды).
+import { intlLocale } from '@/i18n';
 
 export function weatherIcon(code: number | null): string {
   if (code == null) return '·';
@@ -27,6 +28,6 @@ export function weatherText(code: number | null): string {
 /** «Пт», «Сб», «Вс» для даты YYYY-MM-DD (день по UTC, как отдаёт Open-Meteo). */
 export function weekday(day: string): string {
   const d = new Date(`${day.slice(0, 10)}T12:00:00Z`);
-  const s = new Intl.DateTimeFormat('ru-RU', { weekday: 'short', timeZone: 'UTC' }).format(d);
+  const s = new Intl.DateTimeFormat(intlLocale(), { weekday: 'short', timeZone: 'UTC' }).format(d);
   return s.charAt(0).toUpperCase() + s.slice(1);
 }

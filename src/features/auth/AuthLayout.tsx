@@ -5,6 +5,9 @@ import { Frame } from '@/ui/Frame';
 import { MiniFooter } from '@/ui/Footer';
 import { IconFlag, IconGrid, IconTarget, IconUsers, IconWarn } from '@/ui/icons';
 import s from './Auth.module.css';
+import { t } from '@/i18n';
+import { LanguageSwitch } from '@/ui/LanguageSwitch';
+import { markAnonPick } from '@/i18n/locale';
 
 // Логотипы команд на фоне левой панели: позиции, размеры и прозрачность из макета Auth-Login.
 const LOGOS: { team: TeamCode; style: CSSProperties }[] = [
@@ -41,26 +44,26 @@ function BrandPanel() {
       </div>
       <BrandMark />
       <h2 className={s.bh}>
-        Прогнозы и&nbsp;фэнтези на&nbsp;<em>Формулу&nbsp;1</em> с&nbsp;друзьями
+        {t('auth.heroA')} <em>{t('auth.heroF1')}</em> {t('auth.heroB')}
       </h2>
       <div className={s.bf}>
         <div>
           <i>
             <IconTarget size={16} />
           </i>
-          Прогноз на каждый этап: поул, подиум, быстрый круг
+          {t('auth.feature1')}
         </div>
         <div>
           <i>
             <IconUsers size={16} />
           </i>
-          Своя лига: от двух игроков, без лимита
+          {t('auth.feature2')}
         </div>
         <div>
           <i>
             <IconFlag size={16} />
           </i>
-          Фэнтези-состав, бюджет и чипы — всё в одном месте
+          {t('auth.feature3')}
         </div>
       </div>
     </div>
@@ -74,7 +77,7 @@ function NotConfigured() {
     <div className={`${s.alert} ${s.info}`} role="status">
       <IconWarn size={20} />
       <div>
-        Supabase ещё не подключён: вход и регистрация заработают после заполнения <code>.env.local</code>.
+        {t('auth.notConfigured')}
       </div>
     </div>
   );
@@ -86,6 +89,9 @@ export function AuthLayout({ children, centerFooter = false }: { children: React
       <div className={s.stage}>
         <BrandPanel />
         <div className={s.fside}>
+          <div className={s.lang}>
+            <LanguageSwitch compact onChange={markAnonPick} />
+          </div>
           <div className={`${s.fcard} rise`}>
             <NotConfigured />
             {children}

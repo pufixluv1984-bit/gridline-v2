@@ -1,6 +1,7 @@
 import type { AuthChangeEvent, Session } from '@supabase/supabase-js';
 import { env } from '../env';
 import { getSupabase } from '../supabase';
+import { t } from '@/i18n';
 
 // Вход только через Google и Discord (решение владельца 11.11.2026): паролей и писем нет.
 export type OAuthProvider = 'google' | 'discord';
@@ -9,9 +10,9 @@ const AUTH_ERROR_KEY = 'gridline:auth-error';
 
 function friendlyError(e: { message?: string; status?: number } | null | undefined): Error {
   const msg = (e?.message ?? '').toLowerCase();
-  if (e?.status === 429) return new Error('Слишком много попыток. Подожди минуту и попробуй снова.');
-  if (msg.includes('fetch') || msg.includes('network')) return new Error('Нет связи с сервером. Проверь интернет.');
-  return new Error('Что-то пошло не так. Попробуй ещё раз.');
+  if (e?.status === 429) return new Error(t('auth.tooMany'));
+  if (msg.includes('fetch') || msg.includes('network')) return new Error(t('auth.noConnection'));
+  return new Error(t('common.somethingWrong'));
 }
 
 export async function getSession(): Promise<Session | null> {
@@ -56,7 +57,7 @@ export function consumeAuthRedirectParams(): void {
   const description = p.get('error_description');
   if (p.has('error')) {
     try {
-      sessionStorage.setItem(AUTH_ERROR_KEY, description || 'Провайдер отклонил вход.');
+      sessionStorage.setItem(AUTH_ERROR_KEY, description || t('auth.providerRejected'));
     } catch {
       /* хранилище недоступно — просто не покажем текст */
     }

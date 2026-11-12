@@ -5,6 +5,7 @@ import { MiniFooter } from '@/ui/Footer';
 import { IconBack } from '@/ui/icons';
 import a from '@/features/auth/Auth.module.css';
 import s from './NotFound.module.css';
+import { t } from '@/i18n';
 
 /** Макет Error-404. */
 export default function NotFoundPage() {
@@ -16,13 +17,13 @@ export default function NotFoundPage() {
         <div className={`${s.center} rise`}>
           <BrandMark />
           <div className={s.big}>404</div>
-          <h1 className={s.title}>Выехали за&nbsp;пределы трассы</h1>
+          <h1 className={s.title}>{t('err404.title')}</h1>
           <div className="mute" style={{ fontSize: 16, lineHeight: 1.5, maxWidth: 440 }}>
-            Такой страницы нет или она переехала. Вернись на главную — гонка продолжается.
+            {t('err404.text')}
           </div>
           <div className={s.actions}>
             <Link className={a.cta} to="/" style={{ width: 'auto', padding: '0 32px' }}>
-              На главную
+              {t('common.toHome')}
             </Link>
             <button
               type="button"
@@ -30,11 +31,11 @@ export default function NotFoundPage() {
               style={{ width: 'auto', padding: '0 26px' }}
               onClick={() => navigate(-1)}
             >
-              <IconBack size={16} /> Назад
+              <IconBack size={16} /> {t('common.back')}
             </button>
           </div>
           <div className="num mute" style={{ fontSize: 12, marginTop: 10, letterSpacing: '.06em' }}>
-            ОШИБКА 404 · {pathname}
+            {t('err404.code', { path: pathname })}
           </div>
         </div>
       </div>

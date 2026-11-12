@@ -6,6 +6,7 @@ import { Avatar } from '@/ui/Avatar';
 import { Modal } from '@/ui/Modal';
 import b from '@/ui/Button.module.css';
 import s from './AvatarEditor.module.css';
+import { t } from '@/i18n';
 
 // Окна аватара из макета Overlays. Состояние и сохранение — в useAvatarEditor.
 
@@ -79,7 +80,7 @@ export function PickWindow({
           <div className="mute" style={{ fontSize: 12.5, margin: '3px 0 9px' }}>
             {formatMb(step.size)} · {pct}%
           </div>
-          <div className={s.pbar} role="progressbar" aria-label="Загрузка файла" aria-valuemin={0} aria-valuemax={100} aria-valuenow={pct}>
+          <div className={s.pbar} role="progressbar" aria-label={t('avatar.uploadAria')} aria-valuemin={0} aria-valuemax={100} aria-valuenow={pct}>
             <i style={{ transform: `scaleX(${step.progress})` }} />
           </div>
         </div>
@@ -88,33 +89,33 @@ export function PickWindow({
     actions = (
       <>
         <button type="button" className={`${b.cta} ${b.sm} ${b.ghost}`} onClick={onCancelLoad}>
-          Отменить загрузку
+          {t('avatar.cancelUpload')}
         </button>
         <button type="button" className={`${b.cta} ${b.sm}`} disabled>
-          Сохранить
+          {t('common.save')}
         </button>
       </>
     );
   } else if (step.k === 'problem') {
-    const t = problemText(step.problem);
+    const pt = problemText(step.problem);
     body = (
       <div className={`${s.drop} ${s.err}`} role="alert">
         <span className={`${s.bigico} ${s.red}`}>
           <IconImageBad />
         </span>
-        <b>{t.title}</b>
+        <b>{pt.title}</b>
         <span className="mute" style={{ fontSize: 13 }}>
-          {t.text}
+          {pt.text}
         </span>
       </div>
     );
     actions = (
       <>
         <button type="button" className={`${b.cta} ${b.sm} ${b.ghost}`} onClick={onBack}>
-          Отмена
+          {t('common.cancel')}
         </button>
         <button type="button" className={`${b.cta} ${b.sm}`} onClick={onChoose}>
-          Выбрать другой файл
+          {t('avatar.chooseOther')}
         </button>
       </>
     );
@@ -137,29 +138,29 @@ export function PickWindow({
         <span className={s.bigico}>
           <IconUpload />
         </span>
-        <b>Перетащи фото сюда</b>
+        <b>{t('avatar.drop')}</b>
         <span className="mute" style={{ fontSize: 13 }}>
-          JPG, PNG или GIF, квадрат от 256 px, до 2 МБ
+          {t('settings.photoHint')}
         </span>
         <button type="button" className={`${b.cta} ${b.sm} ${b.ghost}`} style={{ marginTop: 4 }} onClick={onChoose}>
-          Выбрать файл
+          {t('avatar.choose')}
         </button>
       </div>
     );
     actions = (
       <>
         <button type="button" className={`${b.cta} ${b.sm} ${b.ghost}`} onClick={onLetters}>
-          Использовать буквы
+          {t('avatar.useLetters')}
         </button>
         <button type="button" className={`${b.cta} ${b.sm}`} disabled>
-          Сохранить
+          {t('common.save')}
         </button>
       </>
     );
   }
 
   return (
-    <Modal title="Новое фото профиля" onClose={loading ? onCancelLoad : onClose} wide closeButton={!loading} actions={actions}>
+    <Modal title={t('avatar.newPhoto')} onClose={loading ? onCancelLoad : onClose} wide closeButton={!loading} actions={actions}>
       {body}
     </Modal>
   );
@@ -222,7 +223,7 @@ export function CropWindow({
 
   return (
     <Modal
-      title="Кадрирование"
+      title={t('avatar.crop')}
       onClose={onClose}
       busy={busy}
       wide
@@ -230,18 +231,18 @@ export function CropWindow({
       actions={
         <>
           <button type="button" className={`${b.cta} ${b.sm} ${b.ghost}`} onClick={onOther} disabled={busy}>
-            Другое фото
+            {t('avatar.otherPhoto')}
           </button>
           <button type="button" className={`${b.cta} ${b.sm} ${busy ? s.ld : ''}`} onClick={save_} disabled={busy}>
             {busy ? (
               <>
                 <Spinner />
-                Сохраняем…
+                {t('common.saving')}
               </>
             ) : save.k === 'error' ? (
-              'Повторить'
+              t('common.retry')
             ) : (
-              'Сохранить'
+              t('common.save')
             )}
           </button>
         </>
@@ -250,7 +251,7 @@ export function CropWindow({
       <div
         className={`${s.crop} ${busy ? s.dis : ''}`}
         role="group"
-        aria-label="Кадр: двигай фото мышью или стрелками, масштаб — плюс и минус"
+        aria-label={t('avatar.cropAria')}
         tabIndex={0}
         onPointerDown={onDown}
         onPointerMove={onMove}
@@ -284,13 +285,13 @@ export function CropWindow({
           step={0.01}
           value={view.zoom}
           disabled={busy}
-          aria-label="Масштаб"
+          aria-label={t('avatar.zoom')}
           style={{ ['--p' as string]: `${((view.zoom - 1) / 2) * 100}%` }}
           onChange={(e) => set({ ...view, zoom: Number(e.target.value) })}
         />
       </div>
       <div className="help" style={{ margin: 0 }}>
-        Двигай фото и меняй масштаб, чтобы лицо было в рамке.{step.gif ? ' GIF сохранится анимированным, 256×256.' : ''}
+        {t('avatar.cropHelp')}{step.gif ? t('avatar.cropGif') : ''}
       </div>
       {save.k === 'error' && (
         <div className="alert bad" role="alert">
@@ -319,7 +320,7 @@ export function LettersWindow({
 
   return (
     <Modal
-      title="Аватар без фото"
+      title={t('avatar.letters')}
       onClose={onClose}
       busy={busy}
       wide
@@ -327,18 +328,18 @@ export function LettersWindow({
       actions={
         <>
           <button type="button" className={`${b.cta} ${b.sm} ${b.ghost}`} onClick={onClose} disabled={busy}>
-            Отмена
+            {t('common.cancel')}
           </button>
           <button type="button" className={`${b.cta} ${b.sm} ${busy ? s.ld : ''}`} onClick={() => onSave(color, letters)} disabled={busy}>
             {busy ? (
               <>
                 <Spinner />
-                Сохраняем…
+                {t('common.saving')}
               </>
             ) : save.k === 'error' ? (
-              'Повторить'
+              t('common.retry')
             ) : (
-              'Сохранить'
+              t('common.save')
             )}
           </button>
         </>
@@ -349,13 +350,13 @@ export function LettersWindow({
         <div style={{ minWidth: 0 }}>
           <div style={{ fontWeight: 600 }}>{me.nickname}</div>
           <div className="mute" style={{ fontSize: 13, marginTop: 4 }}>
-            Так тебя видят в таблице и лобби
+            {t('avatar.seenAs')}
           </div>
         </div>
       </div>
       <div className={busy ? s.dis : ''}>
-        <span className="lab">Цвет</span>
-        <div className={s.swr} role="radiogroup" aria-label="Цвет аватара">
+        <span className="lab">{t('avatar.color')}</span>
+        <div className={s.swr} role="radiogroup" aria-label={t('avatar.colorAria')}>
           {AVATAR_COLORS.map((c) => (
             <button
               key={c}
@@ -372,7 +373,7 @@ export function LettersWindow({
       </div>
       <div className={busy ? s.dis : ''}>
         <label className="lab" htmlFor="ava-letters">
-          Буквы
+          {t('avatar.lettersLabel')}
         </label>
         <input
           id="ava-letters"
@@ -384,11 +385,11 @@ export function LettersWindow({
           autoComplete="off"
           onChange={(e) => setLetters(cleanLetters(e.target.value))}
         />
-        <div className="help">До двух символов. По умолчанию — первые буквы ника.</div>
+        <div className="help">{t('avatar.lettersHelp')}</div>
       </div>
       {me.avatar_path && (
         <div className="alert info">
-          <span>Фото будет убрано, вместо него — буквы.</span>
+          <span>{t('avatar.photoWillGo')}</span>
         </div>
       )}
       {save.k === 'error' && (

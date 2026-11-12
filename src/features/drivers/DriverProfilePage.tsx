@@ -9,8 +9,9 @@ import { Content, PageTitle, PillLink, Toolbar, ToolbarDivider } from '@/ui/Page
 import b from '@/ui/Button.module.css';
 import pg from '@/ui/Page.module.css';
 import s from './Drivers.module.css';
+import { intlLocale } from '@/i18n';
 
-const fmt = (n: number) => n.toLocaleString('ru-RU', { maximumFractionDigits: 1 });
+const fmt = (n: number) => n.toLocaleString(intlLocale(), { maximumFractionDigits: 1 });
 
 /** 2014, 2015, 2017, 2018 → «2014–2015, 2017–2018». */
 function ranges(years: number[]): string {
@@ -104,7 +105,7 @@ export default function DriverProfilePage() {
                   {c?.born && (
                     <div>
                       <span>Родился</span>
-                      {new Intl.DateTimeFormat('ru-RU', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' }).format(new Date(c.born)).replace(' г.', '')}
+                      {new Intl.DateTimeFormat(intlLocale(), { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' }).format(new Date(c.born)).replace(' г.', '')}
                     </div>
                   )}
                   <div><span>Дебют в Ф1</span>{c?.debut_year}{c?.debut_race ? `, ${c.debut_race}` : ''}</div>
