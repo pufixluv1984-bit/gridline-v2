@@ -1,4 +1,5 @@
 import type { BoostBlock as Block } from './picks';
+import { t, type Key } from '@/i18n';
 
 /** Ставка «да / нет» (бонусы фазы 2). Повторный клик по выбранному варианту снимает ответ. */
 export function YesNo({
@@ -21,21 +22,21 @@ export function YesNo({
       </span>
       <span className="seg">
         <button type="button" className={value === true ? 'on' : ''} aria-pressed={value === true} disabled={disabled} onClick={() => onChange(value === true ? null : true)}>
-          Да
+          {t('predict.yes')}
         </button>
         <button type="button" className={value === false ? 'on' : ''} aria-pressed={value === false} disabled={disabled} onClick={() => onChange(value === false ? null : false)}>
-          Нет
+          {t('predict.no')}
         </button>
       </span>
     </div>
   );
 }
 
-const OPTIONS: { v: Block | null; t: string }[] = [
-  { v: null, t: 'Без бустера' },
-  { v: 'qualy', t: 'Квалификация' },
-  { v: 'race', t: 'Гонка' },
-  { v: 'bonus', t: 'Бонусы' },
+const OPTIONS: { v: Block | null; t: Key }[] = [
+  { v: null, t: 'predict.boost.none' },
+  { v: 'qualy', t: 'predict.boost.qualy' },
+  { v: 'race', t: 'predict.boost.race' },
+  { v: 'bonus', t: 'predict.boost.bonus' },
 ];
 
 /** Бустер ×2 на один блок. Если бустер уже стоит на другом этапе окна — выбрать нельзя (проверяет и база). */
@@ -57,7 +58,7 @@ export function BoostPicker({
   const stuck = value !== null && closed(value);
   return (
     <div>
-      <div className="seg2" role="radiogroup" aria-label="Бустер ×2">
+      <div className="seg2" role="radiogroup" aria-label={t('predict.booster')}>
         {OPTIONS.map((o) => (
           <button
             key={o.t}
@@ -68,17 +69,17 @@ export function BoostPicker({
             disabled={disabled || stuck || (locked && o.v !== null) || (o.v !== null && closed(o.v))}
             onClick={() => onChange(o.v)}
           >
-            {o.t}
+            {t(o.t)}
             {o.v && value === o.v ? ' ×2' : ''}
           </button>
         ))}
       </div>
       <div className="help">
         {stuck
-          ? 'Блок с бустером уже закрыт — бустер остаётся на нём.'
+          ? t('predict.boost.stuck')
           : usedElsewhere
-          ? `Бустер этого окна уже стоит на этапе ${usedElsewhere.round} (${usedElsewhere.name}). Сними его там, чтобы поставить здесь.`
-          : 'Очки выбранного блока удвоятся. Следующий бустер — через 5 этапов.'}
+          ? t('predict.boost.used', { round: usedElsewhere.round, name: usedElsewhere.name })
+          : t('predict.boost.help')}
       </div>
     </div>
   );

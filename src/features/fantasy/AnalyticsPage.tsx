@@ -3,11 +3,12 @@ import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '@/features/auth/authContext';
 import { fantasyAnalytics, fantasyKeys, pts } from '@/lib/api/fantasy';
-import { plural } from '@/lib/time/format';
+import { gpShort } from '@/lib/time/format';
 import { DriverTile, Skeleton } from '@/ui/game';
 import { Content, PageTitle } from '@/ui/Page';
 import pg from '@/ui/Page.module.css';
 import { FantasyTabs } from './FantasyTabs';
+import { t as tr } from '@/i18n';
 
 /** Макет Fantasy-Analytics: лучший и средний этап, любимый ×2, штрафы, динамика очков лиги, эффективность пилотов. */
 export default function AnalyticsPage() {
@@ -38,22 +39,22 @@ export default function AnalyticsPage() {
 
   return (
     <>
-      <PageTitle title="Фэнтези-лига" sub="Аналитика" />
-      <FantasyTabs action={<Link className={pg.btn} to="/fantasy/squad">Изменить состав</Link>} />
+      <PageTitle title={tr('fan.title')} sub={tr('fan.tab.analytics')} />
+      <FantasyTabs action={<Link className={pg.btn} to="/fantasy/squad">{tr('fan.editSquad')}</Link>} />
       <Content>
         {q.isLoading && <Skeleton h={300} />}
         {data && (
           <>
             <div className="row">
-              <Stat i={0} label="Лучший этап" value={best ? pts(best.total) : '—'} note={best ? `этап ${best.round} · ${best.name.replace('Гран-при ', '')}` : 'появится после первого этапа'} />
-              <Stat i={1} label="Среднее за этап" value={avg === null ? '—' : pts(Math.round(avg * 10) / 10)} note={`за ${mine.length} ${plural(mine.length, 'этап', 'этапа', 'этапов')}`} />
-              <Stat i={2} label="Чаще всего с ×2" value={drsDriver?.code ?? '—'} note={drs ? `${drs[1]} ${plural(drs[1], 'этап', 'этапа', 'этапов')} из ${mine.length}` : 'DRS ещё не ставился'} />
-              <Stat i={3} label="Потрачено на трансферы" value={spent ? `−${spent}` : '0'} note={spent ? 'штрафы за лишние замены' : 'ни одной платной замены'} />
+              <Stat i={0} label={tr('fan.an.best')} value={best ? pts(best.total) : '—'} note={best ? tr('fan.an.bestNote', { round: best.round, name: gpShort(best.name) }) : tr('fan.an.later')} />
+              <Stat i={1} label={tr('fan.an.avg')} value={avg === null ? '—' : pts(Math.round(avg * 10) / 10)} note={tr('fan.an.avgNote', { n: mine.length })} />
+              <Stat i={2} label={tr('fan.an.drs')} value={drsDriver?.code ?? '—'} note={drs ? tr('fan.an.drsNote', { n: drs[1], total: mine.length }) : tr('fan.an.noDrs')} />
+              <Stat i={3} label={tr('fan.an.spent')} value={spent ? `−${spent}` : '0'} note={spent ? tr('fan.an.spentNote') : tr('fan.an.noSpent')} />
             </div>
             <Dynamics data={data.league} me={me} mode={mode} onMode={setMode} />
             <section className="card rise" style={{ ['--i' as string]: 5 }}>
-              <h2 className="h">Эффективность пилотов</h2>
-              <div className="mute" style={{ fontSize: 14, margin: '6px 0 18px' }}>Очки сезона на $1M цены — кто выгоднее всего</div>
+              <h2 className="h">{tr('fan.an.eff')}</h2>
+              <div className="mute" style={{ fontSize: 14, margin: '6px 0 18px' }}>{tr('fan.an.effSub')}</div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                 {eff.map((p) => (
                   <div key={p.id} style={{ display: 'grid', gridTemplateColumns: '40px 200px 1fr 80px', alignItems: 'center', gap: 14 }}>
@@ -65,7 +66,7 @@ export default function AnalyticsPage() {
                     <b className="num" style={{ textAlign: 'right' }}>{p.v.toFixed(2)}</b>
                   </div>
                 ))}
-                {eff.every((x) => x.v === 0) && <div className="mute" style={{ fontSize: 14 }}>Появится после первого этапа с очками.</div>}
+                {eff.every((x) => x.v === 0) && <div className="mute" style={{ fontSize: 14 }}>{tr('fan.an.effLater')}</div>}
               </div>
             </section>
           </>
@@ -115,12 +116,12 @@ function Dynamics({ data, me, mode, onMode }: {
     <section className="card rise" style={{ ['--i' as string]: 4 }}>
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 16, alignItems: 'center', justifyContent: 'space-between' }}>
         <div>
-          <h2 className="h">Динамика очков</h2>
-          <div className="mute" style={{ fontSize: 14, marginTop: 6 }}>{mode === 'cum' ? 'Сумма очков фэнтези-лиги после каждого этапа' : 'Очки каждой команды за этап'}</div>
+          <h2 className="h">{tr('fan.an.dyn')}</h2>
+          <div className="mute" style={{ fontSize: 14, marginTop: 6 }}>{mode === 'cum' ? tr('fan.an.dynCum') : tr('fan.an.dynStage')}</div>
         </div>
-        <div className="seg" role="tablist" aria-label="Режим">
-          <button type="button" role="tab" className={mode === 'cum' ? 'on' : ''} onClick={() => onMode('cum')}>Накопительно</button>
-          <button type="button" role="tab" className={mode === 'stage' ? 'on' : ''} onClick={() => onMode('stage')}>По этапам</button>
+        <div className="seg" role="tablist" aria-label={tr('fan.an.mode')}>
+          <button type="button" role="tab" className={mode === 'cum' ? 'on' : ''} onClick={() => onMode('cum')}>{tr('fan.an.cum')}</button>
+          <button type="button" role="tab" className={mode === 'stage' ? 'on' : ''} onClick={() => onMode('stage')}>{tr('fan.an.byStage')}</button>
         </div>
       </div>
       <div style={{ display: 'flex', gap: 18, flexWrap: 'wrap', marginTop: 18 }}>
@@ -131,9 +132,9 @@ function Dynamics({ data, me, mode, onMode }: {
         ))}
       </div>
       {rounds.length === 0 ? (
-        <div className="mute" style={{ fontSize: 14, marginTop: 18 }}>График появится после первого этапа фэнтези-лиги.</div>
+        <div className="mute" style={{ fontSize: 14, marginTop: 18 }}>{tr('fan.an.chartLater')}</div>
       ) : (
-        <svg viewBox="0 0 1000 320" style={{ width: '100%', height: 'auto', marginTop: 12 }} role="img" aria-label="График очков">
+        <svg viewBox="0 0 1000 320" style={{ width: '100%', height: 'auto', marginTop: 12 }} role="img" aria-label={tr('fan.an.chartAria')}>
           {grid.map((g) => (
             <g key={g}>
               <line x1="40" x2="990" y1={Y(g)} y2={Y(g)} stroke="rgba(255,255,255,.07)" />

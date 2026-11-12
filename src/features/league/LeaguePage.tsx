@@ -7,7 +7,6 @@ import { homeScreen, leagueScreen, screenKeys, type LeagueScreen } from '@/lib/a
 import { getCurrentLeague, setCurrentLeague } from '@/lib/currentLeague';
 import { initialsOf } from '@/lib/initials';
 import { inviteLink } from '@/lib/invite';
-import { plural } from '@/lib/time/format';
 import { Avatar, Skeleton } from '@/ui/game';
 import { LeagueSettings } from './LeagueSettings';
 import { StandingsCard } from './Standings';
@@ -18,23 +17,24 @@ import b from '@/ui/Button.module.css';
 import m from '@/ui/Modal.module.css';
 import pg from '@/ui/Page.module.css';
 import { avatarOf } from '@/lib/avatar';
+import { t } from '@/i18n';
 
 /** /league без id: открываем выбранную лигу или первую, иначе — пустое состояние. */
 export function LeagueIndexPage() {
   const remembered = getCurrentLeague();
   const q = useQuery({ queryKey: screenKeys.home(remembered), queryFn: () => homeScreen(remembered) });
-  if (q.isLoading) return <><PageTitle title="Лига друзей" sub="Таблица" /><Content><Skeleton h={300} /></Content></>;
+  if (q.isLoading) return <><PageTitle title={t('common.friendsLeague')} sub={t('league.table')} /><Content><Skeleton h={300} /></Content></>;
   if (q.data?.league_id) return <Navigate to={`/league/${q.data.league_id}`} replace />;
   return (
     <>
-      <PageTitle title="Лига друзей" sub="Таблица" />
+      <PageTitle title={t('common.friendsLeague')} sub={t('league.table')} />
       <Content>
         <div className="empty-state">
-          <h3>Ты пока не в лиге</h3>
-          <p>Создай лобби и позови друзей ссылкой — или войди по коду, который прислал друг.</p>
+          <h3>{t('league.notIn')}</h3>
+          <p>{t('league.notInText')}</p>
           <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', justifyContent: 'center' }}>
-            <Link className={`${b.cta} ${b.sm}`} to="/lobby/create">Создать лобби</Link>
-            <Link className={`${b.cta} ${b.sm} ${b.ghost}`} to="/lobby/join">Войти по коду</Link>
+            <Link className={`${b.cta} ${b.sm}`} to="/lobby/create">{t('common.createLobby')}</Link>
+            <Link className={`${b.cta} ${b.sm} ${b.ghost}`} to="/lobby/join">{t('common.joinByCode')}</Link>
           </div>
         </div>
       </Content>
@@ -87,9 +87,9 @@ export default function LeaguePage() {
   if (q.error) {
     return (
       <>
-        <PageTitle title="Лига друзей" sub="Таблица" />
+        <PageTitle title={t('common.friendsLeague')} sub={t('league.table')} />
         <Content>
-          <div className="empty-state"><h3>Лига недоступна</h3><p>Ты не участник этой лиги, или её удалили.</p><Link className={`${b.cta} ${b.sm}`} to="/league">К моим лигам</Link></div>
+          <div className="empty-state"><h3>{t('league.unavailable')}</h3><p>{t('league.unavailableText')}</p><Link className={`${b.cta} ${b.sm}`} to="/league">{t('league.toMine')}</Link></div>
         </Content>
       </>
     );
@@ -112,17 +112,17 @@ export default function LeaguePage() {
 
   return (
     <>
-      <PageTitle title="Лига друзей" sub="Таблица" />
+      <PageTitle title={t('common.friendsLeague')} sub={t('league.table')} />
       <Toolbar>
-        <PillLink to={`/league/${id}`} end>Таблица</PillLink>
+        <PillLink to={`/league/${id}`} end>{t('league.table')}</PillLink>
         <a className={pg.pill} href="#duels" onClick={(e) => { e.preventDefault(); document.getElementById('duels')?.scrollIntoView({ behavior: 'smooth' }); }}>
-          Дуэли
+          {t('league.duels')}
         </a>
         <a className={pg.pill} href="#members" onClick={(e) => { e.preventDefault(); document.getElementById('members')?.scrollIntoView({ behavior: 'smooth' }); }}>
-          Участники
+          {t('league.members')}
         </a>
-        {isOwner && <PillLink to={`/lobby/${id}/invite`}>Пригласить</PillLink>}
-        <PillLink to="/lobby/create">Новое лобби</PillLink>
+        {isOwner && <PillLink to={`/lobby/${id}/invite`}>{t('league.invite')}</PillLink>}
+        <PillLink to="/lobby/create">{t('league.newLobby')}</PillLink>
       </Toolbar>
       <Content>
         <section className="card rise" style={{ display: 'flex', flexWrap: 'wrap', gap: 24, alignItems: 'center', justifyContent: 'space-between' }}>
@@ -131,12 +131,12 @@ export default function LeaguePage() {
               {initialsOf(league?.name ?? '··')}
             </div>
             <div>
-              <div className="eyebrow">Лига</div>
+              <div className="eyebrow">{t('league.league')}</div>
               <div className="num" style={{ fontSize: 32, fontWeight: 600, marginTop: 10 }}>{league?.name ?? '…'}</div>
               {league && (
                 <div className="mute" style={{ fontSize: 14, marginTop: 6 }}>
-                  {league.member_count} {plural(league.member_count, 'игрок', 'игрока', 'игроков')} из {league.max_members} · прогнозы · сезон 2026
-                  {league.start_event ? ` · с ${league.start_event.name.replace('Гран-при ', '')}` : ''}
+                  {t('league.meta', { n: league.member_count, max: league.max_members, year: 2026 })}
+                  {league.start_event ? t('league.since', { name: league.start_event.name }) : ''}
                 </div>
               )}
             </div>
@@ -144,10 +144,10 @@ export default function LeaguePage() {
           {league && (
             <div style={{ display: 'flex', gap: 14, alignItems: 'center', flexWrap: 'wrap' }}>
               <div style={{ height: 44, padding: '0 16px', borderRadius: 14, background: 'var(--bg-field)', border: '1px solid var(--line-strong)', display: 'inline-flex', alignItems: 'center', gap: 12 }}>
-                <span className="mute">Код приглашения</span>
+                <span className="mute">{t('league.code')}</span>
                 <b className="num" style={{ letterSpacing: '.1em' }}>{league.invite_code}</b>
               </div>
-              <button type="button" className="mini go" onClick={copy}>{copied ? 'Ссылка скопирована ✓' : 'Скопировать ссылку'}</button>
+              <button type="button" className="mini go" onClick={copy}>{copied ? t('league.copied') : t('league.copy')}</button>
             </div>
           )}
         </section>
@@ -156,20 +156,20 @@ export default function LeaguePage() {
           <div className="sbn">
             <span className="ic" aria-hidden="true">★</span>
             <div style={{ flex: '1 1 300px' }}>
-              <div style={{ fontWeight: 600, fontSize: 15 }}>Сезон {league?.season ?? ''} завершён — это архив лиги</div>
+              <div style={{ fontWeight: 600, fontSize: 15 }}>{t('league.archive', { year: league?.season ?? '' })}</div>
               <div className="mute" style={{ fontSize: 13, marginTop: 4, lineHeight: 1.45 }}>
                 {data.carried_to
-                  ? `Лига уже перенесена в сезон ${data.current_season}.`
+                  ? t('league.carried', { year: data.current_season })
                   : isOwner
-                    ? `Перенеси лигу в сезон ${data.current_season}: те же игроки и правила, таблица с нуля. Архив останется.`
-                    : `Хозяин лиги может перенести её в сезон ${data.current_season}.`}
+                    ? t('league.carryOwner', { year: data.current_season })
+                    : t('league.carryOther', { year: data.current_season })}
               </div>
             </div>
             {data.carried_to ? (
-              <Link className="mini go" to={`/league/${data.carried_to}`} style={{ display: 'inline-flex', alignItems: 'center' }}>Открыть лигу {data.current_season}</Link>
+              <Link className="mini go" to={`/league/${data.carried_to}`} style={{ display: 'inline-flex', alignItems: 'center' }}>{t('league.openYear', { year: data.current_season })}</Link>
             ) : isOwner ? (
               <button type="button" className="mini go" disabled={carry.isPending} onClick={() => carry.mutate()}>
-                {carry.isPending ? 'Переносим…' : `Перенести в ${data.current_season}`}
+                {carry.isPending ? t('league.carrying') : t('league.carryTo', { year: data.current_season })}
               </button>
             ) : null}
           </div>
@@ -182,7 +182,7 @@ export default function LeaguePage() {
         <div className="row">
           <Duels data={data} me={me} />
           <section className="card rise" style={{ ['--i' as string]: 3, flex: '1 1 480px' }} id="members">
-            <h2 className="h">Участники</h2>
+            <h2 className="h">{t('league.members')}</h2>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginTop: 16 }}>
               {(data?.members ?? []).map((x) => {
                 const sub = data?.submissions.find((s) => s.user_id === x.user_id);
@@ -190,16 +190,16 @@ export default function LeaguePage() {
                   <div key={x.user_id} className="lrow">
                     <Avatar {...avatarOf(x)} />
                     <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ fontWeight: 600 }}>{x.nickname}{x.user_id === me ? ' (ты)' : ''}</div>
+                      <div style={{ fontWeight: 600 }}>{x.nickname}{x.user_id === me ? t('league.you') : ''}</div>
                       <div className="mute" style={{ fontSize: 13, marginTop: 3 }}>
-                        {data?.event ? (sub?.submitted ? `Прогноз на ${data.event.name.replace('Гран-при ', '')} отправлен` : 'Прогноз ещё не отправлен') : ''}
+                        {data?.event ? (sub?.submitted ? t('league.sentFor', { name: data.event.name }) : t('league.notSent')) : ''}
                       </div>
                     </div>
-                    <span className={`chip ${x.role === 'owner' ? 'gold' : ''}`}>{x.role === 'owner' ? 'Хозяин' : 'Игрок'}</span>
+                    <span className={`chip ${x.role === 'owner' ? 'gold' : ''}`}>{x.role === 'owner' ? t('league.owner') : t('league.player')}</span>
                     {isOwner && x.user_id !== me && (
                       <>
-                        <button type="button" className="mini" onClick={() => setDialog({ kind: 'transfer', userId: x.user_id, nickname: x.nickname })}>Передать</button>
-                        <button type="button" className="mini" onClick={() => setDialog({ kind: 'kick', userId: x.user_id, nickname: x.nickname })}>Исключить</button>
+                        <button type="button" className="mini" onClick={() => setDialog({ kind: 'transfer', userId: x.user_id, nickname: x.nickname })}>{t('league.transfer')}</button>
+                        <button type="button" className="mini" onClick={() => setDialog({ kind: 'kick', userId: x.user_id, nickname: x.nickname })}>{t('league.kick')}</button>
                       </>
                     )}
                   </div>
@@ -210,7 +210,7 @@ export default function LeaguePage() {
             {league && (
               <div style={{ marginTop: 18, display: 'flex', justifyContent: 'flex-end' }}>
                 <button type="button" className={`${b.cta} ${b.sm} ${b.ghost}`} onClick={() => setDialog({ kind: 'leave' })}>
-                  {isOwner && league.member_count === 1 ? 'Удалить лигу' : 'Выйти из лиги'}
+                  {isOwner && league.member_count === 1 ? t('league.deleteLeague') : t('league.leave')}
                 </button>
               </div>
             )}
@@ -220,15 +220,15 @@ export default function LeaguePage() {
 
       {dialog && (
         <Modal
-          title={dialog.kind === 'leave' ? (isOwner && league?.member_count === 1 ? 'Удалить лигу?' : 'Выйти из лиги?') : dialog.kind === 'kick' ? `Исключить ${dialog.nickname}?` : `Передать лигу ${dialog.nickname}?`}
+          title={dialog.kind === 'leave' ? (isOwner && league?.member_count === 1 ? t('league.deleteQ') : t('league.leaveQ')) : dialog.kind === 'kick' ? t('league.kickQ', { name: dialog.nickname }) : t('league.transferQ', { name: dialog.nickname })}
           icon={<IconWarn size={24} />}
           onClose={() => { setDialog(null); act.reset(); }}
           busy={act.isPending}
           actions={
             <>
-              <button type="button" className={`${b.cta} ${b.sm} ${b.ghost}`} onClick={() => { setDialog(null); act.reset(); }} disabled={act.isPending}>Отмена</button>
+              <button type="button" className={`${b.cta} ${b.sm} ${b.ghost}`} onClick={() => { setDialog(null); act.reset(); }} disabled={act.isPending}>{t('common.cancel')}</button>
               <button type="button" className={`${b.cta} ${b.sm} ${dialog.kind === 'transfer' ? '' : b.dng}`} onClick={() => act.mutate(dialog)} disabled={act.isPending}>
-                {act.isPending ? 'Секунду…' : dialog.kind === 'leave' ? (isOwner && league?.member_count === 1 ? 'Удалить' : 'Выйти') : dialog.kind === 'kick' ? 'Исключить' : 'Передать'}
+                {act.isPending ? t('league.wait') : dialog.kind === 'leave' ? (isOwner && league?.member_count === 1 ? t('league.delete') : t('league.leaveBtn')) : dialog.kind === 'kick' ? t('league.kick') : t('league.transfer')}
               </button>
             </>
           }
@@ -236,13 +236,13 @@ export default function LeaguePage() {
           <p className={m.text}>
             {dialog.kind === 'leave'
               ? isOwner && league?.member_count === 1
-                ? 'Ты единственный игрок — лига удалится вместе с таблицей.'
+                ? t('league.lastPlayer')
                 : isOwner
-                  ? 'Ты хозяин лиги: сначала передай её другому игроку (кнопка «Передать» у участника).'
-                  : 'Ты пропадёшь из таблицы этой лиги. Твои прогнозы останутся в других лигах.'
+                  ? t('league.ownerFirst')
+                  : t('league.leaveText')
               : dialog.kind === 'kick'
-                ? 'Игрок пропадёт из таблицы лиги. Вернуться он сможет только по новой ссылке.'
-                : 'Новый хозяин сможет исключать игроков и сбрасывать ссылку. Ты останешься обычным игроком.'}
+                ? t('league.kickText')
+                : t('league.transferText')}
           </p>
           {act.error && <div className="alert bad" role="alert">{act.error.message}</div>}
         </Modal>
@@ -281,7 +281,7 @@ function Duels({ data, me }: { data: LeagueScreen | undefined; me: string | unde
 
   return (
     <section className="card rise" style={{ ['--i' as string]: 2, flex: '1 1 480px' }} id="duels">
-      <h2 className="h">Дуэли</h2>
+      <h2 className="h">{t('league.duels')}</h2>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 14, marginTop: 16 }}>
         {duels.map((d) => {
           const total = d.a + d.b || 1;
@@ -296,11 +296,11 @@ function Duels({ data, me }: { data: LeagueScreen | undefined; me: string | unde
                 <i style={{ display: 'block', width: `${(d.a / total) * 100}%`, background: meRow?.avatar_color }} />
                 <i style={{ display: 'block', width: `${(d.b / total) * 100}%`, background: d.avatar_color }} />
               </div>
-              <div className="mute" style={{ fontSize: 13, marginTop: 8 }}>{meRow?.nickname} против {d.nickname} · побед по этапам</div>
+              <div className="mute" style={{ fontSize: 13, marginTop: 8 }}>{t('league.vs', { a: meRow?.nickname ?? '', b: d.nickname })}</div>
             </div>
           );
         })}
-        {data && duels.length === 0 && <div className="mute" style={{ fontSize: 14 }}>Позови друзей — здесь появятся личные счёты.</div>}
+        {data && duels.length === 0 && <div className="mute" style={{ fontSize: 14 }}>{t('league.duelsEmpty')}</div>}
       </div>
     </section>
   );

@@ -19,33 +19,40 @@ import { Notices, Toast } from '@/ui/Toast';
 import { Modal } from '@/ui/Modal';
 import m from '@/ui/Modal.module.css';
 import { avatarOf } from '@/lib/avatar';
+import { t, tn, type Key } from '@/i18n';
 
-const RACE_RULES = [
-  ['Точное место', '+10'],
-  ['Мимо на 1 место', '+5'],
-  ['Мимо на 2 места', '+3'],
-  ['В топ-10, но дальше', '+1'],
-  ['Подиум в точном порядке', '+10'],
+// Таблицы правил — ключи словаря и очки; текст берётся на языке сайта при отрисовке.
+const RACE_RULES: [Key, string][] = [
+  ['predict.r.exact', '+10'],
+  ['predict.r.off1', '+5'],
+  ['predict.r.off2', '+3'],
+  ['predict.r.inTop', '+1'],
+  ['predict.r.podium', '+10'],
 ];
-const QUALY_RULES = [
-  ['Поул точно', '+6'],
-  ['P2 точно', '+4'],
-  ['P3 точно', '+4'],
+const QUALY_RULES: [Key, string][] = [
+  ['predict.r.pole', '+6'],
+  ['predict.r.p2', '+4'],
+  ['predict.r.p3', '+4'],
 ];
 
-const BONUS_RULES = [
-  ['Быстрый круг', 'Лучший круг гонки', '+6'],
-  ['Первый сход', 'Меньше всех кругов среди сошедших; сходов нет — «Никто»', '+10'],
-  ['Победа с поула', 'Выиграет ли гонку пилот с поула', '+3'],
-  ['Safety car', 'Будет ли выезд машины безопасности (VSC не считается)', '+3'],
-  ['Сходов 2 и больше', 'Или меньше двух', '+3'],
+const BONUS_RULES: [Key, Key, string][] = [
+  ['predict.r.fl', 'predict.r.flD', '+6'],
+  ['predict.r.dnf', 'predict.r.dnfD', '+10'],
+  ['predict.r.poleWin', 'predict.r.poleWinD', '+3'],
+  ['predict.r.sc', 'predict.r.scD', '+3'],
+  ['predict.r.dnf2', 'predict.r.dnf2D', '+3'],
 ];
 
 const lastName = (d: Driver) => d.name.split(' ').slice(-1)[0] ?? d.name;
-const BLOCK_NAMES: Record<Block, string> = { qualy: 'Квалификация', sprint: 'Спринт', race: 'Гонка и бонусы', bonus: 'Гонка и бонусы' };
-const SPRINT_RULES = [
-  ['Победитель спринта точно', '+6'],
-  ['P2 и P3 точно', '+4 и +4'],
+const BLOCK_NAMES: Record<Block, string> = {
+  get qualy() { return t('predict.b.qualy'); },
+  get sprint() { return t('predict.b.sprint'); },
+  get race() { return t('predict.b.race'); },
+  get bonus() { return t('predict.b.race'); },
+};
+const SPRINT_RULES: [Key, string][] = [
+  ['predict.r.sprintWin', '+6'],
+  ['predict.r.sprintP23', '+4 / +4'],
 ];
 
 /**
@@ -202,39 +209,39 @@ export default function PredictPage() {
   const boostCls = (b: BoostBlock) => (extras.boost === b ? { borderColor: 'rgba(232,33,26,.5)', boxShadow: '0 0 34px rgba(232,33,26,.14)' } : undefined);
 
   const sendHint = !open
-    ? 'Приём закрыт — прогноз зафиксирован'
+    ? t('predict.hint.closed')
     : split && partial.length
-      ? `Заполни блок целиком или очисти его: ${partial.map((b) => BLOCK_NAMES[b].toLowerCase()).join(', ')}`
+      ? t('predict.hint.partial', { blocks: partial.map((b) => BLOCK_NAMES[b].toLowerCase()).join(', ') })
       : !complete
       ? split
-        ? 'Заполни хотя бы один блок целиком'
-        : `Заполни квалификацию и топ-10: ещё ${13 - picks.slice(0, 13).filter(Boolean).length}`
+        ? t('predict.hint.oneBlock')
+        : t('predict.hint.left', { n: 13 - picks.slice(0, 13).filter(Boolean).length })
       : save.isSuccess && !dirty
-        ? split ? 'Прогноз принят. Открытые блоки можно менять до их закрытия' : 'Прогноз принят. До дедлайна его можно изменить'
+        ? split ? t('predict.hint.acceptedSplit') : t('predict.hint.accepted')
         : data?.prediction && !dirty
-          ? split ? 'Прогноз отправлен. Открытые блоки можно менять до их закрытия' : 'Прогноз отправлен. До дедлайна его можно изменить'
-          : 'Бонусы и бустер можно пропустить';
+          ? split ? t('predict.hint.sentSplit') : t('predict.hint.sent')
+          : t('predict.hint.skip');
 
   return (
     <>
-      <PageTitle title="Игра прогнозов" sub="Прогноз этапа" />
+      <PageTitle title={t('predict.title')} sub={t('predict.sub')} />
       <Toolbar>
         <a className={p.btn} href="#send" onClick={(e) => { e.preventDefault(); document.getElementById('send')?.scrollIntoView({ behavior: 'smooth' }); }}>
           <IconTarget size={20} />
-          Отправить прогноз
+          {t('predict.send')}
         </a>
         <ToolbarDivider />
-        <PillLink to="/predict">Прогноз этапа</PillLink>
-        <PillLink to="/league">Лига друзей</PillLink>
-        <PillLink to="/rules">Правила начисления</PillLink>
+        <PillLink to="/predict">{t('predict.sub')}</PillLink>
+        <PillLink to="/league">{t('common.friendsLeague')}</PillLink>
+        <PillLink to="/rules">{t('predict.scoring')}</PillLink>
       </Toolbar>
       <Content>
         {q.isLoading ? (
           <div className="card"><Skeleton h={420} /></div>
         ) : q.error ? (
-          <div className="empty-state"><h3>Не получилось загрузить этап</h3><p>Проверь интернет и обнови страницу.</p></div>
+          <div className="empty-state"><h3>{t('predict.loadFail')}</h3><p>{t('predict.loadFailText')}</p></div>
         ) : !ev ? (
-          <div className="empty-state"><h3>Сезон закончился</h3><p>Прогнозы снова откроются перед первым этапом нового сезона.</p></div>
+          <div className="empty-state"><h3>{t('predict.seasonOver')}</h3><p>{t('predict.seasonOverText')}</p></div>
         ) : (
           <>
           <Notices notices={data?.notices} />
@@ -242,20 +249,20 @@ export default function PredictPage() {
             <section className="card rise" style={{ flex: '2 1 760px', minWidth: 0 }}>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 16, justifyContent: 'space-between', alignItems: 'flex-start' }}>
                 <div>
-                  <div className="eyebrow">Этап {ev.round} · {ev.name}</div>
-                  <div className="num" style={{ fontSize: 30, fontWeight: 600, marginTop: 12, letterSpacing: '-.01em' }}>Твой прогноз</div>
+                  <div className="eyebrow">{t('predict.roundName', { round: ev.round, name: ev.name })}</div>
+                  <div className="num" style={{ fontSize: 30, fontWeight: 600, marginTop: 12, letterSpacing: '-.01em' }}>{t('predict.yours')}</div>
                   <div className="mute" style={{ fontSize: 14, marginTop: 8 }}>
                     {!open
-                      ? split ? 'Приём закрыт: гонка началась' : 'Приём закрыт: квалификация началась'
+                      ? split ? t('predict.closedRace') : t('predict.closedQualy')
                       : split && nextBlock
-                        ? `${BLOCK_NAMES[nextBlock]}: приём до ${formatDateTime(nextDeadline!)} — старт ${(SESSION_NAMES[nextBlock] ?? '').toLowerCase()}`
-                        : `Приём до ${formatDateTime(ev.deadline!)} — старт квалификации`}
+                        ? t('predict.blockUntil', { block: BLOCK_NAMES[nextBlock], at: formatDateTime(nextDeadline!), session: (SESSION_NAMES[nextBlock] ?? '').toLowerCase() })
+                        : t('predict.until', { at: formatDateTime(ev.deadline!) })}
                   </div>
                 </div>
-                {open && nextDeadline ? <Countdown to={nextDeadline} small seconds={false} /> : <span className="chip red">Приём закрыт</span>}
+                {open && nextDeadline ? <Countdown to={nextDeadline} small seconds={false} /> : <span className="chip red">{t('predict.closedChip')}</span>}
               </div>
 
-              <BlockHead title="Квалификация · топ-3" chip={`${filledIn(picks, 'qualy')} из 3`} full={filledIn(picks, 'qualy') === 3} until={split ? deadlineOf('qualy') : null} closed={closed('qualy')} />
+              <BlockHead title={t('predict.qualyTop3')} chip={t('predict.ofN', { n: filledIn(picks, 'qualy'), total: 3 })} full={filledIn(picks, 'qualy') === 3} until={split ? deadlineOf('qualy') : null} closed={closed('qualy')} />
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,minmax(0,1fr))', gap: 10 }}>
                 {SLOTS.slice(0, 3).map((s) => {
                   const v = slotView(s.index);
@@ -264,7 +271,7 @@ export default function PredictPage() {
                       <span className="num" style={{ width: 44, fontSize: 15, fontWeight: 600, color: 'var(--gold)' }}>{s.label}</span>
                       <DriverTile driver={v.d} size={40} />
                       <div style={{ flex: 1, minWidth: 0 }}>
-                        <div style={{ fontWeight: 600, fontSize: 15 }}>{v.d ? lastName(v.d) : 'Выбрать'}</div>
+                        <div style={{ fontWeight: 600, fontSize: 15 }}>{v.d ? lastName(v.d) : t('predict.pick')}</div>
                         <div className="mute" style={{ fontSize: 12, marginTop: 2 }}>{v.d ? v.d.team_name : s.points}</div>
                       </div>
                     </button>
@@ -274,7 +281,7 @@ export default function PredictPage() {
 
               {hasSprint && (
                 <>
-                  <BlockHead title="Спринт · топ-3" chip={`${filledIn(picks, 'sprint')} из 3`} full={filledIn(picks, 'sprint') === 3} until={deadlineOf('sprint')} closed={closed('sprint')} />
+                  <BlockHead title={t('predict.sprintTop3')} chip={t('predict.ofN', { n: filledIn(picks, 'sprint'), total: 3 })} full={filledIn(picks, 'sprint') === 3} until={deadlineOf('sprint')} closed={closed('sprint')} />
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,minmax(0,1fr))', gap: 10 }}>
                     {SLOTS.slice(15, 18).map((s) => {
                       const v = slotView(s.index);
@@ -283,7 +290,7 @@ export default function PredictPage() {
                           <span className="num" style={{ width: 56, fontSize: 15, fontWeight: 600, color: 'var(--gold)' }}>{s.label}</span>
                           <DriverTile driver={v.d} size={40} />
                           <div style={{ flex: 1, minWidth: 0 }}>
-                            <div style={{ fontWeight: 600, fontSize: 15 }}>{v.d ? lastName(v.d) : 'Выбрать'}</div>
+                            <div style={{ fontWeight: 600, fontSize: 15 }}>{v.d ? lastName(v.d) : t('predict.pick')}</div>
                             <div className="mute" style={{ fontSize: 12, marginTop: 2 }}>{v.d ? v.d.team_name : s.points}</div>
                           </div>
                         </button>
@@ -293,7 +300,7 @@ export default function PredictPage() {
                 </>
               )}
 
-              <BlockHead title="Топ-10 финиша" chip={`${filledIn(picks, 'race')} из 10`} full={filledIn(picks, 'race') === 10} until={split ? deadlineOf('race') : null} closed={closed('race')} />
+              <BlockHead title={t('predict.top10')} chip={t('predict.ofN', { n: filledIn(picks, 'race'), total: 10 })} full={filledIn(picks, 'race') === 10} until={split ? deadlineOf('race') : null} closed={closed('race')} />
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2,minmax(0,1fr))', gap: 10 }}>
                 {SLOTS.slice(3, 13).map((s) => {
                   const v = slotView(s.index);
@@ -302,8 +309,8 @@ export default function PredictPage() {
                       <span className="num" style={{ width: 36, fontSize: 18, fontWeight: 600, color: s.pos <= 3 ? 'var(--gold)' : 'var(--mute)' }}>P{s.pos}</span>
                       <DriverTile driver={v.d} size={40} />
                       <div style={{ flex: 1, minWidth: 0 }}>
-                        <div style={{ fontWeight: 600, fontSize: 15 }}>{v.d ? v.d.name : 'Выбери пилота'}</div>
-                        <div className="mute" style={{ fontSize: 12, marginTop: 2 }}>{v.d ? v.d.team_name : active === s.index && slotOpen(s.index) ? 'Выбираешь сейчас' : ''}</div>
+                        <div style={{ fontWeight: 600, fontSize: 15 }}>{v.d ? v.d.name : t('predict.pickDriver')}</div>
+                        <div className="mute" style={{ fontSize: 12, marginTop: 2 }}>{v.d ? v.d.team_name : active === s.index && slotOpen(s.index) ? t('predict.picking') : ''}</div>
                       </div>
                     </button>
                   );
@@ -311,8 +318,8 @@ export default function PredictPage() {
               </div>
 
               <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', gap: 10, margin: '30px 0 14px' }}>
-                <span className="eyebrow">Бонус</span>
-                <span className="chip green">Считается автоматически</span>
+                <span className="eyebrow">{t('predict.bonus')}</span>
+                <span className="chip green">{t('predict.auto')}</span>
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,minmax(0,1fr))', gap: 12 }}>
                 {[13, 14].map((i) => {
@@ -322,36 +329,36 @@ export default function PredictPage() {
                     <button key={i} type="button" className={v.cls} style={{ flexDirection: 'column', alignItems: 'center', textAlign: 'center', padding: '16px 12px', gap: 10, ...boostCls('bonus') }} onClick={() => tapSlot(i)} disabled={!slotOpen(i)} aria-pressed={active === i}>
                       <div className="eyebrow">{s.label}</div>
                       {v.none ? (
-                        <div className="ph" style={{ width: 72, height: 72, borderRadius: 22, ['--c' as string]: '#7fe0a0' }}><span className="npc" style={{ fontSize: 15 }}>никто</span></div>
+                        <div className="ph" style={{ width: 72, height: 72, borderRadius: 22, ['--c' as string]: '#7fe0a0' }}><span className="npc" style={{ fontSize: 15 }}>{t('predict.nobody')}</span></div>
                       ) : (
                         <DriverTile driver={v.d} size={72} />
                       )}
-                      <div style={{ fontWeight: 600, fontSize: 14, minHeight: 18 }}>{v.none ? 'Никто не сойдёт' : v.d ? lastName(v.d) : 'Выбрать'}</div>
-                      <div className="mute" style={{ fontSize: 12 }}>{i === 13 ? 'Гонка' : 'Круги в гонке'} · <b style={{ color: 'var(--pos)' }}>{s.points}</b></div>
+                      <div style={{ fontWeight: 600, fontSize: 14, minHeight: 18 }}>{v.none ? t('predict.nobodyDnf') : v.d ? lastName(v.d) : t('predict.pick')}</div>
+                      <div className="mute" style={{ fontSize: 12 }}>{i === 13 ? t('predict.race') : t('predict.laps')} · <b style={{ color: 'var(--pos)' }}>{s.points}</b></div>
                     </button>
                   );
                 })}
                 <div style={{ gridColumn: 'span 2', display: 'flex', flexDirection: 'column', gap: 10 }}>
-                  <YesNo label="Поул выиграет гонку" points="+3" value={extras.poleWins} onChange={(v) => setExtra('poleWins', v)} disabled={closed('race')} />
-                  <YesNo label="Будет safety car" points="+3" value={extras.safetyCar} onChange={(v) => setExtra('safetyCar', v)} disabled={closed('race')} />
-                  <YesNo label="Сходов 2 и больше" points="+3" value={extras.dnfMany} onChange={(v) => setExtra('dnfMany', v)} disabled={closed('race')} />
+                  <YesNo label={t('predict.poleWins')} points="+3" value={extras.poleWins} onChange={(v) => setExtra('poleWins', v)} disabled={closed('race')} />
+                  <YesNo label={t('predict.scYes')} points="+3" value={extras.safetyCar} onChange={(v) => setExtra('safetyCar', v)} disabled={closed('race')} />
+                  <YesNo label={t('predict.dnfMany')} points="+3" value={extras.dnfMany} onChange={(v) => setExtra('dnfMany', v)} disabled={closed('race')} />
                 </div>
               </div>
 
               <div style={{ margin: '28px 0 14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
-                <span className="eyebrow">Бустер ×2</span>
-                <span className="chip">Один на каждые 5 этапов</span>
+                <span className="eyebrow">{t('predict.booster')}</span>
+                <span className="chip">{t('predict.boosterWindow')}</span>
               </div>
               <BoostPicker value={extras.boost} onChange={(v) => setExtra('boost', v)} disabled={!open} usedElsewhere={data?.boost_used ?? null} closed={(b) => closed(b)} />
 
               {slotOpen(active) && (
                 <>
                   <div style={{ margin: '28px 0 14px' }}>
-                    <span className="eyebrow">Выбери пилота для: <b style={{ color: '#fff' }}>{SLOTS[active]!.block === 'race' ? `P${SLOTS[active]!.pos} в гонке` : SLOTS[active]!.block === 'qualy' ? `${SLOTS[active]!.label} в квалификации` : SLOTS[active]!.block === 'sprint' ? `${SLOTS[active]!.label} в спринте` : SLOTS[active]!.label}</b></span>
+                    <span className="eyebrow">{t('predict.pickFor')} <b style={{ color: '#fff' }}>{SLOTS[active]!.block === 'race' ? t('predict.pickRace', { n: SLOTS[active]!.pos }) : SLOTS[active]!.block === 'qualy' ? t('predict.pickQualy', { slot: SLOTS[active]!.label }) : SLOTS[active]!.block === 'sprint' ? t('predict.pickSprint', { slot: SLOTS[active]!.label }) : SLOTS[active]!.label}</b></span>
                   </div>
                   {active === FIRST_DNF && (
                     <button type="button" className={`slot ${picks[FIRST_DNF] === NONE ? 'act' : ''}`} style={{ width: '100%', justifyContent: 'center', marginBottom: 10, fontWeight: 600 }} onClick={() => choose(NONE)}>
-                      Никто не сойдёт
+                      {t('predict.nobodyDnf')}
                     </button>
                   )}
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6,minmax(0,1fr))', gap: 10 }}>
@@ -363,14 +370,14 @@ export default function PredictPage() {
                           <DriverTile driver={d} size={52} />
                           <div style={{ fontSize: 13, fontWeight: 600 }}>{d.code}</div>
                           <div style={{ fontSize: 10, letterSpacing: '.06em', textTransform: 'uppercase', color: '#ffb800', minHeight: 12 }}>
-                            {here ? 'выбран' : used ? 'уже в блоке' : ''}
+                            {here ? t('predict.chosen') : used ? t('predict.inBlock') : ''}
                           </div>
                         </button>
                       );
                     })}
                   </div>
                   <div className="mute" style={{ fontSize: 12, margin: '10px 2px 0' }}>
-                    Состав — по заявке последнего этапа из Jolpica. Пилот уже стоит в блоке — выбор переставит его на это место.
+                    {t('predict.lineupNote')}
                   </div>
                 </>
               )}
@@ -378,7 +385,7 @@ export default function PredictPage() {
               <div id="send" style={{ display: 'flex', flexWrap: 'wrap', gap: 14, alignItems: 'center', marginTop: 28 }}>
                 {open && (
                   <button type="button" className={p.btn} style={complete ? undefined : { opacity: 0.45, cursor: 'not-allowed' }} disabled={!complete || save.isPending || (!dirty && !!data?.prediction)} onClick={() => save.mutate()}>
-                    {save.isPending ? 'Отправляем…' : data?.prediction && !dirty ? 'Отправлено ✓' : data?.prediction ? 'Сохранить изменения' : 'Отправить прогноз'}
+                    {save.isPending ? t('predict.sending') : data?.prediction && !dirty ? t('predict.sent') : data?.prediction ? t('predict.saveChanges') : t('predict.send')}
                   </button>
                 )}
                 <span className="mute" style={{ fontSize: 14 }} aria-live="polite">{sendHint}</span>
@@ -388,61 +395,61 @@ export default function PredictPage() {
 
             <div style={{ flex: '1 1 380px', minWidth: 0, display: 'flex', flexDirection: 'column', gap: 18 }}>
               <section className="card rise" style={{ ['--i' as string]: 1 }}>
-                <h2 className="h">Кто уже отправил</h2>
+                <h2 className="h">{t('predict.whoSent')}</h2>
                 {data?.league ? (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginTop: 16 }}>
                     {data.submissions.map((s) => (
                       <div key={s.user_id} className="lrow">
                         <Avatar {...avatarOf(s)} />
                         <div style={{ flex: 1, fontWeight: 600 }}>{s.nickname}</div>
-                        <span className={`chip ${s.submitted ? 'green' : ''}`}>{s.submitted ? 'Отправил' : 'Ждём'}</span>
+                        <span className={`chip ${s.submitted ? 'green' : ''}`}>{s.submitted ? t('predict.sentChip') : t('predict.waitChip')}</span>
                       </div>
                     ))}
-                    <div className="mute" style={{ fontSize: 12 }}>Лига «{data.league.name}». Чужие прогнозы скрыты до {split ? 'старта гонки' : 'закрытия приёма'}.</div>
+                    <div className="mute" style={{ fontSize: 12 }}>{t('predict.leagueHidden', { name: data.league.name, until: split ? t('predict.untilRace') : t('predict.untilClose') })}</div>
                   </div>
                 ) : (
                   <div className="mute" style={{ fontSize: 14, marginTop: 12, lineHeight: 1.5 }}>
-                    Ты пока не в лиге. <Link to="/lobby/create" style={{ color: '#fff', fontWeight: 600 }}>Создай лобби</Link> или войди по коду друга — прогноз один на все твои лиги.
+                    {tn('predict.noLeague', { create: <Link to="/lobby/create" style={{ color: '#fff', fontWeight: 600 }}>{t('predict.noLeagueCreate')}</Link> })}
                   </div>
                 )}
               </section>
               <section className="card rise" style={{ ['--i' as string]: 2 }} id="rules">
-                <h2 className="h">Очки за квалификацию</h2>
-                <div style={{ marginTop: 10 }}>{QUALY_RULES.map(([n, v]) => <div key={n} className="kv"><span>{n}</span><b className="num">{v}</b></div>)}</div>
+                <h2 className="h">{t('predict.ptsQualy')}</h2>
+                <div style={{ marginTop: 10 }}>{QUALY_RULES.map(([n, v]) => <div key={n} className="kv"><span>{t(n)}</span><b className="num">{v}</b></div>)}</div>
               </section>
               {hasSprint && (
                 <section className="card rise" style={{ ['--i' as string]: 2 }}>
-                  <h2 className="h">Очки за спринт</h2>
-                  <div style={{ marginTop: 10 }}>{SPRINT_RULES.map(([n, v]) => <div key={n} className="kv"><span>{n}</span><b className="num">{v}</b></div>)}</div>
-                  <div className="mute" style={{ fontSize: 12, marginTop: 8, lineHeight: 1.5 }}>Бустер на спринт не ставится.</div>
+                  <h2 className="h">{t('predict.ptsSprint')}</h2>
+                  <div style={{ marginTop: 10 }}>{SPRINT_RULES.map(([n, v]) => <div key={n} className="kv"><span>{t(n)}</span><b className="num">{v}</b></div>)}</div>
+                  <div className="mute" style={{ fontSize: 12, marginTop: 8, lineHeight: 1.5 }}>{t('predict.noSprintBoost')}</div>
                 </section>
               )}
               <section className="card rise" style={{ ['--i' as string]: 3 }}>
-                <h2 className="h">Очки за топ-10</h2>
-                <div style={{ marginTop: 10 }}>{RACE_RULES.map(([n, v]) => <div key={n} className="kv"><span>{n}</span><b className="num">{v}</b></div>)}</div>
-                <div className="mute" style={{ fontSize: 12, marginTop: 8, lineHeight: 1.5 }}>Очки за место даются, если пилот финишировал в топ-10.</div>
+                <h2 className="h">{t('predict.ptsTop10')}</h2>
+                <div style={{ marginTop: 10 }}>{RACE_RULES.map(([n, v]) => <div key={n} className="kv"><span>{t(n)}</span><b className="num">{v}</b></div>)}</div>
+                <div className="mute" style={{ fontSize: 12, marginTop: 8, lineHeight: 1.5 }}>{t('predict.top10Note')}</div>
               </section>
               <section className="card rise" style={{ ['--i' as string]: 4 }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}><h2 className="h">Бонус</h2><span className="chip green">Авто</span></div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}><h2 className="h">{t('predict.bonus')}</h2><span className="chip green">{t('predict.autoChip')}</span></div>
                 <div style={{ marginTop: 10 }}>
                   {BONUS_RULES.map(([n, d, v]) => (
                     <div key={n} className="kv">
-                      <span>{n}<span className="mute" style={{ display: 'block', fontSize: 12, marginTop: 3 }}>{d}</span></span>
+                      <span>{t(n)}<span className="mute" style={{ display: 'block', fontSize: 12, marginTop: 3 }}>{t(d)}</span></span>
                       <b className="num" style={{ color: 'var(--pos)' }}>{v}</b>
                     </div>
                   ))}
                 </div>
-                <div className="mute" style={{ fontSize: 12, marginTop: 8, lineHeight: 1.5 }}>Бустер ×2 удваивает один блок этапа. Один бустер на каждые 5 этапов сезона.</div>
+                <div className="mute" style={{ fontSize: 12, marginTop: 8, lineHeight: 1.5 }}>{t('predict.boosterNote')}</div>
               </section>
               {data?.last && (
                 <section className="card rise" style={{ ['--i' as string]: 5 }}>
-                  <h2 className="h">Прошлый этап · {data.last.name.replace('Гран-при ', '')}</h2>
-                  <div className="mute" style={{ fontSize: 14, marginTop: 8 }}>Твой прогноз против результата</div>
+                  <h2 className="h">{t('predict.lastRace', { name: data.last.name })}</h2>
+                  <div className="mute" style={{ fontSize: 14, marginTop: 8 }}>{t('predict.vsResult')}</div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginTop: 16 }}>
                     <div className="num" style={{ fontSize: 44, fontWeight: 600, lineHeight: 1 }}>+{data.last.total}</div>
                     <div className="mute" style={{ fontSize: 14, lineHeight: 1.5 }}>
-                      квалификация — {data.last.qualy ?? 0},<br />
-                      гонка — {data.last.race ?? 0}, бонус — {data.last.bonus ?? 0}
+                      {t('predict.lastQualy', { n: data.last.qualy ?? 0 })}<br />
+                      {t('predict.lastRaceBonus', { race: data.last.race ?? 0, bonus: data.last.bonus ?? 0 })}
                     </div>
                   </div>
                 </section>
@@ -453,14 +460,14 @@ export default function PredictPage() {
         )}
         <div className="mute" style={{ fontSize: 12, padding: '4px 6px 0', lineHeight: 1.6 }}>
           {split
-            ? 'Каждый блок закрывается со стартом своей сессии: квалификация — квалификации, спринт — спринта, топ-10 и бонусы — гонки. Чужие прогнозы скрыты до старта гонки.'
-            : 'Прогноз закрывается со стартом квалификации, чужие прогнозы скрыты до закрытия.'}{' '}
-          Не отправил прогноз — 0 очков за этап. Очки предварительные 48 часов после гонки (штрафы стюардов), потом фиксируются. Максимум за этап без бустера: 14 за квалификацию, 110 за гонку, 25 за бонусы.
+            ? t('predict.footSplit')
+            : t('predict.footOld')}{' '}
+          {t('predict.footRules')}
         </div>
       </Content>
       {justClosed && (
         <Modal
-          title={justClosed === 'all' ? 'Прогноз закрыт' : `${BLOCK_NAMES[justClosed]}: приём закрыт`}
+          title={justClosed === 'all' ? t('predict.closedAll') : t('predict.closedBlock', { block: BLOCK_NAMES[justClosed] })}
           icon={
             <span className="bigico grn" style={{ width: 52, height: 52, borderRadius: 16 }}>
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -470,19 +477,19 @@ export default function PredictPage() {
             </span>
           }
           onClose={() => setJustClosed(null)}
-          actions={<button type="button" className="mini go" onClick={() => setJustClosed(null)}>Посмотреть мой прогноз</button>}
+          actions={<button type="button" className="mini go" onClick={() => setJustClosed(null)}>{t('predict.seeMine')}</button>}
         >
           <p className={m.text}>
             {justClosed === 'all'
-              ? `${split ? 'Гонка' : 'Квалификация'} началась — изменить прогноз уже нельзя. Твой вариант зафиксирован, прогнозы друзей теперь видны в разборе.`
+              ? t('predict.startedAll', { session: split ? SESSION_NAMES.race! : SESSION_NAMES.qualy! })
               : justClosed === 'qualy'
-                ? 'Квалификация началась — блок квалификации зафиксирован. Спринт и гонку ещё можно поменять до их старта.'
-                : 'Спринт начался — блок спринта зафиксирован. Топ-10 и бонусы можно менять до старта гонки.'}
+                ? t('predict.startedQualy')
+                : t('predict.startedSprint')}
           </p>
         </Modal>
       )}
-      {toast === 'saved' && <Toast tone="g" title="Прогноз сохранён" text={split ? 'Открытые блоки можно менять до их закрытия' : 'Можно менять до старта квалификации'} onDone={() => setToast(null)} />}
-      {toast === 'failed' && <Toast tone="r" title="Не удалось сохранить" text="Проверь интернет и повтори" onDone={() => setToast(null)} />}
+      {toast === 'saved' && <Toast tone="g" title={t('predict.saved')} text={split ? t('predict.savedSplit') : t('predict.savedOld')} onDone={() => setToast(null)} />}
+      {toast === 'failed' && <Toast tone="r" title={t('predict.saveFail')} text={t('predict.saveFailText')} onDone={() => setToast(null)} />}
     </>
   );
 }
@@ -492,9 +499,9 @@ function BlockHead({ title, chip, full, until = null, closed = false }: { title:
     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10, flexWrap: 'wrap', margin: '28px 0 14px' }}>
       <span className="eyebrow">
         {title}
-        {until && <span className="mute" style={{ marginLeft: 10, textTransform: 'none', letterSpacing: 0 }}>{closed ? '· блок закрыт' : `· до ${formatDateTime(until)}`}</span>}
+        {until && <span className="mute" style={{ marginLeft: 10, textTransform: 'none', letterSpacing: 0 }}>{closed ? t('predict.blockClosed') : t('predict.blockTill', { at: formatDateTime(until) })}</span>}
       </span>
-      <span className={`chip ${closed && until ? 'red' : full ? 'green' : ''}`}>{closed && until ? 'Закрыт' : chip}</span>
+      <span className={`chip ${closed && until ? 'red' : full ? 'green' : ''}`}>{closed && until ? t('predict.closedShort') : chip}</span>
     </div>
   );
 }

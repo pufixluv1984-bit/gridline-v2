@@ -3,13 +3,12 @@ import { type CSSProperties, type MouseEvent } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { teamLogo, type TeamCode } from '@/lib/assets';
 import { countryOf, driverKeys, driverScreen, type CareerSeason, type DriverScreen } from '@/lib/api/drivers';
-import { plural } from '@/lib/time/format';
 import { DriverTile, Skeleton } from '@/ui/game';
 import { Content, PageTitle, PillLink, Toolbar, ToolbarDivider } from '@/ui/Page';
 import b from '@/ui/Button.module.css';
 import pg from '@/ui/Page.module.css';
 import s from './Drivers.module.css';
-import { intlLocale } from '@/i18n';
+import { intlLocale, t } from '@/i18n';
 
 const fmt = (n: number) => n.toLocaleString(intlLocale(), { maximumFractionDigits: 1 });
 
@@ -53,12 +52,12 @@ export default function DriverProfilePage() {
   if (q.error || (data && !d)) {
     return (
       <>
-        <PageTitle title="Пилоты" sub="Профиль" />
+        <PageTitle title={t('drv.title')} sub={t('drv.profile')} />
         <Content>
           <div className="empty-state">
-            <h3>Пилот не найден</h3>
-            <p>Такого пилота нет в справочнике сезона.</p>
-            <Link className={`${b.cta} ${b.sm}`} to="/drivers">Все пилоты</Link>
+            <h3>{t('drv.notFound')}</h3>
+            <p>{t('drv.notFoundText')}</p>
+            <Link className={`${b.cta} ${b.sm}`} to="/drivers">{t('drv.all')}</Link>
           </div>
         </Content>
       </>
@@ -74,14 +73,14 @@ export default function DriverProfilePage() {
 
   return (
     <>
-      <PageTitle title="Пилоты" sub={d?.name ?? '…'} />
+      <PageTitle title={t('drv.title')} sub={d?.name ?? '…'} />
       <Toolbar>
-        <PillLink to="/drivers" end>Все пилоты</PillLink>
+        <PillLink to="/drivers" end>{t('drv.all')}</PillLink>
         <ToolbarDivider />
-        <a className={`${pg.pill} ${pg.pillOn}`} href="#top" onClick={scrollTo('top')}>Обзор</a>
-        <a className={pg.pill} href="#career" onClick={scrollTo('career')}>Карьера по сезонам</a>
-        <a className={pg.pill} href="#achievements" onClick={scrollTo('achievements')}>Достижения</a>
-        <a className={pg.pill} href="#bio" onClick={scrollTo('bio')}>Биография</a>
+        <a className={`${pg.pill} ${pg.pillOn}`} href="#top" onClick={scrollTo('top')}>{t('drv.overview')}</a>
+        <a className={pg.pill} href="#career" onClick={scrollTo('career')}>{t('drv.careerBySeason')}</a>
+        <a className={pg.pill} href="#achievements" onClick={scrollTo('achievements')}>{t('drv.achievements')}</a>
+        <a className={pg.pill} href="#bio" onClick={scrollTo('bio')}>{t('drv.bio')}</a>
       </Toolbar>
       <Content>
         <div id="top" />
@@ -92,8 +91,8 @@ export default function DriverProfilePage() {
             <DriverTile driver={{ code: d.code, number: d.number, color: d.color ?? '#3a3a42', team_code: d.team_code ?? '', name: d.name }} size={200} className={s.big} />
             <div>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-                {titles.length > 0 && <span className="chip gold">{titles.length}× чемпион мира</span>}
-                {d.active && <span className="chip green">Действующий пилот</span>}
+                {titles.length > 0 && <span className="chip gold">{t('drv.champX', { n: titles.length })}</span>}
+                {d.active && <span className="chip green">{t('drv.active')}</span>}
               </div>
               <h1 className={s.h1}>{d.name}</h1>
               <div className={`mute ${s.sub}`}>
@@ -104,13 +103,13 @@ export default function DriverProfilePage() {
                 <div className={s.facts}>
                   {c?.born && (
                     <div>
-                      <span>Родился</span>
-                      {new Intl.DateTimeFormat(intlLocale(), { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' }).format(new Date(c.born)).replace(' г.', '')}
+                      <span>{t('drv.born')}</span>
+                      {new Intl.DateTimeFormat(intlLocale(), { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' }).format(new Date(c.born)).replace(/ (г|р)\.$/, '')}
                     </div>
                   )}
-                  <div><span>Дебют в Ф1</span>{c?.debut_year}{c?.debut_race ? `, ${c.debut_race}` : ''}</div>
-                  {teamNames.length > 0 && <div><span>Команды</span>{teamNames.join(', ')}</div>}
-                  {data?.championship && <div><span>Сезон {data.season}</span>{data.championship.position} место · {fmt(Number(data.championship.points))} очк.</div>}
+                  <div><span>{t('drv.debut')}</span>{c?.debut_year}{c?.debut_race ? `, ${c.debut_race}` : ''}</div>
+                  {teamNames.length > 0 && <div><span>{t('drv.teams')}</span>{teamNames.join(', ')}</div>}
+                  {data?.championship && <div><span>{t('drv.seasonN', { season: data.season })}</span>{t('drv.champLine', { pos: data.championship.position, pts: fmt(Number(data.championship.points)) })}</div>}
                 </div>
               )}
             </div>
@@ -119,8 +118,8 @@ export default function DriverProfilePage() {
 
         {data && !ready && (
           <div className="empty-state">
-            <h3>Карьера ещё загружается</h3>
-            <p>Статистику и историю по сезонам сайт подтягивает из Jolpica F1 API понемногу, чтобы не превышать лимит. Загляни через пару часов.</p>
+            <h3>{t('drv.loading')}</h3>
+            <p>{t('drv.loadingText')}</p>
           </div>
         )}
 
@@ -129,20 +128,20 @@ export default function DriverProfilePage() {
             <section className="rise" style={{ ['--i' as string]: 1 }}>
               <div className={s.stats}>
                 <div className={`${s.sc} ${titles.length ? s.gold : ''}`}>
-                  <span className="eyebrow">Титулы</span>
+                  <span className="eyebrow">{t('drv.titles')}</span>
                   <b>{titles.length}</b>
-                  <small>{titles.length ? ranges(titles) : 'пока без титулов'}</small>
+                  <small>{titles.length ? ranges(titles) : t('drv.noTitles')}</small>
                 </div>
                 <div className={s.sc}>
-                  <span className="eyebrow">Победы</span>
+                  <span className="eyebrow">{t('drv.wins')}</span>
                   <b>{c.wins}</b>
-                  <small>{c.first_win_year ? `первая — ${c.first_win_year}` : 'пока без побед'}</small>
+                  <small>{c.first_win_year ? t('drv.firstWin', { year: c.first_win_year }) : t('drv.noWins')}</small>
                 </div>
-                <div className={s.sc}><span className="eyebrow">Поулы</span><b>{c.poles}</b><small>старты с первого места</small></div>
-                <div className={s.sc}><span className="eyebrow">Подиумы</span><b>{c.podiums}</b><small>из {c.starts} {plural(c.starts, 'гонки', 'гонок', 'гонок')}</small></div>
-                <div className={s.sc}><span className="eyebrow">Быстрые круги</span><b>{c.fastest_laps}</b><small>за карьеру</small></div>
+                <div className={s.sc}><span className="eyebrow">{t('drv.poles')}</span><b>{c.poles}</b><small>{t('drv.polesHint')}</small></div>
+                <div className={s.sc}><span className="eyebrow">{t('drv.podiums')}</span><b>{c.podiums}</b><small>{t('drv.ofRaces', { n: c.starts })}</small></div>
+                <div className={s.sc}><span className="eyebrow">{t('drv.fl')}</span><b>{c.fastest_laps}</b><small>{t('drv.career')}</small></div>
               </div>
-              <div className="mute" style={{ fontSize: 12.5, marginTop: 10 }}>По данным Jolpica F1 API, только гонки Гран-при (без спринтов).</div>
+              <div className="mute" style={{ fontSize: 12.5, marginTop: 10 }}>{t('drv.source')}</div>
             </section>
 
             <SeasonsChart seasons={seasons} titles={titles} teams={teamsDict} />
@@ -153,10 +152,10 @@ export default function DriverProfilePage() {
 
         {c?.bio && (
           <section className={`card rise ${s.bio}`} style={{ ['--i' as string]: 5 }} id="bio">
-            <h2 className="h" style={{ marginBottom: 16 }}>Биография</h2>
+            <h2 className="h" style={{ marginBottom: 16 }}>{t('drv.bio')}</h2>
             {c.bio.split('\n').filter(Boolean).map((p, i) => <p key={i}>{p}</p>)}
             <span className={s.bt}>
-              Текст: {c.bio_url ? <a href={c.bio_url} target="_blank" rel="noreferrer">Википедия</a> : 'Википедия'} · CC BY-SA 4.0
+              {t('drv.text')} {c.bio_url ? <a href={c.bio_url} target="_blank" rel="noreferrer">{t('drv.wiki')}</a> : t('drv.wiki')} · CC BY-SA 4.0
             </span>
           </section>
         )}
@@ -183,17 +182,17 @@ function SeasonsChart({ seasons, titles, teams }: { seasons: CareerSeason[]; tit
     <section className="card rise" style={{ ['--i' as string]: 2 }}>
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12, alignItems: 'center', justifyContent: 'space-between' }}>
         <div>
-          <h2 className="h">Очки по сезонам</h2>
-          <div className="mute" style={{ fontSize: 14, marginTop: 6 }}>Золотым выделены сезоны с титулом</div>
+          <h2 className="h">{t('drv.ptsBySeason')}</h2>
+          <div className="mute" style={{ fontSize: 14, marginTop: 6 }}>{t('drv.goldHint')}</div>
         </div>
         <div className={s.legend}>
-          <span><i style={{ background: 'var(--gold)' }} />Чемпион</span>
-          <span><i style={{ background: '#2a2a32' }} />Остальные сезоны</span>
+          <span><i style={{ background: 'var(--gold)' }} />{t('drv.champion')}</span>
+          <span><i style={{ background: '#2a2a32' }} />{t('drv.otherSeasons')}</span>
         </div>
       </div>
       <div className={s.bars}>
         {seasons.map((x) => (
-          <div key={x.year} className={s.bc} title={`${x.year}: ${fmt(x.points)} очк.${x.position ? `, ${x.position} место` : ''}`}>
+          <div key={x.year} className={s.bc} title={t('drv.barTitle', { year: x.year, pts: fmt(x.points) }) + (x.position ? t('drv.barPos', { pos: x.position }) : '')}>
             <i className={titles.includes(x.year) ? s.ch : ''} style={{ height: `${Math.round((x.points / max) * 100)}%` }} />
             <em>{String(x.year).slice(2)}</em>
           </div>
@@ -224,17 +223,17 @@ function Achievements({ data, seasons }: { data: DriverScreen; seasons: CareerSe
   const best = seasons.filter((x) => x.position).sort((a, b) => a.position! - b.position! || a.year - b.year)[0];
   const winSeasons = seasons.filter((x) => x.wins > 0).length;
   const items: { badge: string; title: string; text: string }[] = [];
-  if (titles.length) items.push({ badge: `${titles.length}`, title: titles.length === 1 ? 'Чемпион мира' : `${titles.length}-кратный чемпион мира`, text: titles.join(', ') });
-  else if (best) items.push({ badge: `P${best.position}`, title: 'Лучшее место в чемпионате', text: `${best.year}${mainTeam(best) ? `, ${teamOf(mainTeam(best)!, data.teams).name}` : ''}` });
-  if (c.wins) items.push({ badge: `${c.wins}`, title: `${c.wins} ${plural(c.wins, 'победа', 'победы', 'побед')} в Гран-при`, text: `Первая — ${c.first_win_year}${c.first_win_race ? `, ${c.first_win_race}` : ''}` });
-  if (winSeasons > 1) items.push({ badge: `${winSeasons}`, title: `${plural(winSeasons, 'Сезон', 'Сезона', 'Сезонов')} с победами`, text: `из ${seasons.length} в Формуле-1` });
-  if (c.poles) items.push({ badge: `${c.poles}`, title: `${c.poles} ${plural(c.poles, 'поул', 'поула', 'поулов')}`, text: 'Старты с первого места' });
-  if (c.podiums) items.push({ badge: `${c.podiums}`, title: `${c.podiums} ${plural(c.podiums, 'подиум', 'подиума', 'подиумов')}`, text: `${Math.round((100 * c.podiums) / Math.max(1, c.starts))}% гонок в первой тройке` });
-  items.push({ badge: `${seasons.length}`, title: `${seasons.length} ${plural(seasons.length, 'сезон', 'сезона', 'сезонов')} в Формуле-1`, text: `${c.starts} ${plural(c.starts, 'гонка', 'гонки', 'гонок')} с ${c.debut_year} года` });
+  if (titles.length) items.push({ badge: `${titles.length}`, title: titles.length === 1 ? t('drv.ach.champ') : t('drv.ach.champN', { n: titles.length }), text: titles.join(', ') });
+  else if (best) items.push({ badge: `P${best.position}`, title: t('drv.ach.best'), text: `${best.year}${mainTeam(best) ? `, ${teamOf(mainTeam(best)!, data.teams).name}` : ''}` });
+  if (c.wins) items.push({ badge: `${c.wins}`, title: t('drv.ach.wins', { n: c.wins }), text: `${t('drv.ach.firstWin', { year: c.first_win_year })}${c.first_win_race ? `, ${c.first_win_race}` : ''}` });
+  if (winSeasons > 1) items.push({ badge: `${winSeasons}`, title: t('drv.ach.winSeasons', { n: winSeasons }), text: t('drv.ach.ofSeasons', { n: seasons.length }) });
+  if (c.poles) items.push({ badge: `${c.poles}`, title: t('drv.ach.poles', { n: c.poles }), text: t('drv.ach.polesText') });
+  if (c.podiums) items.push({ badge: `${c.podiums}`, title: t('drv.ach.podiums', { n: c.podiums }), text: t('drv.ach.podiumPct', { p: Math.round((100 * c.podiums) / Math.max(1, c.starts)) }) });
+  items.push({ badge: `${seasons.length}`, title: t('drv.ach.seasons', { n: seasons.length }), text: t('drv.ach.races', { n: c.starts, year: c.debut_year }) });
   return (
     <section className="card rise" style={{ ['--i' as string]: 3 }} id="achievements">
-      <h2 className="h">Достижения</h2>
-      <div className="mute" style={{ fontSize: 14, margin: '6px 0 18px' }}>Знаковые цифры карьеры</div>
+      <h2 className="h">{t('drv.achievements')}</h2>
+      <div className="mute" style={{ fontSize: 14, margin: '6px 0 18px' }}>{t('drv.achSub')}</div>
       <div className={s.ach}>
         {items.map((x) => (
           <div key={x.title} className={s.ac}>
@@ -250,9 +249,9 @@ function Achievements({ data, seasons }: { data: DriverScreen; seasons: CareerSe
 function CareerTable({ seasons, titles, teams }: { seasons: CareerSeason[]; titles: number[]; teams: DriverScreen['teams'] }) {
   return (
     <section className="card rise" style={{ ['--i' as string]: 4 }} id="career">
-      <h2 className="h">Карьера по сезонам</h2>
-      <div className="mute" style={{ fontSize: 14, margin: '6px 0 18px' }}>Команда, место в чемпионате и очки</div>
-      <div className={s.tbh}><span>Сезон</span><span>Команда</span><span className={s.rt}>Место</span><span className={s.rt}>Очки</span><span className={s.rt} /></div>
+      <h2 className="h">{t('drv.careerBySeason')}</h2>
+      <div className="mute" style={{ fontSize: 14, margin: '6px 0 18px' }}>{t('drv.careerSub')}</div>
+      <div className={s.tbh}><span>{t('drv.season')}</span><span>{t('drv.team')}</span><span className={s.rt}>{t('drv.place')}</span><span className={s.rt}>{t('drv.points')}</span><span className={s.rt} /></div>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
         {[...seasons].reverse().map((x) => {
           const champ = titles.includes(x.year);
@@ -268,7 +267,7 @@ function CareerTable({ seasons, titles, teams }: { seasons: CareerSeason[]; titl
               </span>
               <span className={`num ${s.rt}`}>{x.position ?? '—'}</span>
               <span className={`num ${s.rt}`}>{fmt(x.points)}</span>
-              <span className={s.rt}>{champ ? <span className="chip gold">Чемпион</span> : !x.final ? <span className="chip">идёт</span> : null}</span>
+              <span className={s.rt}>{champ ? <span className="chip gold">{t('drv.champion')}</span> : !x.final ? <span className="chip">{t('drv.ongoing')}</span> : null}</span>
             </div>
           );
         })}

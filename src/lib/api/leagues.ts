@@ -1,4 +1,5 @@
 import { getSupabase } from '../supabase';
+import { t } from '@/i18n';
 
 export type LeaguePreview =
   | { error: 'not_found' }
@@ -19,17 +20,17 @@ export type LeaguePreview =
 function friendly(error: { hint?: string | null; code?: string; message?: string }): Error {
   switch (error.hint) {
     case 'rate_limited':
-      return new Error('Слишком много неверных кодов. Попробуй через час.');
+      return new Error(t('league.err.attempts'));
     case 'league_full':
-      return new Error('В лиге нет свободных мест.');
+      return new Error(t('league.err.full'));
     case 'owner_must_transfer':
-      return new Error('Ты владелец: сначала передай лигу другому игроку.');
+      return new Error(t('league.err.ownerLeave'));
     case 'not_member':
-      return new Error('Новый владелец должен быть участником лиги.');
+      return new Error(t('league.err.newOwner'));
   }
-  if (error.code === '23514') return new Error('Проверь название: от 2 до 40 символов, без < и >.');
-  if (error.code === '42501') return new Error('Нет прав на это действие.');
-  return new Error('Не получилось. Попробуй ещё раз.');
+  if (error.code === '23514') return new Error(t('league.err.name'));
+  if (error.code === '42501') return new Error(t('league.err.rights'));
+  return new Error(t('league.err.generic'));
 }
 
 export async function createLeague(input: { name: string; mode?: 'predict' | 'fantasy' | 'both'; maxMembers: number; startEventId: number | null; seasonId: number }) {
@@ -106,6 +107,6 @@ export async function updateLeagueBonuses(league: string, config: Record<BonusKe
 /** Перенести лигу прошлого сезона в текущий (только хозяин). Возвращает id новой лиги. */
 export async function carryOverLeague(league: string): Promise<string> {
   const { data, error } = await getSupabase().rpc('league_carry_over' as never, { league } as never);
-  if (error) throw new Error(error.code === '42501' ? 'Перенести лигу может только её хозяин.' : error.message);
+  if (error) throw new Error(error.code === '42501' ? t('league.err.carry') : error.message);
   return data as unknown as string;
 }

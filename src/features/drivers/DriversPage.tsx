@@ -3,12 +3,11 @@ import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { teamLogo, type TeamCode } from '@/lib/assets';
 import { driverKeys, driversScreen } from '@/lib/api/drivers';
-import { plural } from '@/lib/time/format';
 import { DriverTile, Skeleton } from '@/ui/game';
 import { Content, PageTitle, Toolbar, ToolbarDivider } from '@/ui/Page';
 import pg from '@/ui/Page.module.css';
 import s from './Drivers.module.css';
-import { intlLocale } from '@/i18n';
+import { intlLocale, t } from '@/i18n';
 
 const fmt = (n: number) => n.toLocaleString(intlLocale(), { maximumFractionDigits: 1 });
 
@@ -35,27 +34,27 @@ export default function DriversPage() {
 
   return (
     <>
-      <PageTitle title="Пилоты" sub={`Каталог сезона ${q.data?.season ?? ''}`.trim()} />
+      <PageTitle title={t('drv.title')} sub={q.data ? t('drv.catalog', { season: q.data.season }) : ''} />
       <Toolbar>
-        <input className={s.srch} type="search" placeholder="Найти пилота" aria-label="Найти пилота" value={search} onChange={(e) => setSearch(e.target.value)} />
+        <input className={s.srch} type="search" placeholder={t('drv.search')} aria-label={t('drv.search')} value={search} onChange={(e) => setSearch(e.target.value)} />
         <ToolbarDivider />
-        <button type="button" className={`${pg.pill} ${team === null ? pg.pillOn : ''}`} onClick={() => setTeam(null)}>Все команды</button>
+        <button type="button" className={`${pg.pill} ${team === null ? pg.pillOn : ''}`} onClick={() => setTeam(null)}>{t('drv.allTeams')}</button>
         {teams.map(([id, name]) => (
           <button key={id} type="button" className={`${pg.pill} ${team === id ? pg.pillOn : ''}`} onClick={() => setTeam(id)}>{name}</button>
         ))}
-        <span className={`seg ${s.cnt}`} role="tablist" aria-label="Период">
-          <button type="button" role="tab" className={allTime ? '' : 'on'} aria-selected={!allTime} onClick={() => setAllTime(false)}>Сезон {q.data?.season}</button>
-          <button type="button" role="tab" className={allTime ? 'on' : ''} aria-selected={allTime} onClick={() => setAllTime(true)}>Все времена</button>
+        <span className={`seg ${s.cnt}`} role="tablist" aria-label={t('drv.period')}>
+          <button type="button" role="tab" className={allTime ? '' : 'on'} aria-selected={!allTime} onClick={() => setAllTime(false)}>{t('drv.seasonN', { season: q.data?.season })}</button>
+          <button type="button" role="tab" className={allTime ? 'on' : ''} aria-selected={allTime} onClick={() => setAllTime(true)}>{t('drv.allTime')}</button>
         </span>
       </Toolbar>
       <Content>
         <section className="card rise" style={{ ['--i' as string]: 0 }}>
           <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 12, marginBottom: 18 }}>
             <div>
-              <h2 className="h">{allTime ? 'Пилоты сезона за всю карьеру' : 'Пилоты сезона'}</h2>
-              <div className="mute" style={{ fontSize: 14, marginTop: 6 }}>Нажми на пилота, чтобы открыть карьеру, статистику и достижения</div>
+              <h2 className="h">{allTime ? t('drv.careerTitle') : t('drv.seasonTitle')}</h2>
+              <div className="mute" style={{ fontSize: 14, marginTop: 6 }}>{t('drv.hint')}</div>
             </div>
-            <span className="chip">{shown.length} {plural(shown.length, 'пилот', 'пилота', 'пилотов')}</span>
+            <span className="chip">{t('drv.count', { n: shown.length })}</span>
           </div>
           {q.isLoading ? (
             <Skeleton h={320} />
@@ -74,16 +73,16 @@ export default function DriversPage() {
                     <div className={s.st}>
                       {allTime ? (
                         <>
-                          <div><span className="eyebrow">Очки за карьеру</span><b>{fmt(d.career_points)}</b></div>
-                          <div><span className="eyebrow">Титулы</span><b>{d.titles}</b></div>
+                          <div><span className="eyebrow">{t('drv.careerPts')}</span><b>{fmt(d.career_points)}</b></div>
+                          <div><span className="eyebrow">{t('drv.titles')}</span><b>{d.titles}</b></div>
                         </>
                       ) : (
                         <>
-                          <div><span className="eyebrow">Очки</span><b>{fmt(d.points)}</b></div>
+                          <div><span className="eyebrow">{t('drv.points')}</span><b>{fmt(d.points)}</b></div>
                           {q.data?.prices?.[d.id] != null ? (
-                            <div><span className="eyebrow">Цена</span><b>${Number(q.data.prices[d.id]).toFixed(1)}M</b></div>
+                            <div><span className="eyebrow">{t('drv.price')}</span><b>${Number(q.data.prices[d.id]).toFixed(1)}M</b></div>
                           ) : (
-                            <div><span className="eyebrow">Место</span><b>{d.position ?? '—'}</b></div>
+                            <div><span className="eyebrow">{t('drv.place')}</span><b>{d.position ?? '—'}</b></div>
                           )}
                         </>
                       )}
@@ -91,7 +90,7 @@ export default function DriversPage() {
                   </Link>
                 );
               })}
-              {shown.length === 0 && <div className="mute" style={{ fontSize: 14 }}>Никого не нашлось.</div>}
+              {shown.length === 0 && <div className="mute" style={{ fontSize: 14 }}>{t('drv.nobody')}</div>}
             </div>
           )}
         </section>

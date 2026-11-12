@@ -9,6 +9,8 @@ import { Modal } from '@/ui/Modal';
 import { Content, PageTitle } from '@/ui/Page';
 import b from '@/ui/Button.module.css';
 import m from '@/ui/Modal.module.css';
+import { t } from '@/i18n';
+import { SESSION_NAMES } from '@/lib/time/format';
 
 /**
  * Ручной ввод результата при сбое Jolpica — только админ сайта (решение владельца, PRODUCT.md §7).
@@ -42,12 +44,12 @@ export default function AdminResultsPage() {
     },
   });
 
-  if (admin.isLoading) return <><PageTitle title="Админ" sub="Ручной ввод" /><Content><Skeleton h={200} /></Content></>;
+  if (admin.isLoading) return <><PageTitle title={t('adm.title')} sub={t('adm.manual')} /><Content><Skeleton h={200} /></Content></>;
   if (!admin.data) {
     return (
       <>
-        <PageTitle title="Админ" sub="Ручной ввод" />
-        <Content><div className="empty-state"><h3>Только для админа сайта</h3><p>Результаты подтягиваются из Jolpica автоматически.</p></div></Content>
+        <PageTitle title={t('adm.title')} sub={t('adm.manual')} />
+        <Content><div className="empty-state"><h3>{t('adm.only')}</h3><p>{t('adm.onlyText')}</p></div></Content>
       </>
     );
   }
@@ -59,44 +61,44 @@ export default function AdminResultsPage() {
 
   return (
     <>
-      <PageTitle title="Админ" sub="Ручной ввод результата" />
+      <PageTitle title={t('adm.title')} sub={t('adm.manualResult')} />
       <Content>
         <section className="card rise" style={{ display: 'flex', flexWrap: 'wrap', gap: 18, alignItems: 'flex-end' }}>
           <div style={{ flex: '2 1 320px' }}>
-            <label className="lab" htmlFor="adm-ev">Этап</label>
+            <label className="lab" htmlFor="adm-ev">{t('adm.event')}</label>
             <select id="adm-ev" className="in" value={ev?.id ?? ''} onChange={(e) => { setEvId(Number(e.target.value)); setOrder([]); setFastest(''); save.reset(); }}>
               {started.map((e) => <option key={e.id} value={e.id}>{e.round}. {e.name}</option>)}
             </select>
           </div>
           <div style={{ flex: '1 1 240px' }}>
-            <span className="lab">Сессия</span>
+            <span className="lab">{t('adm.session')}</span>
             <div className="seg2" role="group">
-              <button type="button" className={session === 'qualy' ? 'on' : ''} onClick={() => { setSession('qualy'); save.reset(); }}>Квалификация</button>
-              <button type="button" className={session === 'race' ? 'on' : ''} onClick={() => { setSession('race'); save.reset(); }}>Гонка</button>
+              <button type="button" className={session === 'qualy' ? 'on' : ''} onClick={() => { setSession('qualy'); save.reset(); }}>{SESSION_NAMES.qualy}</button>
+              <button type="button" className={session === 'race' ? 'on' : ''} onClick={() => { setSession('race'); save.reset(); }}>{SESSION_NAMES.race}</button>
             </div>
           </div>
           <div className="alert info" style={{ flex: '1 1 100%' }}>
             <IconWarn size={18} />
-            <div>Нажимай пилотов в порядке финиша: первый клик — P1. Повторный клик убирает пилота. Нужно минимум {minCount}. Результат заменит то, что пришло из Jolpica, станет окончательным, и очки пересчитаются во всех лигах.</div>
+            <div>{t('adm.help', { n: minCount })}</div>
           </div>
         </section>
 
         <section className="card rise" style={{ ['--i' as string]: 1, display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 14 }}>
           <div>
-            <h2 className="h">Safety car в гонке</h2>
-            <div className="mute" style={{ fontSize: 13, marginTop: 4 }}>Если OpenF1 не дал данных. Считается только настоящий SC, не VSC. Ручной ввод главнее синхронизации.</div>
+            <h2 className="h">{t('adm.sc')}</h2>
+            <div className="mute" style={{ fontSize: 13, marginTop: 4 }}>{t('adm.scHelp')}</div>
           </div>
           <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
-            <button type="button" className={`${b.cta} ${b.sm} ${b.ghost}`} disabled={!ev || sc.isPending} onClick={() => sc.mutate(true)}>Был</button>
-            <button type="button" className={`${b.cta} ${b.sm} ${b.ghost}`} disabled={!ev || sc.isPending} onClick={() => sc.mutate(false)}>Не было</button>
-            {sc.isSuccess && <span className="chip green">Сохранено: {sc.variables ? 'был' : 'не было'}</span>}
+            <button type="button" className={`${b.cta} ${b.sm} ${b.ghost}`} disabled={!ev || sc.isPending} onClick={() => sc.mutate(true)}>{t('adm.was')}</button>
+            <button type="button" className={`${b.cta} ${b.sm} ${b.ghost}`} disabled={!ev || sc.isPending} onClick={() => sc.mutate(false)}>{t('adm.wasNot')}</button>
+            {sc.isSuccess && <span className="chip green">{t('adm.savedSc', { v: sc.variables ? t('adm.wasLow') : t('adm.wasNotLow') })}</span>}
             {sc.error && <span className="chip red">{sc.error.message}</span>}
           </div>
         </section>
 
         <div className="row" style={{ alignItems: 'flex-start' }}>
           <section className="card rise" style={{ ['--i' as string]: 2, flex: '2 1 640px', minWidth: 0 }}>
-            <h2 className="h">Пилоты</h2>
+            <h2 className="h">{t('adm.drivers')}</h2>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6,minmax(0,1fr))', gap: 10, marginTop: 16 }}>
               {drivers.map((d) => {
                 const pos = order.indexOf(d.id);
@@ -113,23 +115,23 @@ export default function AdminResultsPage() {
           </section>
 
           <section className="card rise" style={{ ['--i' as string]: 2, flex: '1 1 340px', minWidth: 0, display: 'flex', flexDirection: 'column', gap: 12 }}>
-            <h2 className="h">Порядок · {order.length}</h2>
+            <h2 className="h">{t('adm.order', { n: order.length })}</h2>
             <ol style={{ margin: 0, paddingLeft: 26, display: 'flex', flexDirection: 'column', gap: 4 }}>
               {order.map((id) => <li key={id} className="num">{byId.get(id)?.name ?? id}</li>)}
             </ol>
             {session === 'race' && (
               <div>
-                <label className="lab" htmlFor="adm-fl">Быстрый круг</label>
+                <label className="lab" htmlFor="adm-fl">{t('adm.fl')}</label>
                 <select id="adm-fl" className="in" value={fastest} onChange={(e) => setFastest(e.target.value)}>
-                  <option value="">— не указан —</option>
+                  <option value="">{t('adm.flNone')}</option>
                   {order.map((id) => <option key={id} value={id}>{byId.get(id)?.name ?? id}</option>)}
                 </select>
               </div>
             )}
-            {save.isSuccess && <div className="alert ok">Сохранено. Строк очков: {save.data}.</div>}
+            {save.isSuccess && <div className="alert ok">{t('adm.saved', { n: save.data })}</div>}
             <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
-              <button type="button" className={`${b.cta} ${b.sm}`} disabled={!ev || order.length < minCount} onClick={() => setConfirm(true)}>Сохранить результат</button>
-              <button type="button" className={`${b.cta} ${b.sm} ${b.ghost}`} onClick={() => { setOrder([]); setFastest(''); }} disabled={!order.length}>Сбросить</button>
+              <button type="button" className={`${b.cta} ${b.sm}`} disabled={!ev || order.length < minCount} onClick={() => setConfirm(true)}>{t('adm.save')}</button>
+              <button type="button" className={`${b.cta} ${b.sm} ${b.ghost}`} onClick={() => { setOrder([]); setFastest(''); }} disabled={!order.length}>{t('adm.reset')}</button>
             </div>
           </section>
         </div>
@@ -137,20 +139,20 @@ export default function AdminResultsPage() {
 
       {confirm && ev && (
         <Modal
-          title="Сохранить результат?"
+          title={t('adm.confirm')}
           icon={<IconWarn size={24} />}
           onClose={() => setConfirm(false)}
           busy={save.isPending}
           actions={
             <>
-              <button type="button" className={`${b.cta} ${b.sm} ${b.ghost}`} onClick={() => setConfirm(false)} disabled={save.isPending}>Отмена</button>
-              <button type="button" className={`${b.cta} ${b.sm}`} onClick={() => save.mutate()} disabled={save.isPending}>{save.isPending ? 'Сохраняем…' : 'Сохранить'}</button>
+              <button type="button" className={`${b.cta} ${b.sm} ${b.ghost}`} onClick={() => setConfirm(false)} disabled={save.isPending}>{t('common.cancel')}</button>
+              <button type="button" className={`${b.cta} ${b.sm}`} onClick={() => save.mutate()} disabled={save.isPending}>{save.isPending ? t('common.saving') : t('common.save')}</button>
             </>
           }
         >
           <p className={m.text}>
-            {ev.name}, {session === 'race' ? 'гонка' : 'квалификация'}: {order.length} пилотов, P1 — {byId.get(order[0]!)?.name}.
-            Очки пересчитаются во всех лигах. Ручной результат считается окончательным — синхронизация с Jolpica его не перезапишет.
+            {t('adm.confirmText', { ev: ev.name, session: (SESSION_NAMES[session] ?? '').toLowerCase(), n: order.length, p1: byId.get(order[0]!)?.name })}{' '}
+            {t('adm.confirmNote')}
           </p>
           {save.error && <div className="alert bad" role="alert">{save.error.message}</div>}
         </Modal>

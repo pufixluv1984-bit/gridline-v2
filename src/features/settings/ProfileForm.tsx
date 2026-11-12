@@ -12,7 +12,7 @@ import { t as tr } from '@/i18n';
 
 const NICK_COOLDOWN_MS = 30 * 24 * 3600 * 1000;
 // Те же правила, что в базе (миграции 0001, 0015): база всё равно проверит, здесь — подсказка сразу.
-const NICK_RE = /^[A-Za-zА-Яа-яЁё0-9 _.-]+$/;
+const NICK_RE = /^[A-Za-zА-Яа-яЁёІіЇїЄєҐґ0-9 _.-]+$/;
 
 type Values = { nickname: string; fav_team: string; fav_driver: string; team_name: string };
 

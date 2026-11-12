@@ -2,15 +2,17 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { BONUS_KEYS, updateLeagueBonuses, type BonusKey } from '@/lib/api/leagues';
 import { screenKeys } from '@/lib/api/screens';
+import { t, type Key } from '@/i18n';
 
-const LABELS: Record<BonusKey, [string, string]> = {
-  fastest_lap: ['Быстрый круг', '+6'],
-  first_dnf: ['Первый сход', '+10'],
-  pole_wins: ['Победа с поула', '+3'],
-  safety_car: ['Safety car', '+3'],
-  dnf_many: ['Сходов 2 и больше', '+3'],
-  boost: ['Бустер ×2', 'один на 5 этапов'],
+const LABELS: Record<BonusKey, [Key, string | Key]> = {
+  fastest_lap: ['predict.r.fl', '+6'],
+  first_dnf: ['predict.r.dnf', '+10'],
+  pole_wins: ['predict.r.poleWin', '+3'],
+  safety_car: ['predict.r.sc', '+3'],
+  dnf_many: ['predict.r.dnf2', '+3'],
+  boost: ['predict.booster', 'league.onePer5'],
 };
+const second = (v: string) => (v.startsWith('+') ? v : t(v as Key));
 
 /**
  * Настройки лиги для владельца (макет Settings, «Настройки лобби»): какие бонусы считаются в таблице.
@@ -32,19 +34,19 @@ export function LeagueSettings({ leagueId, config }: { leagueId: string; config:
 
   return (
     <section className="card rise" style={{ ['--i' as string]: 4 }}>
-      <h2 className="h">Настройки лиги</h2>
-      <div className="mute" style={{ fontSize: 14, margin: '6px 0 10px' }}>Только для хозяина. Какие бонусы считаются в таблице этой лиги.</div>
+      <h2 className="h">{t('league.settings')}</h2>
+      <div className="mute" style={{ fontSize: 14, margin: '6px 0 10px' }}>{t('league.settingsText')}</div>
       {BONUS_KEYS.map((k) => (
         <div key={k} className="kv">
           <span>
-            {LABELS[k][0]}
-            <span className="mute" style={{ fontSize: 13, marginLeft: 8 }}>{LABELS[k][1]}</span>
+            {t(LABELS[k][0])}
+            <span className="mute" style={{ fontSize: 13, marginLeft: 8 }}>{second(LABELS[k][1])}</span>
           </span>
           <button
             type="button"
             role="switch"
             aria-checked={value[k]}
-            aria-label={LABELS[k][0]}
+            aria-label={t(LABELS[k][0])}
             disabled={save.isPending}
             onClick={() => save.mutate({ ...value, [k]: !value[k] })}
             className={`toggle ${value[k] ? 'on' : ''}`}

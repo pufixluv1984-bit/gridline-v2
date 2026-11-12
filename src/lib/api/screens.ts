@@ -1,5 +1,6 @@
 import { getSupabase } from '../supabase';
 import type { LeagueTitles } from './profile';
+import { t } from '@/i18n';
 
 // Типы ответов RPC экранов (миграция 0008). Один запрос на экран (правило 11).
 
@@ -218,7 +219,8 @@ export const breakdownScreen = (ev?: number, player?: string) =>
 /** Когда синхронизация с Jolpica последний раз прошла успешно (для подвала). */
 export const dataUpdatedAt = () => call<string | null>('data_updated_at');
 
-const BLOCK_LABEL = { qualy: 'квалификации', sprint: 'спринта', race: 'гонки' } as const;
+/** Блок в родительном падеже внутри фразы «с началом …» — на языке сайта. */
+const BLOCK_LABEL = { get qualy() { return t('block.gen.qualy'); }, get sprint() { return t('block.gen.sprint'); }, get race() { return t('block.gen.race'); } };
 /**
  * Ближайший открытый дедлайн прогноза этапа (фаза 5: по блокам; по-старому — квалификация).
  * Считается на клиенте от серверного времени, чтобы таймер переключался между блоками без перезагрузки.

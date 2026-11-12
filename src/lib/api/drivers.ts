@@ -1,4 +1,5 @@
 import { getSupabase } from '../supabase';
+import { regionName } from '@/i18n/region';
 
 export type CatalogDriver = {
   id: string;
@@ -80,13 +81,15 @@ export async function driverScreen(driver: string): Promise<DriverScreen> {
   return data as unknown as DriverScreen;
 }
 
-/** Страна по национальности из Jolpica (для подписи в профиле пилота). */
+/** ISO-код страны по национальности из Jolpica; название страны даёт Intl на языке сайта. */
 const COUNTRY: Record<string, string> = {
-  American: 'США', Argentine: 'Аргентина', Argentinian: 'Аргентина', Australian: 'Австралия', Austrian: 'Австрия',
-  Belgian: 'Бельгия', Brazilian: 'Бразилия', British: 'Великобритания', Canadian: 'Канада', Chinese: 'Китай',
-  Danish: 'Дания', Dutch: 'Нидерланды', Finnish: 'Финляндия', French: 'Франция', German: 'Германия',
-  Indian: 'Индия', Italian: 'Италия', Japanese: 'Япония', Mexican: 'Мексика', Monegasque: 'Монако',
-  'New Zealander': 'Новая Зеландия', Polish: 'Польша', Russian: 'Россия', Spanish: 'Испания', Swedish: 'Швеция',
-  Swiss: 'Швейцария', Thai: 'Таиланд', Venezuelan: 'Венесуэла', Estonian: 'Эстония', Israeli: 'Израиль',
+  American: 'US', Argentine: 'AR', Argentinian: 'AR', Australian: 'AU', Austrian: 'AT', Belgian: 'BE', Brazilian: 'BR',
+  British: 'GB', Canadian: 'CA', Chinese: 'CN', Danish: 'DK', Dutch: 'NL', Finnish: 'FI', French: 'FR', German: 'DE',
+  Indian: 'IN', Italian: 'IT', Japanese: 'JP', Mexican: 'MX', Monegasque: 'MC', 'New Zealander': 'NZ', Polish: 'PL',
+  Russian: 'RU', Spanish: 'ES', Swedish: 'SE', Swiss: 'CH', Thai: 'TH', Venezuelan: 'VE', Estonian: 'EE', Israeli: 'IL',
 };
-export const countryOf = (nationality: string | null | undefined) => (nationality ? (COUNTRY[nationality] ?? nationality) : null);
+export function countryOf(nationality: string | null | undefined): string | null {
+  if (!nationality) return null;
+  const code = COUNTRY[nationality];
+  return code ? regionName(code) : nationality;
+}

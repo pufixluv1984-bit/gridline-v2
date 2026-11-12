@@ -9,7 +9,6 @@ import { signOut } from '@/lib/api/auth';
 import { setCurrentLeague } from '@/lib/currentLeague';
 import { initialsOf } from '@/lib/initials';
 import { parseInviteCode } from '@/lib/invite';
-import { plural } from '@/lib/time/format';
 import { Avatar } from '@/ui/game';
 import { Frame } from '@/ui/Frame';
 import { MiniFooter } from '@/ui/Footer';
@@ -18,6 +17,8 @@ import b from '@/ui/Button.module.css';
 import s from './Join.module.css';
 import { LobbyTabs } from './LobbyTabs';
 import { avatarOf } from '@/lib/avatar';
+import { t, tn } from '@/i18n';
+import { gpShort } from '@/lib/time/format';
 
 /** Ввод кода вручную (внутри приложения): /lobby/join. */
 export function JoinByCodePage() {
@@ -30,16 +31,16 @@ export function JoinByCodePage() {
   };
   return (
     <>
-      <PageTitle title="Лига друзей" sub="Войти по коду" />
+      <PageTitle title={t('common.friendsLeague')} sub={t('lobby.joinSub')} />
       <LobbyTabs active="join" />
       <Content>
         <form className="card rise" style={{ maxWidth: 560, display: 'flex', flexDirection: 'column', gap: 18 }} onSubmit={submit} noValidate>
           <div>
-            <h2 className="h">Код или ссылка от друга</h2>
-            <div className="mute" style={{ fontSize: 14, marginTop: 6 }}>6 символов, например K7Q2XM, или ссылка целиком</div>
+            <h2 className="h">{t('lobby.codeTitle')}</h2>
+            <div className="mute" style={{ fontSize: 14, marginTop: 6 }}>{t('lobby.codeHelp')}</div>
           </div>
-          <input className="in" type="text" autoComplete="off" placeholder="K7Q2XM" value={raw} onChange={(e) => setRaw(e.target.value)} aria-label="Код лиги" />
-          <button type="submit" className={b.cta} disabled={!code}>Найти лобби</button>
+          <input className="in" type="text" autoComplete="off" placeholder="K7Q2XM" value={raw} onChange={(e) => setRaw(e.target.value)} aria-label={t('lobby.codeAria')} />
+          <button type="submit" className={b.cta} disabled={!code}>{t('lobby.find')}</button>
         </form>
       </Content>
     </>
@@ -78,34 +79,34 @@ export default function JoinPage() {
           <BrandMark />
           {notFound ? (
             <div className={s.card}>
-              <div style={{ font: '600 26px var(--font-num)' }}>Лобби не найдено</div>
-              <div className="mute" style={{ fontSize: 15, lineHeight: 1.5 }}>Проверь код или попроси друга прислать новую ссылку — старую могли сбросить.</div>
-              <Link className={`${b.cta} ${b.ghost}`} to="/lobby/join">Ввести код вручную</Link>
+              <div style={{ font: '600 26px var(--font-num)' }}>{t('lobby.notFound')}</div>
+              <div className="mute" style={{ fontSize: 15, lineHeight: 1.5 }}>{t('lobby.notFoundJoin')}</div>
+              <Link className={`${b.cta} ${b.ghost}`} to="/lobby/join">{t('lobby.enterCode')}</Link>
             </div>
           ) : preview.error ? (
             <div className={s.card}>
               <div className="alert bad" role="alert">{(preview.error as Error).message}</div>
-              <Link className={`${b.cta} ${b.ghost}`} to="/">На главную</Link>
+              <Link className={`${b.cta} ${b.ghost}`} to="/">{t('common.toHome')}</Link>
             </div>
           ) : (
             <>
               <div className="mute" style={{ fontSize: 16 }}>
-                {p ? <><b style={{ color: '#fff' }}>{p.owner_nickname}</b> зовёт тебя в игру</> : 'Загружаем приглашение…'}
+                {p ? tn('lobby.invitesYou', { name: <b style={{ color: '#fff' }}>{p.owner_nickname}</b> }) : t('lobby.loadingInvite')}
               </div>
               <div className={s.card}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
                   <span className={s.mark}>{initialsOf(p?.name ?? '··')}</span>
                   <div>
                     <div style={{ font: '600 26px var(--font-num)', letterSpacing: '-.02em' }}>{p?.name ?? '…'}</div>
-                    {p && <div className="mute" style={{ fontSize: 13, marginTop: 4 }}>Хозяин: {p.owner_nickname}</div>}
+                    {p && <div className="mute" style={{ fontSize: 13, marginTop: 4 }}>{t('lobby.owner', { name: p.owner_nickname })}</div>}
                   </div>
                 </div>
                 {p && (
                   <>
                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-                      <span className="chip red">Прогнозы</span>
-                      {p.start_event && <span className="chip">Старт: {p.start_event.name.replace('Гран-при ', '')}</span>}
-                      <span className="chip">До {p.max_members} игроков</span>
+                      <span className="chip red">{t('lobby.mode.predict')}</span>
+                      {p.start_event && <span className="chip">{t('lobby.start', { name: gpShort(p.start_event.name) })}</span>}
+                      <span className="chip">{t('lobby.upTo', { n: p.max_members })}</span>
                     </div>
                     <div className={s.players}>
                       <div style={{ display: 'flex' }}>
@@ -116,32 +117,32 @@ export default function JoinPage() {
                         ))}
                       </div>
                       <div className="mute" style={{ fontSize: 14 }}>
-                        Уже {plural(p.member_count, 'играет', 'играют', 'играют')} {p.member_count} из {p.max_members}
+                        {t('lobby.playing', { n: p.member_count, max: p.max_members })}
                       </div>
                     </div>
                     {full ? (
-                      <div className="alert bad">В лобби нет свободных мест. Попроси хозяина увеличить лимит.</div>
+                      <div className="alert bad">{t('lobby.full')}</div>
                     ) : (
                       <div className="alert info">
                         <div>
-                          {p.already_member ? 'Ты уже в этом лобби.' : <>Ты войдёшь как <b style={{ color: '#fff' }}>{me.data?.nickname ?? '…'}</b>. Таблица и прогнозы лобби появятся на главной.</>}
+                          {p.already_member ? t('lobby.already') : tn('lobby.joinAs', { name: <b style={{ color: '#fff' }}>{me.data?.nickname ?? '…'}</b> })}
                         </div>
                       </div>
                     )}
                     {join.error && <div className="alert bad" role="alert">{join.error.message}</div>}
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                       <button type="button" className={b.cta} disabled={full || join.isPending} onClick={() => (p.already_member ? navigate(`/league/${p.id}`) : join.mutate())}>
-                        {p.already_member ? 'Открыть лобби' : join.isPending ? 'Входим…' : 'Присоединиться'}
+                        {p.already_member ? t('lobby.openLobby') : join.isPending ? t('lobby.joining') : t('lobby.join')}
                       </button>
-                      <Link className={`${b.cta} ${b.ghost}`} to="/">Не сейчас</Link>
+                      <Link className={`${b.cta} ${b.ghost}`} to="/">{t('lobby.notNow')}</Link>
                     </div>
                   </>
                 )}
               </div>
               <div className="mute" style={{ fontSize: 13 }}>
-                Не ты?{' '}
+                {t('lobby.notYou')}{' '}
                 <button type="button" className={s.link} onClick={() => void signOut()}>
-                  Войти другим аккаунтом
+                  {t('lobby.otherAccount')}
                 </button>
               </div>
             </>

@@ -1,3 +1,4 @@
+import { t } from '@/i18n';
 // Логика выбора пилотов на экране прогноза (без React — чтобы покрыть тестами).
 // 18 слотов: 0–2 квалификация (поул, P2, P3), 3–12 топ-10 гонки, 13 — быстрый круг, 14 — первый сход,
 // 15–17 — топ-3 спринта (только спринт-этапы, фаза 5).
@@ -12,13 +13,13 @@ export type Slot = { index: number; block: Block; pos: number; label: string; po
 export const NONE = 'none';
 
 export const SLOTS: Slot[] = [
-  { index: 0, block: 'qualy', pos: 1, label: 'Поул', points: '+6' },
+  { index: 0, block: 'qualy', pos: 1, get label() { return t('predict.slot.pole'); }, points: '+6' },
   { index: 1, block: 'qualy', pos: 2, label: 'P2', points: '+4' },
   { index: 2, block: 'qualy', pos: 3, label: 'P3', points: '+4' },
   ...Array.from({ length: 10 }, (_, i) => ({ index: 3 + i, block: 'race' as const, pos: i + 1, label: `P${i + 1}`, points: '' })),
-  { index: 13, block: 'bonus', pos: 0, label: 'Быстрый круг', points: '+6' },
-  { index: 14, block: 'bonus', pos: 0, label: 'Первый сход', points: '+10' },
-  { index: 15, block: 'sprint', pos: 1, label: 'Победа', points: '+6' },
+  { index: 13, block: 'bonus', pos: 0, get label() { return t('predict.r.fl'); }, points: '+6' },
+  { index: 14, block: 'bonus', pos: 0, get label() { return t('predict.r.dnf'); }, points: '+10' },
+  { index: 15, block: 'sprint', pos: 1, get label() { return t('predict.slot.win'); }, points: '+6' },
   { index: 16, block: 'sprint', pos: 2, label: 'P2', points: '+4' },
   { index: 17, block: 'sprint', pos: 3, label: 'P3', points: '+4' },
 ];

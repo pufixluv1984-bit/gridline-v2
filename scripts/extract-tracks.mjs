@@ -14,6 +14,8 @@ const re = new RegExp(
 const esc = (s) => s.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
 
 mkdirSync('public/assets/tracks', { recursive: true });
+// Переводы (name_uk, name_en) и ISO-код страны (cc) ведутся в tracks.json руками — сохраняем их.
+const prev = new Map(JSON.parse(readFileSync('src/lib/tracks.json', 'utf8')).map((t) => [t.id, t]));
 const list = [];
 for (const [, id, name, country, d, bA, bB] of src.matchAll(re)) {
   if (!d) continue;
@@ -25,7 +27,9 @@ for (const [, id, name, country, d, bA, bB] of src.matchAll(re)) {
       (bA ? `<path data-bg="a" d="${bA}" fill="#fff" fill-opacity=".045"/>` : '') +
       `<path data-track="1" d="${d}" fill="none" stroke="currentColor" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"/></svg>\n`,
   );
-  list.push({ id, name, country });
+  const p = prev.get(id) ?? {};
+  if (!p.cc) console.warn(`${id}: нет перевода и кода страны (${country}) — добавь name_uk, name_en, cc в tracks.json`);
+  list.push({ id, name, name_uk: p.name_uk ?? name, name_en: p.name_en ?? name, cc: p.cc ?? '' });
 }
 writeFileSync('src/lib/tracks.json', JSON.stringify(list, null, 1) + '\n');
 console.log(`трасс: ${list.length}`);

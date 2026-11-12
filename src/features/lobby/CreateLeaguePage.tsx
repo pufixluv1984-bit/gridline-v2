@@ -7,23 +7,24 @@ import { getMyProfile, profileKeys } from '@/lib/api/profile';
 import { scheduleScreen, screenKeys } from '@/lib/api/screens';
 import { setCurrentLeague } from '@/lib/currentLeague';
 import { initialsOf } from '@/lib/initials';
-import { formatRange } from '@/lib/time/format';
+import { formatRange, gpShort } from '@/lib/time/format';
 import { serverNow } from '@/lib/time/useServerNow';
 import { Content, PageTitle } from '@/ui/Page';
 import b from '@/ui/Button.module.css';
 import { LobbyTabs } from './LobbyTabs';
 import { Avatar } from '@/ui/Avatar';
+import { t, type Key } from '@/i18n';
 
 const MODES = [
-  { id: 'predict', t: 'Прогнозы', help: 'Игра прогнозов на этапы: квалификация, топ-10 и бонусы.' },
-  { id: 'fantasy', t: 'Фэнтези', help: 'Фэнтези-лига: состав из 5 пилотов и 2 конструкторов на бюджет.' },
-  { id: 'both', t: 'Оба', help: 'Две таблицы: прогнозы и фэнтези-лига, с одними и теми же друзьями.' },
+  { id: 'predict', t: 'lobby.mode.predict', help: 'lobby.mode.predictHelp' },
+  { id: 'fantasy', t: 'lobby.mode.fantasy', help: 'lobby.mode.fantasyHelp' },
+  { id: 'both', t: 'lobby.mode.both', help: 'lobby.mode.bothHelp' },
 ] as const;
 type Mode = (typeof MODES)[number]['id'];
-const ACCESS = [
-  { t: 'По приглашению', on: false },
-  { t: 'По ссылке', on: true },
-  { t: 'Открытое', on: false },
+const ACCESS: { t: Key; on: boolean }[] = [
+  { t: 'lobby.access.invite', on: false },
+  { t: 'lobby.access.link', on: true },
+  { t: 'lobby.access.open', on: false },
 ];
 
 /** Макет Lobby-Create. Приглашения по нику и открытые лиги — позже. */
@@ -60,50 +61,50 @@ export default function CreateLeaguePage() {
     if (nameOk && !create.isPending) create.mutate();
   };
 
-  const startLabel = start ? `с ${start.name.replace('Гран-при ', '')}` : 'с ближайшего этапа';
+  const startLabel = start ? t('lobby.startFrom', { name: gpShort(start.name) }) : t('lobby.startNext');
   const owner = profile.data?.nickname ?? '…';
 
   return (
     <>
-      <PageTitle title="Лига друзей" sub="Создать лобби" />
+      <PageTitle title={t('common.friendsLeague')} sub={t('lobby.create')} />
       <LobbyTabs active="create" />
       <Content>
         <div className="row">
           <form className="card rise" style={{ flex: '3 1 560px', minWidth: 0, display: 'flex', flexDirection: 'column', gap: 22 }} onSubmit={submit} noValidate>
             <div>
-              <h2 className="h">Новое лобби</h2>
-              <div className="mute" style={{ fontSize: 14, marginTop: 6 }}>Настрой игру — друзей позовёшь на следующем шаге</div>
+              <h2 className="h">{t('lobby.new')}</h2>
+              <div className="mute" style={{ fontSize: 14, marginTop: 6 }}>{t('lobby.newText')}</div>
             </div>
             <div>
-              <label className="lab" htmlFor="lg-name">Название</label>
-              <input id="lg-name" className="in" type="text" placeholder="Как назовём лобби" maxLength={32} value={name} onChange={(e) => setName(e.target.value)} />
+              <label className="lab" htmlFor="lg-name">{t('lobby.name')}</label>
+              <input id="lg-name" className="in" type="text" placeholder={t('lobby.namePh')} maxLength={32} value={name} onChange={(e) => setName(e.target.value)} />
               <div className={`help ${name && !nameOk ? 'err' : ''}`}>
-                {name && !nameOk ? 'От 2 до 32 символов, без < и >.' : 'До 32 символов. Его увидят все, кто получит приглашение.'}
+                {name && !nameOk ? t('lobby.nameBad') : t('lobby.nameHelp')}
               </div>
             </div>
             <div>
-              <span className="lab">Режим игры</span>
-              <div className="seg2" role="group" aria-label="Режим игры">
+              <span className="lab">{t('lobby.gameMode')}</span>
+              <div className="seg2" role="group" aria-label={t('lobby.gameMode')}>
                 {MODES.map((m) => (
                   <button key={m.id} type="button" className={mode === m.id ? 'on' : ''} aria-pressed={mode === m.id} onClick={() => setMode(m.id)}>
-                    {m.t}
+                    {t(m.t)}
                   </button>
                 ))}
               </div>
-              <div className="help">{MODES.find((m) => m.id === mode)?.help}</div>
+              <div className="help">{t(MODES.find((m) => m.id === mode)!.help)}</div>
             </div>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 22 }}>
               <div style={{ flex: '1 1 220px' }}>
-                <span className="lab">Игроков</span>
+                <span className="lab">{t('lobby.players')}</span>
                 <div className="stp">
-                  <button type="button" aria-label="Меньше" onClick={() => setCount((c) => Math.max(2, c - 1))}>−</button>
+                  <button type="button" aria-label={t('lobby.fewer')} onClick={() => setCount((c) => Math.max(2, c - 1))}>−</button>
                   <b aria-live="polite">{count}</b>
-                  <button type="button" aria-label="Больше" onClick={() => setCount((c) => Math.min(20, c + 1))}>+</button>
+                  <button type="button" aria-label={t('lobby.more')} onClick={() => setCount((c) => Math.min(20, c + 1))}>+</button>
                 </div>
-                <div className="help">От 2 до 20</div>
+                <div className="help">{t('lobby.from2to20')}</div>
               </div>
               <div style={{ flex: '2 1 300px' }}>
-                <label className="lab" htmlFor="lg-start">Старт с этапа</label>
+                <label className="lab" htmlFor="lg-start">{t('lobby.startRound')}</label>
                 <select id="lg-start" className="in" value={start ? String(start.id) : ''} onChange={(e) => setStartId(e.target.value)} disabled={!upcoming.length}>
                   {upcoming.map((e) => {
                     const first = e.sessions[0]?.starts_at;
@@ -116,48 +117,48 @@ export default function CreateLeaguePage() {
                     );
                   })}
                 </select>
-                <div className="help">Очки до этого этапа не считаются.</div>
+                <div className="help">{t('lobby.startHelp')}</div>
               </div>
             </div>
             <div>
-              <span className="lab">Кто может войти</span>
-              <div className="seg2" role="group" aria-label="Доступ">
+              <span className="lab">{t('lobby.whoCanJoin')}</span>
+              <div className="seg2" role="group" aria-label={t('lobby.accessAria')}>
                 {ACCESS.map((a) => (
-                  <button key={a.t} type="button" className={a.on ? 'on' : ''} disabled={!a.on} title={a.on ? undefined : 'Скоро'}>
-                    {a.t}
+                  <button key={a.t} type="button" className={a.on ? 'on' : ''} disabled={!a.on} title={a.on ? undefined : t('lobby.soon')}>
+                    {t(a.t)}
                   </button>
                 ))}
               </div>
-              <div className="help">Любой, у кого есть ссылка или код, попадёт в лобби.</div>
+              <div className="help">{t('lobby.accessHelp')}</div>
             </div>
             {create.error && <div className="alert bad" role="alert">{create.error.message}</div>}
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12, marginTop: 6 }}>
               <button type="submit" className={b.cta} disabled={!nameOk || create.isPending} style={{ padding: '0 32px' }}>
-                {create.isPending ? 'Создаём…' : 'Создать лобби'}
+                {create.isPending ? t('lobby.creating') : t('lobby.create')}
               </button>
               <PillJoin />
             </div>
           </form>
 
           <section className="card rise" style={{ ['--i' as string]: 1, flex: '2 1 380px', minWidth: 0, display: 'flex', flexDirection: 'column', gap: 18 }}>
-            <div className="eyebrow">Так увидят друзья</div>
+            <div className="eyebrow">{t('lobby.preview')}</div>
             <div style={{ padding: 22, borderRadius: 22, background: 'radial-gradient(90% 90% at 80% 0%,rgba(232,33,26,.18),transparent 70%),#0f0f12', border: '1px solid rgba(255,255,255,.1)', display: 'flex', flexDirection: 'column', gap: 18 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
                 <span style={{ width: 52, height: 52, borderRadius: 16, background: 'var(--gold)', color: '#0a0a0d', font: "700 18px var(--font-num)", display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  {initialsOf(name.trim() || 'Лобби')}
+                  {initialsOf(name.trim() || t('lobby.lobby'))}
                 </span>
                 <div>
-                  <div style={{ font: "600 22px var(--font-num)", letterSpacing: '-.01em' }}>{name.trim() || 'Название лобби'}</div>
-                  <div className="mute" style={{ fontSize: 13, marginTop: 3 }}>Хозяин: {owner}</div>
+                  <div style={{ font: "600 22px var(--font-num)", letterSpacing: '-.01em' }}>{name.trim() || t('lobby.namePlaceholder')}</div>
+                  <div className="mute" style={{ fontSize: 13, marginTop: 3 }}>{t('lobby.owner', { name: owner })}</div>
                 </div>
               </div>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-                <span className="chip red">{MODES.find((m) => m.id === mode)?.t}</span>
-                <span className="chip">По ссылке</span>
+                <span className="chip red">{t(MODES.find((m) => m.id === mode)!.t)}</span>
+                <span className="chip">{t('lobby.access.link')}</span>
                 <span className="chip">{startLabel}</span>
               </div>
               <div>
-                <div className="mute" style={{ fontSize: 13, marginBottom: 10 }}>Игроки · 1 из {count}</div>
+                <div className="mute" style={{ fontSize: 13, marginBottom: 10 }}>{t('lobby.playersOf', { n: count })}</div>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
                   {Array.from({ length: Math.min(count, 8) }, (_, i) =>
                     i === 0 ? (
@@ -176,9 +177,9 @@ export default function CreateLeaguePage() {
                 </div>
               </div>
             </div>
-            <div className="step"><b>1</b><div><div style={{ fontWeight: 600 }}>Создай лобби</div><div className="mute" style={{ fontSize: 13, marginTop: 4, lineHeight: 1.45 }}>Название и лимит можно изменить потом</div></div></div>
-            <div className="step"><b>2</b><div><div style={{ fontWeight: 600 }}>Позови друзей</div><div className="mute" style={{ fontSize: 13, marginTop: 4, lineHeight: 1.45 }}>Ссылкой или кодом</div></div></div>
-            <div className="step"><b>3</b><div><div style={{ fontWeight: 600 }}>Играйте</div><div className="mute" style={{ fontSize: 13, marginTop: 4, lineHeight: 1.45 }}>{mode === 'predict' ? 'Прогнозы' : mode === 'fantasy' ? 'Фэнтези-составы' : 'Прогнозы и составы'} с ближайшего этапа</div></div></div>
+            <div className="step"><b>1</b><div><div style={{ fontWeight: 600 }}>{t('lobby.step1')}</div><div className="mute" style={{ fontSize: 13, marginTop: 4, lineHeight: 1.45 }}>{t('lobby.step1t')}</div></div></div>
+            <div className="step"><b>2</b><div><div style={{ fontWeight: 600 }}>{t('lobby.step2')}</div><div className="mute" style={{ fontSize: 13, marginTop: 4, lineHeight: 1.45 }}>{t('lobby.step2t')}</div></div></div>
+            <div className="step"><b>3</b><div><div style={{ fontWeight: 600 }}>{t('lobby.step3')}</div><div className="mute" style={{ fontSize: 13, marginTop: 4, lineHeight: 1.45 }}>{mode === 'predict' ? t('lobby.step3predict') : mode === 'fantasy' ? t('lobby.step3fantasy') : t('lobby.step3both')}</div></div></div>
           </section>
         </div>
       </Content>
@@ -190,7 +191,7 @@ function PillJoin() {
   const navigate = useNavigate();
   return (
     <button type="button" className={`${b.cta} ${b.ghost}`} style={{ padding: '0 26px' }} onClick={() => navigate('/lobby/join')}>
-      Есть код? Войти в лобби
+      {t('lobby.haveCode')}
     </button>
   );
 }

@@ -1,4 +1,5 @@
 import { getSupabase } from '../supabase';
+import { t } from '@/i18n';
 
 export type PredictionInput = {
   eventId: number;
@@ -34,10 +35,10 @@ export async function savePrediction(p: PredictionInput): Promise<void> {
     );
   if (!error) return;
   if (error.hint === 'block_closed') throw new Error(error.message);
-  if (error.hint === 'deadline_passed' || error.code === '42501') throw new Error('Приём прогнозов на этот этап закрыт.');
-  if (error.hint === 'duplicate_driver') throw new Error('Один пилот стоит на двух местах.');
-  if (error.hint === 'incomplete') throw new Error('Заполни все места.');
-  if (error.hint === 'boost_used') throw new Error('Бустер уже стоит на другом этапе этого окна — один на каждые 5 этапов.');
-  if (error.hint === 'unknown_driver') throw new Error('В прогнозе пилот, которого нет в заявке. Обнови страницу.');
-  throw new Error('Не получилось отправить. Попробуй ещё раз.');
+  if (error.hint === 'deadline_passed' || error.code === '42501') throw new Error(t('predict.err.closed'));
+  if (error.hint === 'duplicate_driver') throw new Error(t('predict.err.dup'));
+  if (error.hint === 'incomplete') throw new Error(t('predict.err.incomplete'));
+  if (error.hint === 'boost_used') throw new Error(t('predict.err.boost'));
+  if (error.hint === 'unknown_driver') throw new Error(t('predict.err.unknown'));
+  throw new Error(t('predict.err.failed'));
 }

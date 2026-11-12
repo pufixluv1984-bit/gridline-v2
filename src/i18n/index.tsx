@@ -42,7 +42,7 @@ export function setDictForTests(l: Locale, d: Dict): void {
   apply(l, d);
 }
 
-export type Params = Record<string, string | number>;
+export type Params = Record<string, string | number | null | undefined>;
 
 export function t(key: Key, params?: Params): string {
   const e = dict[key];
@@ -53,7 +53,7 @@ export function t(key: Key, params?: Params): string {
     const cat = rules.select(Number(params?.n ?? 0)) as keyof Plural;
     s = e[cat] ?? e.other;
   }
-  return params ? s.replace(/\{(\w+)\}/g, (m, k: string) => (k in params ? String(params[k]) : m)) : s;
+  return params ? s.replace(/\{(\w+)\}/g, (m, k: string) => (k in params ? String(params[k] ?? '') : m)) : s;
 }
 
 /**

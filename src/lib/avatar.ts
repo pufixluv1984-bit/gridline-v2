@@ -95,7 +95,7 @@ export async function renderAvatar(img: CanvasImageSource, rect: { sx: number; s
 
 /** Буквы аватара без фото: до двух букв или цифр. */
 export function cleanLetters(raw: string): string {
-  return [...raw.replace(/[^A-Za-zА-Яа-яЁё0-9]/g, '')].slice(0, 2).join('').toUpperCase();
+  return [...raw.replace(/[^A-Za-zА-Яа-яЁёІіЇїЄєҐґ0-9]/g, '')].slice(0, 2).join('').toUpperCase();
 }
 
 /** Поля аватара из строки ответа экрана: `<Avatar {...avatarOf(row)} />`. */

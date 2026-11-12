@@ -4,14 +4,14 @@ import { Link, useParams } from 'react-router-dom';
 import { useAuth } from '@/features/auth/authContext';
 import { teamCar, type TeamCode } from '@/lib/assets';
 import { profileKeys, profileScreen, TITLE_NAMES, type ProfileScreen } from '@/lib/api/profile';
-import { plural } from '@/lib/time/format';
+import { SESSION_NAMES } from '@/lib/time/format';
 import { Avatar, DriverTile, Skeleton } from '@/ui/game';
 import { Content, PageTitle, PillLink, PrimaryLink, Toolbar, ToolbarDivider } from '@/ui/Page';
 import b from '@/ui/Button.module.css';
 import pg from '@/ui/Page.module.css';
 import s from './Profile.module.css';
 import { avatarOf } from '@/lib/avatar';
-import { intlLocale } from '@/i18n';
+import { currentLocale, intlLocale, t, t as tr } from '@/i18n';
 
 const IconEdit = () => (
   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -29,10 +29,12 @@ function scrollTo(id: string) {
 const pct = (hit: number, total: number) => (total > 0 ? Math.round((100 * hit) / total) : null);
 /** «ноября 2026»: родительный падеж берём из формата с днём и убираем день. */
 const monthYear = (iso: string) =>
-  new Intl.DateTimeFormat(intlLocale(), { day: 'numeric', month: 'long', year: 'numeric' })
-    .format(new Date(iso))
-    .replace(/^\d+\s/, '')
-    .replace(' г.', '');
+  currentLocale() === 'en'
+    ? new Intl.DateTimeFormat(intlLocale(), { month: 'long', year: 'numeric' }).format(new Date(iso))
+    : new Intl.DateTimeFormat(intlLocale(), { day: 'numeric', month: 'long', year: 'numeric' })
+        .format(new Date(iso))
+        .replace(/^\d+\s/, '')
+        .replace(/ (г|р)\.$/, '');
 
 /** Макет Profile: свой профиль (/profile) или соседа по лиге (/profile/:id); архив сезонов — переключатель в истории. */
 export default function ProfilePage() {
@@ -48,12 +50,12 @@ export default function ProfilePage() {
   if (q.error || (data && !p)) {
     return (
       <>
-        <PageTitle title="Профиль" />
+        <PageTitle title={t('drv.profile')} />
         <Content>
           <div className="empty-state">
-            <h3>Профиль недоступен</h3>
-            <p>Профили видны только игрокам из общих лиг.</p>
-            <Link className={`${b.cta} ${b.sm}`} to="/league">К моим лигам</Link>
+            <h3>{t('prof.unavailable')}</h3>
+            <p>{t('prof.unavailableText')}</p>
+            <Link className={`${b.cta} ${b.sm}`} to="/league">{t('league.toMine')}</Link>
           </div>
         </Content>
       </>
@@ -71,18 +73,18 @@ export default function ProfilePage() {
 
   return (
     <>
-      <PageTitle title="Профиль" sub={p?.nickname ?? '…'} />
+      <PageTitle title={t('drv.profile')} sub={p?.nickname ?? '…'} />
       <Toolbar>
         {isMe && (
           <PrimaryLink to="/settings" icon={<IconEdit />}>
-            Редактировать профиль
+            {t('prof.edit')}
           </PrimaryLink>
         )}
         {isMe && <ToolbarDivider />}
-        <a className={`${pg.pill} ${pg.pillOn}`} href="#top" onClick={scrollTo('top')}>Обзор</a>
-        <a className={pg.pill} href="#history" onClick={scrollTo('history')}>История</a>
-        <a className={pg.pill} href="#leagues" onClick={scrollTo('leagues')}>Лиги</a>
-        {isMe && <PillLink to="/settings">Настройки</PillLink>}
+        <a className={`${pg.pill} ${pg.pillOn}`} href="#top" onClick={scrollTo('top')}>{t('drv.overview')}</a>
+        <a className={pg.pill} href="#history" onClick={scrollTo('history')}>{t('prof.history')}</a>
+        <a className={pg.pill} href="#leagues" onClick={scrollTo('leagues')}>{t('prof.leagues')}</a>
+        {isMe && <PillLink to="/settings">{t('settings.sub')}</PillLink>}
       </Toolbar>
       <Content>
         <div id="top" />
@@ -95,45 +97,45 @@ export default function ProfilePage() {
         <div className="row">
           {fl ? (
             <section className={`card rise ${s.stat}`} style={{ ['--i' as string]: 1 }}>
-              <div className="eyebrow">Фэнтези · место</div>
-              <div className={`num ${s.big}`}>{fl.rank}<small> из {fl.members}</small></div>
+              <div className="eyebrow">{t('prof.fantasyPlace')}</div>
+              <div className={`num ${s.big}`}>{fl.rank}<small> {t('prof.ofN', { n: fl.members })}</small></div>
               <div style={{ marginTop: 14 }}>
-                {fl.rank === 1 && Number(fl.points) > 0 ? <span className="chip green">Лидер</span> : <span className="chip">{fl.name}</span>}
+                {fl.rank === 1 && Number(fl.points) > 0 ? <span className="chip green">{t('prof.leader')}</span> : <span className="chip">{fl.name}</span>}
               </div>
             </section>
           ) : (
           <section className={`card rise ${s.stat}`} style={{ ['--i' as string]: 1 }}>
-            <div className="eyebrow">Лига · место</div>
+            <div className="eyebrow">{t('prof.leaguePlace')}</div>
             <div className={`num ${s.big}`}>
               {firstLeague?.rank ?? '—'}
-              {firstLeague && <small> из {firstLeague.member_count}</small>}
+              {firstLeague && <small> {t('prof.ofN', { n: firstLeague.member_count })}</small>}
             </div>
             <div style={{ marginTop: 14 }}>
               {firstLeague ? (
-                firstLeague.rank === 1 && total > 0 ? <span className="chip green">Лидер</span> : <span className="chip">{firstLeague.name}</span>
+                firstLeague.rank === 1 && total > 0 ? <span className="chip green">{t('prof.leader')}</span> : <span className="chip">{firstLeague.name}</span>
               ) : (
-                <span className="mute" style={{ fontSize: 14 }}>Пока без лиги</span>
+                <span className="mute" style={{ fontSize: 14 }}>{t('prof.noLeague')}</span>
               )}
             </div>
           </section>
           )}
           <section className={`card rise ${s.stat}`} style={{ ['--i' as string]: 2 }}>
-            <div className="eyebrow">Очки сезона</div>
+            <div className="eyebrow">{t('prof.seasonPts')}</div>
             <div className={`num ${s.big}`}>{total.toLocaleString(intlLocale())}</div>
-            <div className={s.note}>{last ? `+${last.points} за этап ${last.round}` : 'Очки появятся после первого этапа'}</div>
+            <div className={s.note}>{last ? t('prof.lastRound', { p: last.points, r: last.round }) : t('prof.ptsLater')}</div>
           </section>
           <section className={`card rise ${s.stat}`} style={{ ['--i' as string]: 3 }}>
-            <div className="eyebrow">Прогнозы · точность</div>
+            <div className="eyebrow">{t('prof.accuracy')}</div>
             <div className={`num ${s.big}`}>{overall ?? '—'}{overall !== null && <small>%</small>}</div>
-            <div className={s.note}>точных мест в квалификации и гонке</div>
+            <div className={s.note}>{t('prof.accuracyNote')}</div>
           </section>
           <section className={`card rise ${s.stat}`} style={{ ['--i' as string]: 4 }}>
-            <div className="eyebrow">Лучшая серия</div>
+            <div className="eyebrow">{t('prof.bestStreak')}</div>
             <div className={`num ${s.big}`}>
               {data?.best_streak ?? 0}
-              <small> {plural(data?.best_streak ?? 0, 'этап', 'этапа', 'этапов')}</small>
+              <small> {t('prof.rounds', { n: data?.best_streak ?? 0 })}</small>
             </div>
-            <div className={s.note}>подряд с очками в прогнозе</div>
+            <div className={s.note}>{t('prof.streakNote')}</div>
           </section>
         </div>
 
@@ -151,7 +153,7 @@ export default function ProfilePage() {
 
         <div className="row">
           <section className="card rise" style={{ ['--i' as string]: 8, flex: '1 1 480px' }} id="leagues">
-            <h2 className="h">Лиги</h2>
+            <h2 className="h">{t('prof.leagues')}</h2>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginTop: 18 }}>
               {(data?.leagues ?? []).map((l, i) => (
                 <Link key={l.id} to={`/league/${l.id}`} className="lrow" style={i === 0 ? { borderColor: 'rgba(255,212,0,.4)' } : undefined}>
@@ -159,16 +161,16 @@ export default function ProfilePage() {
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ fontWeight: 600 }}>{l.name}</div>
                     <div className="mute" style={{ fontSize: 13, marginTop: 3 }}>
-                      {l.member_count} {plural(l.member_count, 'игрок', 'игрока', 'игроков')} · прогнозы
+                      {t('prof.membersPredict', { n: l.member_count })}
                     </div>
                   </div>
-                  {l.rank && <span className={`chip ${l.rank === 1 && total > 0 ? 'green' : ''}`}>{l.rank} место</span>}
+                  {l.rank && <span className={`chip ${l.rank === 1 && total > 0 ? 'green' : ''}`}>{t('prof.rankPlace', { n: l.rank })}</span>}
                 </Link>
               ))}
-              {data && data.leagues.length === 0 && <div className="mute" style={{ fontSize: 14 }}>{isMe ? 'Ты пока не в лиге.' : 'Общих лиг в этом сезоне нет.'}</div>}
+              {data && data.leagues.length === 0 && <div className="mute" style={{ fontSize: 14 }}>{isMe ? t('prof.noLeagueMe') : t('prof.noCommon')}</div>}
               {isMe && (
                 <Link className="mini" to="/lobby/join" style={{ alignSelf: 'flex-start', marginTop: 4, display: 'inline-flex', alignItems: 'center' }}>
-                  + Создать лигу или войти по коду
+                  {t('prof.createOrJoin')}
                 </Link>
               )}
             </div>
@@ -189,18 +191,18 @@ function Hero({ data }: { data: ProfileScreen }) {
     <section className={`card rise ${s.hero}`} style={{ ['--i' as string]: 0 }}>
       <Avatar {...avatarOf(p)} size={112} fontSize={40} className={s.avl} style={{ '--c': p.avatar_color } as CSSProperties} />
       <div style={{ minWidth: 0 }}>
-        <div className="eyebrow">Игрок</div>
+        <div className="eyebrow">{t('league.player')}</div>
         <div className={`num ${s.name}`}>{p.nickname}</div>
         <div className={s.chips}>
-          {leader && <span className="chip red">Лидер лиги</span>}
+          {leader && <span className="chip red">{t('prof.leagueLeader')}</span>}
           {data.titles.map((t) => (
-            <span key={`${t.league_id}${t.title}`} className="chip gold" title={`Звание сезона в лиге «${t.league}»`}>
+            <span key={`${t.league_id}${t.title}`} className="chip gold" title={tr('prof.titleIn', { league: t.league })}>
               {TITLE_NAMES[t.title]}
             </span>
           ))}
-          <span className="chip">Прогнозы</span>
+          <span className="chip">{tr('lobby.mode.predict')}</span>
         </div>
-        <div className="mute" style={{ marginTop: 14, fontSize: 15 }}>в игре с {monthYear(p.created_at)}</div>
+        <div className="mute" style={{ marginTop: 14, fontSize: 15 }}>{tr('prof.since', { date: monthYear(p.created_at) })}</div>
       </div>
       {(fd || ft) && (
         <div className={s.favs}>
@@ -208,7 +210,7 @@ function Hero({ data }: { data: ProfileScreen }) {
             <div className={s.fav}>
               <DriverTile driver={{ code: fd.code, number: fd.number, color: fd.color ?? '#3a3a42', team_code: fd.team_code ?? '', name: fd.name }} size={112} className={s.lg} />
               <div>
-                <div className="eyebrow">Любимый пилот</div>
+                <div className="eyebrow">{tr('prof.favDriver')}</div>
                 <div className={s.favName}>{fd.name}</div>
                 <div className={`mute ${s.favSub}`}>{[fd.team_name, fd.number ? `#${fd.number}` : null].filter(Boolean).join(' · ')}</div>
               </div>
@@ -218,7 +220,7 @@ function Hero({ data }: { data: ProfileScreen }) {
             <div className={s.fav}>
               <div className={s.car}>{car ? <img src={car} alt={ft.name} loading="lazy" decoding="async" /> : <div className={s.carEmpty} />}</div>
               <div>
-                <div className="eyebrow">Любимая команда</div>
+                <div className="eyebrow">{tr('prof.favTeam')}</div>
                 <div className={s.favName}>{ft.name}</div>
               </div>
             </div>
@@ -234,7 +236,7 @@ function BestDrivers({ data }: { data: ProfileScreen | undefined }) {
   const list = data?.best_drivers ?? [];
   return (
     <section className="card rise" style={{ ['--i' as string]: 5, flex: '1 1 480px' }}>
-      <h2 className="h">Лучшие пилоты в прогнозах</h2>
+      <h2 className="h">{t('prof.bestDrivers')}</h2>
       <div className={s.lineup}>
         {list.map((d) => (
           <div key={d.id} title={d.name}>
@@ -247,10 +249,10 @@ function BestDrivers({ data }: { data: ProfileScreen | undefined }) {
         {list.map((d) => (
           <div key={d.id} className="kv">
             <span className="mute">{d.name}</span>
-            <b className="num">{d.points} {plural(d.points, 'очко', 'очка', 'очков')}</b>
+            <b className="num">{t('prof.pts', { n: d.points })}</b>
           </div>
         ))}
-        {data && list.length === 0 && <div className="mute" style={{ fontSize: 14 }}>Появятся после первого этапа с результатами.</div>}
+        {data && list.length === 0 && <div className="mute" style={{ fontSize: 14 }}>{t('prof.afterFirst')}</div>}
       </div>
     </section>
   );
@@ -264,8 +266,8 @@ function FantasyCard({ data }: { data: ProfileScreen }) {
   return (
     <section className="card rise" style={{ ['--i' as string]: 5, flex: '1 1 560px' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12 }}>
-        <h2 className="h">Фэнтези-команда{f.team_name ? ` «${f.team_name}»` : ''}</h2>
-        {data.is_me && <Link className="mini" to="/fantasy/squad" style={{ display: 'inline-flex', alignItems: 'center' }}>Состав</Link>}
+        <h2 className="h">{f.team_name ? t('prof.fantasyTeamNamed', { name: f.team_name }) : t('prof.fantasyTeam')}</h2>
+        {data.is_me && <Link className="mini" to="/fantasy/squad" style={{ display: 'inline-flex', alignItems: 'center' }}>{t('prof.squad')}</Link>}
       </div>
       <div className={s.lineup}>
         {sq.lineup.map((d) => (
@@ -285,10 +287,10 @@ function FantasyCard({ data }: { data: ProfileScreen }) {
         ))}
       </div>
       <div style={{ marginTop: 20 }}>
-        <div className="kv"><span className="mute">Бюджет</span><b className="num">${Number(sq.cost).toFixed(1)}M <span className="mute" style={{ fontWeight: 500 }}>· свободно ${(f.budget - Number(sq.cost)).toFixed(1)}M</span></b></div>
-        <div className="kv"><span className="mute">Замены на этапе</span><b>{sq.free_before >= 99 ? 'первая сборка' : `${sq.transfers} из ${sq.free_before} бесплатных`}</b></div>
+        <div className="kv"><span className="mute">{t('prof.budget')}</span><b className="num">${Number(sq.cost).toFixed(1)}M <span className="mute" style={{ fontWeight: 500 }}>{t('prof.freeM', { m: `$${(f.budget - Number(sq.cost)).toFixed(1)}M` })}</span></b></div>
+        <div className="kv"><span className="mute">{t('prof.transfers')}</span><b>{sq.free_before >= 99 ? t('prof.firstBuild') : t('prof.transfersOf', { n: sq.transfers, free: sq.free_before })}</b></div>
         <div className="kv">
-          <span className="mute">Чипы</span>
+          <span className="mute">{t('prof.chips')}</span>
           <span style={{ display: 'flex', gap: 6, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
             {(['wildcard', 'limitless', 'final_fix', 'autopilot', 'no_negative', 'extra_drs'] as const).map((c, i) => (
               <span key={c} className={`chip ${used.has(c) ? '' : 'green'}`} style={used.has(c) ? { opacity: 0.5 } : undefined}>{['WC', 'LL', 'FF', 'AP', 'NN', 'X3'][i]}</span>
@@ -304,9 +306,9 @@ function PredictCard({ data, me }: { data: ProfileScreen | undefined; me: string
   const a = data?.accuracy;
   const rows = a
     ? [
-        { name: 'Квалификация', v: pct(a.qualy_hit, a.qualy_total) },
-        { name: 'Гонка', v: pct(a.race_hit, a.race_total) },
-        { name: 'Бонусы', v: pct(a.bonus_hit, a.bonus_total) },
+        { name: SESSION_NAMES.qualy!, v: pct(a.qualy_hit, a.qualy_total) },
+        { name: SESSION_NAMES.race!, v: pct(a.race_hit, a.race_total) },
+        { name: t('bd.bonuses'), v: pct(a.bonus_hit, a.bonus_total) },
       ]
     : [];
   const duel = data?.duel;
@@ -314,7 +316,7 @@ function PredictCard({ data, me }: { data: ProfileScreen | undefined; me: string
   const sum = duel ? duel.wins + duel.losses || 1 : 1;
   return (
     <section className="card rise" style={{ ['--i' as string]: 6, flex: '1 1 480px' }}>
-      <h2 className="h">Игра прогнозов</h2>
+      <h2 className="h">{t('predict.title')}</h2>
       <div style={{ marginTop: 14 }}>
         {rows.map((r) => (
           <div key={r.name} className={s.pr}>
@@ -329,13 +331,13 @@ function PredictCard({ data, me }: { data: ProfileScreen | undefined; me: string
       </div>
       {duel && p && (
         <div style={{ marginTop: 20, paddingTop: 20, borderTop: '1px solid var(--line)' }}>
-          <div className="eyebrow">Дуэль с {duel.rival.nickname}</div>
+          <div className="eyebrow">{t('prof.duel', { name: duel.rival.nickname })}</div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 14, margin: '16px 0 12px' }}>
             <Avatar {...avatarOf(p)} />
             <div className="num" style={{ fontSize: 28, fontWeight: 600, flex: 1, textAlign: 'center' }}>
               {duel.wins} <span className="mute">:</span> {duel.losses}
             </div>
-            <Link to={duel.rival.id === me ? '/profile' : `/profile/${duel.rival.id}`} aria-label={`Профиль ${duel.rival.nickname}`}>
+            <Link to={duel.rival.id === me ? '/profile' : `/profile/${duel.rival.id}`} aria-label={t('prof.profileOf', { name: duel.rival.nickname })}>
               <Avatar {...avatarOf(duel.rival)} />
             </Link>
           </div>
@@ -343,7 +345,7 @@ function PredictCard({ data, me }: { data: ProfileScreen | undefined; me: string
             <i style={{ width: `${(duel.wins / sum) * 100}%`, background: p.avatar_color }} />
             <i style={{ width: `${(duel.losses / sum) * 100}%`, background: duel.rival.avatar_color }} />
           </div>
-          <div className="mute" style={{ marginTop: 12, fontSize: 13 }}>Побед по этапам в прогнозах за сезон</div>
+          <div className="mute" style={{ marginTop: 12, fontSize: 13 }}>{t('prof.duelNote')}</div>
         </div>
       )}
     </section>
@@ -359,12 +361,12 @@ function History({ data, season, onSeason }: { data: ProfileScreen | undefined; 
     <section className="card rise" style={{ ['--i' as string]: 7 }} id="history">
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
         <div>
-          <h2 className="h">История по этапам</h2>
-          <div className="mute" style={{ fontSize: 14, marginTop: 6 }}>Очки за прогноз на каждый этап · лучший этап выделен жёлтым</div>
+          <h2 className="h">{t('prof.historyTitle')}</h2>
+          <div className="mute" style={{ fontSize: 14, marginTop: 6 }}>{t('prof.historySub')}</div>
         </div>
         <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
           {(data?.seasons.length ?? 0) > 1 && (
-            <div className="seg" role="tablist" aria-label="Сезон">
+            <div className="seg" role="tablist" aria-label={t('drv.season')}>
               {data!.seasons.map((y) => (
                 <button key={y} role="tab" type="button" className={y === current ? 'on' : ''} aria-selected={y === current} onClick={() => onSeason(y)}>
                   {y}
@@ -372,23 +374,23 @@ function History({ data, season, onSeason }: { data: ProfileScreen | undefined; 
               ))}
             </div>
           )}
-          <div className="seg" role="tablist" aria-label="Режим истории">
-            <button role="tab" type="button" disabled title="Фэнтези-лига — к сезону 2027">Фэнтези</button>
-            <button role="tab" type="button" className="on" aria-selected="true">Прогнозы</button>
+          <div className="seg" role="tablist" aria-label={t('prof.historyMode')}>
+            <button role="tab" type="button" disabled title={t('prof.fantasySoon')}>{t('lobby.mode.fantasy')}</button>
+            <button role="tab" type="button" className="on" aria-selected="true">{t('lobby.mode.predict')}</button>
           </div>
         </div>
       </div>
       {h.length > 0 ? (
         <div className={s.bars}>
           {h.map((x, i) => (
-            <div key={x.event_id} className={s.bc} title={`${x.name}: ${x.points} ${plural(x.points, 'очко', 'очка', 'очков')}${x.played ? '' : ' · без прогноза'}`}>
+            <div key={x.event_id} className={s.bc} title={`${x.name}: ${t('prof.pts', { n: x.points })}${x.played ? '' : t('prof.noPick')}`}>
               <i className={i === h.length - 1 ? s.now : i === best && x.points > 0 ? s.best : ''} style={{ height: `${Math.round((x.points / max) * 100)}%` }} />
               <span>{x.round}</span>
             </div>
           ))}
         </div>
       ) : (
-        <div className="mute" style={{ fontSize: 14, marginTop: 18 }}>{data ? 'Этапов с результатами пока нет.' : ''}</div>
+        <div className="mute" style={{ fontSize: 14, marginTop: 18 }}>{data ? t('prof.noRounds') : ''}</div>
       )}
     </section>
   );

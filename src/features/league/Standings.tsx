@@ -3,15 +3,16 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Modal } from '@/ui/Modal';
 import b from '@/ui/Button.module.css';
 import type { LeagueScreen } from '@/lib/api/screens';
-import { plural } from '@/lib/time/format';
 import { Avatar, Skeleton } from '@/ui/game';
 import { avatarOf } from '@/lib/avatar';
+import { t } from '@/i18n';
+import { TITLE_NAMES } from '@/lib/api/profile';
 
 type Period = 'season' | 'stage' | 'all';
 const PERIODS: { id: Period; label: string }[] = [
-  { id: 'season', label: 'Сезон' },
-  { id: 'stage', label: 'Этап' },
-  { id: 'all', label: 'Всё время' },
+  { id: 'season', get label() { return t('league.p.season'); } },
+  { id: 'stage', get label() { return t('league.p.stage'); } },
+  { id: 'all', get label() { return t('league.p.all'); } },
 ];
 const COLS = '70px minmax(200px,1.2fr) 110px 140px 140px 120px';
 
@@ -71,30 +72,30 @@ export function StandingsCard({ data, me }: { data: LeagueScreen | undefined; me
 
   const leader = rows[0]?.main ?? 0;
   const headers: Record<Period, [string, string]> = {
-    season: ['Очки сезона', 'Последний этап'],
-    stage: [lastRound ? `Этап ${lastRound.round}` : 'Этап', 'Очки сезона'],
-    all: ['За всё время', 'Точных'],
+    season: [t('league.h.seasonPts'), t('league.h.lastRace')],
+    stage: [lastRound ? t('league.h.round', { n: lastRound.round }) : t('league.p.stage'), t('league.h.seasonPts')],
+    all: [t('league.h.allTime'), t('league.h.exact')],
   };
   const titles = data?.titles;
   const titleTiles = [
-    { key: 'sniper', name: 'Снайпер', t: titles?.sniper, unit: (v: number) => `${v} ${plural(v, 'точное попадание', 'точных попадания', 'точных попаданий')}` },
-    { key: 'best_stage', name: 'Лучший этап', t: titles?.best_stage, unit: (v: number) => `${v} ${plural(v, 'очко', 'очка', 'очков')}` },
-    { key: 'survivor', name: 'Выживший', t: titles?.survivor, unit: (v: number) => `${v} ${plural(v, 'этап', 'этапа', 'этапов')} подряд с очками` },
+    { key: 'sniper', name: TITLE_NAMES.sniper, t: titles?.sniper, unit: (v: number) => t('league.u.exact', { n: v }) },
+    { key: 'best_stage', name: TITLE_NAMES.best_stage, t: titles?.best_stage, unit: (v: number) => t('league.u.pts', { n: v }) },
+    { key: 'survivor', name: TITLE_NAMES.survivor, t: titles?.survivor, unit: (v: number) => t('league.u.streak', { n: v }) },
   ];
 
   return (
     <section className="card rise" style={{ ['--i' as string]: 1 }}>
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 14, alignItems: 'center', justifyContent: 'space-between', marginBottom: 18 }}>
         <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
-          <div className="seg" role="tablist" aria-label="Игра">
+          <div className="seg" role="tablist" aria-label={t('league.gameAria')}>
             {data?.league.mode && data.league.mode !== 'predict' ? (
-              <Link role="tab" to="/fantasy" style={{ height: 36, padding: '0 16px', borderRadius: 999, display: 'inline-flex', alignItems: 'center', color: 'var(--mute)', fontSize: 14, fontWeight: 500 }}>Фэнтези</Link>
+              <Link role="tab" to="/fantasy" style={{ height: 36, padding: '0 16px', borderRadius: 999, display: 'inline-flex', alignItems: 'center', color: 'var(--mute)', fontSize: 14, fontWeight: 500 }}>{t('summary.fantasy')}</Link>
             ) : (
-              <button role="tab" type="button" disabled title="В этой лиге только прогнозы">Фэнтези</button>
+              <button role="tab" type="button" disabled title={t('league.onlyPredict')}>{t('summary.fantasy')}</button>
             )}
-            <button role="tab" type="button" className="on" aria-selected="true">Прогнозы</button>
+            <button role="tab" type="button" className="on" aria-selected="true">{t('league.predictions')}</button>
           </div>
-          <div className="seg" role="tablist" aria-label="Период">
+          <div className="seg" role="tablist" aria-label={t('league.periodAria')}>
             {PERIODS.map((x) => (
               <button
                 key={x.id}
@@ -111,32 +112,32 @@ export function StandingsCard({ data, me }: { data: LeagueScreen | undefined; me
           </div>
         </div>
         <div className="mute" style={{ fontSize: 13 }}>
-          {period === 'season' && 'При равенстве: точные попадания → выигранные этапы → последний этап'}
-          {period === 'stage' && lastRound && `Только последний этап: ${lastRound.name}`}
-          {period === 'all' && 'Все этапы всех сезонов, бонусы — по правилам этой лиги'}
+          {period === 'season' && t('league.tieSeason')}
+          {period === 'stage' && lastRound && t('league.onlyLast', { name: lastRound.name })}
+          {period === 'all' && t('league.allSeasons')}
         </div>
       </div>
-      <div role="table" aria-label="Таблица лиги">
+      <div role="table" aria-label={t('league.tableAria')}>
         <div role="row" className="eyebrow" style={{ display: 'grid', gridTemplateColumns: COLS, gap: 14, padding: '0 16px 10px' }}>
-          <span role="columnheader">Место</span>
-          <span role="columnheader">Игрок</span>
-          <span role="columnheader">Форма</span>
+          <span role="columnheader">{t('league.pos')}</span>
+          <span role="columnheader">{t('league.player')}</span>
+          <span role="columnheader">{t('league.form')}</span>
           <span role="columnheader" style={{ textAlign: 'right' }}>{headers[period][0]}</span>
           <span role="columnheader" style={{ textAlign: 'right' }}>{headers[period][1]}</span>
-          <span role="columnheader" style={{ textAlign: 'right' }}>Отрыв</span>
+          <span role="columnheader" style={{ textAlign: 'right' }}>{t('league.gap')}</span>
         </div>
         {rows.map(({ r, main, second, mv, rank }) => (
           <div role="row" key={r.user_id} className={`trow ${r.user_id === me ? 'me' : ''}`} style={{ display: 'grid', gridTemplateColumns: COLS, gap: 14 }}>
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 4 }}>
               <span className="num" style={{ fontSize: 22, fontWeight: 600, lineHeight: 1, color: rank === 1 && main > 0 ? 'var(--gold)' : undefined }}>{rank}</span>
               {mv !== null && (
-                <span className={`mv ${mv > 0 ? 'up' : mv < 0 ? 'dn' : 'eq'}`} title="Сдвиг за последний этап">
+                <span className={`mv ${mv > 0 ? 'up' : mv < 0 ? 'dn' : 'eq'}`} title={t('league.move')}>
                   {mv > 0 ? `▲ ${mv}` : mv < 0 ? `▼ ${-mv}` : '—'}
                 </span>
               )}
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 12, minWidth: 0 }}>
-              <button type="button" onClick={() => setCard(r.user_id)} aria-label={`Карточка игрока ${r.nickname}`}
+              <button type="button" onClick={() => setCard(r.user_id)} aria-label={t('league.card', { name: r.nickname })}
                 style={{ padding: 0, border: 0, background: 'none', cursor: 'pointer', borderRadius: '50%' }}>
                 <Avatar {...avatarOf(r)} />
               </button>
@@ -145,23 +146,23 @@ export function StandingsCard({ data, me }: { data: LeagueScreen | undefined; me
                   <Link to={r.user_id === me ? '/profile' : `/profile/${r.user_id}`}>{r.nickname}</Link>
                   {r.points > 0 && (
                     <Link to={`/breakdown?player=${r.user_id}`} className="mute" style={{ fontSize: 12, fontWeight: 500, marginLeft: 10, textDecoration: 'underline' }}>
-                      разбор
+                      {t('league.breakdown')}
                     </Link>
                   )}
                 </div>
                 <div className="mute" style={{ fontSize: 13, marginTop: 3 }}>
-                  точных {r.exact_hits} · этапов выиграно {r.events_won}
-                  {r.provisional ? ' · предварительно' : ''}
+                  {t('league.rowStats', { exact: r.exact_hits, won: r.events_won })}
+                  {r.provisional ? t('league.rowProv') : ''}
                 </div>
               </div>
             </div>
-            <div style={{ display: 'flex', alignItems: 'flex-end', gap: 4, height: 30 }} title="Форма за 5 этапов">
+            <div style={{ display: 'flex', alignItems: 'flex-end', gap: 4, height: 30 }} title={t('league.form5')}>
               {formRounds.map((fr, i) => {
                 const v = byUser.get(r.user_id)?.get(fr.round);
                 return (
                   <i
                     key={fr.round}
-                    title={`${fr.name}: ${v === undefined ? 'не в лиге' : v}`}
+                    title={`${fr.name}: ${v === undefined ? t('league.notInLeague') : v}`}
                     style={{
                       display: 'block',
                       width: 10,
@@ -182,12 +183,12 @@ export function StandingsCard({ data, me }: { data: LeagueScreen | undefined; me
         ))}
         {!data && <Skeleton h={120} />}
         {data && table.every((r) => r.points === 0) && (
-          <div className="mute" style={{ fontSize: 14, padding: '14px 16px 0' }}>Очки появятся после первого этапа лиги — примерно через час после финиша гонки.</div>
+          <div className="mute" style={{ fontSize: 14, padding: '14px 16px 0' }}>{t('league.empty')}</div>
         )}
       </div>
       {titleTiles.some((x) => x.t) && (
         <div style={{ marginTop: 20, paddingTop: 18, borderTop: '1px solid var(--line)' }}>
-          <div className="eyebrow">Звания сезона</div>
+          <div className="eyebrow">{t('league.titles')}</div>
           <div className="row" style={{ marginTop: 12, gap: 12 }}>
             {titleTiles.map((x) => (
               <div key={x.key} className="tile">
@@ -248,25 +249,25 @@ function PlayerCard({ data, userId, me, byUser, onClose }: {
       onClose={onClose}
       actions={
         <>
-          <button type="button" className={`${b.cta} ${b.sm} ${b.ghost}`} onClick={onClose}>Закрыть</button>
-          <button type="button" className={`${b.cta} ${b.sm}`} onClick={() => navigate(self ? '/profile' : `/profile/${userId}`)}>Профиль</button>
+          <button type="button" className={`${b.cta} ${b.sm} ${b.ghost}`} onClick={onClose}>{t('common.close')}</button>
+          <button type="button" className={`${b.cta} ${b.sm}`} onClick={() => navigate(self ? '/profile' : `/profile/${userId}`)}>{t('league.profile')}</button>
         </>
       }
     >
-      <div className="mute" style={{ fontSize: 13, marginTop: -8 }}>{r.rank} место в лиге · точных {r.exact_hits}</div>
+      <div className="mute" style={{ fontSize: 13, marginTop: -8 }}>{t('league.cardMeta', { rank: r.rank, exact: r.exact_hits })}</div>
       <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
-        <div className="tile"><span className="eyebrow">Очки</span><b>{r.points}</b></div>
-        <div className="tile"><span className="eyebrow">Лучший этап</span><b>{best}</b></div>
-        <div className="tile"><span className="eyebrow">Этапов выиграно</span><b>{r.events_won}</b></div>
+        <div className="tile"><span className="eyebrow">{t('league.points')}</span><b>{r.points}</b></div>
+        <div className="tile"><span className="eyebrow">{t('league.bestRace')}</span><b>{best}</b></div>
+        <div className="tile"><span className="eyebrow">{t('league.racesWon')}</span><b>{r.events_won}</b></div>
       </div>
       {!self && mine && (
         <div>
-          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, marginBottom: 8 }}><b>Ты</b><b>{r.nickname}</b></div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, marginBottom: 8 }}><b>{t('league.youShort')}</b><b>{r.nickname}</b></div>
           <div style={{ display: 'flex', height: 10, borderRadius: 5, overflow: 'hidden', background: '#1e1e24', gap: 3 }}>
             <i style={{ display: 'block', width: `${(a / total) * 100}%`, background: mine.avatar_color }} />
             <i style={{ display: 'block', width: `${(c / total) * 100}%`, background: r.avatar_color }} />
           </div>
-          <div className="help">Очный счёт по этапам: {a} — {c}</div>
+          <div className="help">{t('league.h2h', { a, b: c })}</div>
         </div>
       )}
     </Modal>

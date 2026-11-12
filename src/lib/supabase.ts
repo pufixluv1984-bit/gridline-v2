@@ -8,7 +8,7 @@ let client: SupabaseClient<Database> | null = null;
 
 export function getSupabase(): SupabaseClient<Database> {
   if (!env.supabaseConfigured) {
-    throw new Error('Supabase не настроен: заполни VITE_SUPABASE_URL и VITE_SUPABASE_ANON_KEY в .env.local');
+    throw new Error('Supabase is not configured: set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY in .env.local');
   }
   if (!client) {
     client = createClient<Database>(env.supabaseUrl, env.supabaseAnonKey, {

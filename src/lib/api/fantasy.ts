@@ -1,17 +1,27 @@
 import { getSupabase } from '../supabase';
 import type { EventInfo } from './screens';
-import { intlLocale } from '@/i18n';
+import { intlLocale, t } from '@/i18n';
 
 export type ChipId = 'wildcard' | 'limitless' | 'final_fix' | 'autopilot' | 'no_negative' | 'extra_drs';
 
 /** Чипы (FANTASY-FORMULA.md §5). Коды — как в макете Fantasy-Squad. */
+const chip = (id: ChipId, code: string, name: string, notFirst: boolean) => ({
+  id,
+  code,
+  name,
+  notFirst,
+  /** Описание на языке сайта. */
+  get desc() {
+    return t(`fan.chip.${id}`);
+  },
+});
 export const CHIPS: { id: ChipId; code: string; name: string; desc: string; notFirst: boolean }[] = [
-  { id: 'wildcard', code: 'WC', name: 'Wildcard', desc: 'Любые замены без штрафа, бюджет остаётся.', notFirst: true },
-  { id: 'limitless', code: 'LL', name: 'Limitless', desc: 'Один этап без бюджета. После него состав возвращается.', notFirst: true },
-  { id: 'final_fix', code: 'FF', name: 'Final Fix', desc: 'Одна замена пилота после закрытия составов и до старта гонки.', notFirst: true },
-  { id: 'autopilot', code: 'AP', name: 'Autopilot', desc: 'DRS-буст сам переходит к лучшему пилоту состава.', notFirst: false },
-  { id: 'no_negative', code: 'NN', name: 'No Negative', desc: 'Отрицательные очки пилотов и конструкторов не засчитываются.', notFirst: false },
-  { id: 'extra_drs', code: 'X3', name: 'Extra DRS', desc: 'Пилот с DRS-бустом получает ×3 вместо ×2.', notFirst: false },
+  chip('wildcard', 'WC', 'Wildcard', true),
+  chip('limitless', 'LL', 'Limitless', true),
+  chip('final_fix', 'FF', 'Final Fix', true),
+  chip('autopilot', 'AP', 'Autopilot', false),
+  chip('no_negative', 'NN', 'No Negative', false),
+  chip('extra_drs', 'X3', 'Extra DRS', false),
 ];
 export const chipOf = (id: string | null | undefined) => CHIPS.find((c) => c.id === id);
 

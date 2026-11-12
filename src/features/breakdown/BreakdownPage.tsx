@@ -6,25 +6,29 @@ import { useServerNow } from '@/lib/time/useServerNow';
 import { Avatar, DriverTile, Skeleton } from '@/ui/game';
 import { Content, PageTitle, PillLink, Toolbar } from '@/ui/Page';
 import { avatarOf } from '@/lib/avatar';
+import { t, type Key } from '@/i18n';
+import { SESSION_NAMES } from '@/lib/time/format';
 
 // Разбор этапа: каждое начисление — строка score_lines с причиной (docs/PRODUCT.md §2).
 // Отдельного макета нет — собран из элементов Predict и Results.
-const REASON: Record<ScoreKind, string> = {
-  qualy_exact: 'Точное место в квалификации',
-  sprint_exact: 'Точное место в спринте',
-  race_exact: 'Точное место',
-  race_off1: 'Мимо на 1 место',
-  race_off2: 'Мимо на 2 места',
-  race_in_top10: 'В топ-10, но дальше',
-  race_podium: 'Подиум в точном порядке',
-  fastest_lap: 'Быстрый круг',
-  first_dnf: 'Первый сход',
-  pole_wins: 'Победа с поула',
-  safety_car: 'Safety car',
-  dnf_many: 'Число сходов',
+const REASON_KEYS: Record<ScoreKind, Key> = {
+  qualy_exact: 'bd.qualyExact',
+  sprint_exact: 'bd.sprintExact',
+  race_exact: 'predict.r.exact',
+  race_off1: 'predict.r.off1',
+  race_off2: 'predict.r.off2',
+  race_in_top10: 'predict.r.inTop',
+  race_podium: 'predict.r.podium',
+  fastest_lap: 'predict.r.fl',
+  first_dnf: 'predict.r.dnf',
+  pole_wins: 'predict.r.poleWin',
+  safety_car: 'predict.r.sc',
+  dnf_many: 'bd.dnfCount',
 };
+/** Причина строки очков на языке сайта. */
+const REASON = new Proxy({} as Record<ScoreKind, string>, { get: (_, k) => (typeof k === 'string' && k in REASON_KEYS ? t(REASON_KEYS[k as ScoreKind]) : undefined) });
 
-const yn = (v: boolean | null | undefined) => (v == null ? '—' : v ? 'да' : 'нет');
+const yn = (v: boolean | null | undefined) => (v == null ? '—' : v ? t('bd.yes') : t('bd.no'));
 
 export default function BreakdownPage() {
   const { ev } = useParams();
@@ -37,17 +41,17 @@ export default function BreakdownPage() {
 
   return (
     <>
-      <PageTitle title="Игра прогнозов" sub="Разбор этапа" />
+      <PageTitle title={t('predict.title')} sub={t('bd.sub')} />
       <Toolbar>
-        <PillLink to="/predict">Прогноз этапа</PillLink>
-        <PillLink to="/breakdown">Разбор этапа</PillLink>
-        <PillLink to="/league">Лига друзей</PillLink>
+        <PillLink to="/predict">{t('predict.sub')}</PillLink>
+        <PillLink to="/breakdown">{t('bd.sub')}</PillLink>
+        <PillLink to="/league">{t('common.friendsLeague')}</PillLink>
       </Toolbar>
       <Content>
         {q.isLoading ? (
           <div className="card"><Skeleton h={320} /></div>
         ) : q.error || !d?.event ? (
-          <div className="empty-state"><h3>Разбора пока нет</h3><p>Он появится после первого этапа с результатами.</p></div>
+          <div className="empty-state"><h3>{t('bd.none')}</h3><p>{t('bd.noneText')}</p></div>
         ) : (
           <Body d={d} onEvent={(id) => navigate(`/breakdown/${id}${player ? `?player=${player}` : ''}`)} />
         )}
@@ -68,12 +72,12 @@ function Body({ d, onEvent }: { d: BreakdownScreen; onEvent: (id: number) => voi
   const p = d.prediction;
   const provisional = lines.some((l) => l.provisional);
   const boost = p?.boost_block ?? null;
-  const name = (id: string | null | undefined) => (id === 'none' ? 'Никто' : id ? byId.get(id)?.name ?? id : '—');
+  const name = (id: string | null | undefined) => (id === 'none' ? t('bd.nobody') : id ? byId.get(id)?.name ?? id : '—');
 
   const firstDnfActual = (() => {
     const dnfs = d.race.filter((r) => r.dnf);
     if (!d.race.length) return '—';
-    if (!dnfs.length) return 'Никто';
+    if (!dnfs.length) return t('bd.nobody');
     const min = Math.min(...dnfs.map((r) => r.laps ?? 0));
     return dnfs.filter((r) => (r.laps ?? 0) === min).map((r) => name(r.driver_id)).join(', ');
   })();
@@ -88,16 +92,16 @@ function Body({ d, onEvent }: { d: BreakdownScreen; onEvent: (id: number) => voi
         <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
           {d.player && <Avatar {...avatarOf(d.player)} size={56} />}
           <div>
-            <div className="eyebrow">Этап {d.event!.round} · {d.player?.nickname}</div>
+            <div className="eyebrow">{t('bd.roundPlayer', { round: d.event!.round, name: d.player?.nickname ?? '' })}</div>
             <div className="num" style={{ fontSize: 30, fontWeight: 600, marginTop: 10 }}>{d.event!.name}</div>
           </div>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 14, flexWrap: 'wrap' }}>
-          {provisional && <span className="chip gold" title="48 часов после гонки возможны штрафы стюардов">Предварительно</span>}
-          {boost && <span className="chip red">Бустер ×2: {boost === 'qualy' ? 'квалификация' : boost === 'race' ? 'гонка' : 'бонусы'}</span>}
+          {provisional && <span className="chip gold" title={t('common.provisionalHint')}>{t('common.provisional')}</span>}
+          {boost && <span className="chip red">{t('bd.boost', { block: boost === 'qualy' ? t('bd.boostQualy') : boost === 'race' ? t('bd.boostRace') : t('bd.boostBonus') })}</span>}
           <div className="num" style={{ fontSize: 44, fontWeight: 600, lineHeight: 1 }}>+{total}</div>
           {d.events.length > 1 && (
-            <select className="in" style={{ height: 40, width: 'auto', padding: '0 40px 0 14px', backgroundPosition: 'calc(100% - 22px) 17px, calc(100% - 16px) 17px' }} value={d.event!.id} onChange={(e) => onEvent(Number(e.target.value))} aria-label="Этап">
+            <select className="in" style={{ height: 40, width: 'auto', padding: '0 40px 0 14px', backgroundPosition: 'calc(100% - 22px) 17px, calc(100% - 16px) 17px' }} value={d.event!.id} onChange={(e) => onEvent(Number(e.target.value))} aria-label={t('res.eventAria')}>
               {d.events.map((e) => <option key={e.id} value={e.id}>{e.round}. {e.name}</option>)}
             </select>
           )}
@@ -106,46 +110,46 @@ function Body({ d, onEvent }: { d: BreakdownScreen; onEvent: (id: number) => voi
 
       {!p ? (
         <div className="empty-state">
-          <h3>Прогноза на этот этап нет</h3>
-          <p>Не отправил прогноз — 0 очков за этап. {d.event!.deadline && Date.parse(d.event!.deadline) > now ? 'Чужие прогнозы видны только после закрытия приёма.' : ''}</p>
-          <Link className="mini go" to="/predict">К прогнозу</Link>
+          <h3>{t('bd.noPrediction')}</h3>
+          <p>{t('bd.noPredictionText')} {d.event!.deadline && Date.parse(d.event!.deadline) > now ? t('bd.hiddenUntil') : ''}</p>
+          <Link className="mini go" to="/predict">{t('bd.toPredict')}</Link>
         </div>
       ) : (
         <div className="row" style={{ alignItems: 'flex-start' }}>
-          <Block title="Квалификация" points={block('qualy')} boosted={boost === 'qualy'} i={1}>
+          <Block title={SESSION_NAMES.qualy!} points={block('qualy')} boosted={boost === 'qualy'} i={1}>
             {(p.qualy ?? []).map((id, k) => {
               const l = lineFor('qualy_exact', k + 1);
               const actual = d.qualy[k];
-              return <Row key={k} label={['Поул', 'P2', 'P3'][k]!} driver={byId.get(id) ?? null} note={actual ? `факт: ${name(actual)}` : 'ещё нет результата'} line={l ? { text: REASON[l.kind], pts: l.points, mult: l.multiplier } : null} />;
+              return <Row key={k} label={[t('predict.slot.pole'), 'P2', 'P3'][k]!} driver={byId.get(id) ?? null} note={actual ? t('bd.fact', { name: name(actual) }) : t('bd.noResult')} line={l ? { text: REASON[l.kind], pts: l.points, mult: l.multiplier } : null} />;
             })}
           </Block>
           {p.sprint && (
-            <Block title="Спринт" points={block('sprint')} boosted={false} i={1}>
+            <Block title={SESSION_NAMES.sprint!} points={block('sprint')} boosted={false} i={1}>
               {p.sprint.map((id, k) => {
                 const l = lineFor('sprint_exact', k + 1);
                 const actual = d.sprint?.[k];
-                return <Row key={k} label={['P1', 'P2', 'P3'][k]!} driver={byId.get(id) ?? null} note={actual ? `факт: ${name(actual)}` : 'ещё нет результата'} line={l ? { text: REASON[l.kind], pts: l.points, mult: l.multiplier } : null} />;
+                return <Row key={k} label={['P1', 'P2', 'P3'][k]!} driver={byId.get(id) ?? null} note={actual ? t('bd.fact', { name: name(actual) }) : t('bd.noResult')} line={l ? { text: REASON[l.kind], pts: l.points, mult: l.multiplier } : null} />;
               })}
             </Block>
           )}
-          <Block title="Гонка · топ-10" points={block('race')} boosted={boost === 'race'} i={2}>
+          <Block title={t('bd.raceTop10')} points={block('race')} boosted={boost === 'race'} i={2}>
             {(p.race ?? []).map((id, k) => {
               const l = lineFor(['race_exact', 'race_off1', 'race_off2', 'race_in_top10'], k + 1);
               const r = pos.get(id);
-              const note = !d.race.length ? 'ещё нет результата' : !r ? 'не классифицирован' : r.dnf ? `сход, ${r.position}-й` : `финиш ${r.position}-м`;
+              const note = !d.race.length ? t('bd.noResult') : !r ? t('bd.notClassified') : r.dnf ? t('bd.dnfAt', { n: r.position }) : t('bd.finishAt', { n: r.position });
               return <Row key={k} label={`P${k + 1}`} driver={byId.get(id) ?? null} note={note} line={l ? { text: REASON[l.kind], pts: l.points, mult: l.multiplier } : null} />;
             })}
             {(() => {
               const l = lineFor('race_podium');
-              return l ? <Row label="★" driver={null} note="Все три места подиума угаданы" line={{ text: REASON.race_podium, pts: l.points, mult: l.multiplier }} /> : null;
+              return l ? <Row label="★" driver={null} note={t('bd.podiumAll')} line={{ text: REASON.race_podium, pts: l.points, mult: l.multiplier }} /> : null;
             })()}
           </Block>
-          <Block title="Бонусы" points={block('bonus')} boosted={boost === 'bonus'} i={3}>
-            <Bonus label="Быстрый круг" guess={name(p.fastest_lap)} fact={fastest ? name(fastest) : '—'} line={lineFor('fastest_lap')} />
-            <Bonus label="Первый сход" guess={name(p.first_dnf)} fact={firstDnfActual} line={lineFor('first_dnf')} />
-            <Bonus label="Поул выиграет" guess={yn(p.pole_wins)} fact={pole && winner ? yn(pole === winner) : '—'} line={lineFor('pole_wins')} />
+          <Block title={t('bd.bonuses')} points={block('bonus')} boosted={boost === 'bonus'} i={3}>
+            <Bonus label={t('predict.r.fl')} guess={name(p.fastest_lap)} fact={fastest ? name(fastest) : '—'} line={lineFor('fastest_lap')} />
+            <Bonus label={t('predict.r.dnf')} guess={name(p.first_dnf)} fact={firstDnfActual} line={lineFor('first_dnf')} />
+            <Bonus label={t('bd.poleWins')} guess={yn(p.pole_wins)} fact={pole && winner ? yn(pole === winner) : '—'} line={lineFor('pole_wins')} />
             <Bonus label="Safety car" guess={yn(p.safety_car)} fact={yn(d.safety_car)} line={lineFor('safety_car')} />
-            <Bonus label="Сходов 2 и больше" guess={yn(p.dnf_many)} fact={d.race.length ? `${yn(dnfCount >= 2)} (${dnfCount})` : '—'} line={lineFor('dnf_many')} />
+            <Bonus label={t('predict.r.dnf2')} guess={yn(p.dnf_many)} fact={d.race.length ? `${yn(dnfCount >= 2)} (${dnfCount})` : '—'} line={lineFor('dnf_many')} />
           </Block>
         </div>
       )}
@@ -184,7 +188,7 @@ function Bonus({ label, guess, fact, line }: { label: string; guess: string; fac
     <div className="trow" style={{ padding: '10px 12px' }}>
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{ fontWeight: 600, fontSize: 14 }}>{label}</div>
-        <div className="mute" style={{ fontSize: 12, marginTop: 2 }}>прогноз: {guess} · факт: {fact}</div>
+        <div className="mute" style={{ fontSize: 12, marginTop: 2 }}>{t('bd.guessFact', { guess, fact })}</div>
       </div>
       <b className="num" style={{ color: line ? 'var(--pos)' : 'var(--mute)', fontSize: 15 }}>{line ? `+${line.points}${line.multiplier > 1 ? ' ×2' : ''}` : '0'}</b>
     </div>

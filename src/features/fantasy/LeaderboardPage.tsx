@@ -14,6 +14,7 @@ import { FantasyTabs } from './FantasyTabs';
 import s from './Fantasy.module.css';
 import { lineText } from './lines';
 import { avatarOf } from '@/lib/avatar';
+import { t as tr } from '@/i18n';
 
 /** Макет Fantasy-Leaderboard: ближайший этап, лидер, лучший этап, таблица лиги с составами и разбором. */
 export default function LeaderboardPage() {
@@ -23,18 +24,18 @@ export default function LeaderboardPage() {
 
   return (
     <>
-      <PageTitle title="Фэнтези-лига" sub="Лидерборд" />
-      <FantasyTabs action={<Link className={pg.btn} to="/fantasy/squad">Изменить состав</Link>} />
+      <PageTitle title={tr('fan.title')} sub={tr('fan.tab.board')} />
+      <FantasyTabs action={<Link className={pg.btn} to="/fantasy/squad">{tr('fan.editSquad')}</Link>} />
       <Content>
         {q.isLoading && <Skeleton h={300} />}
         {data && <NextEvent data={data} />}
         {data && !data.league && (
           <div className="empty-state">
-            <h3>Нет лиги с фэнтези</h3>
-            <p>Состав можно собрать и без лиги, а чтобы соревноваться — создай лобби в режиме «Фэнтези» или «Оба» и позови друзей.</p>
+            <h3>{tr('fan.lb.noLeague')}</h3>
+            <p>{tr('fan.lb.noLeagueText')}</p>
             <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', justifyContent: 'center' }}>
-              <Link className="mini go" to="/fantasy/squad" style={{ display: 'inline-flex', alignItems: 'center' }}>Собрать состав</Link>
-              <Link className="mini" to="/lobby/create" style={{ display: 'inline-flex', alignItems: 'center' }}>Создать лобби</Link>
+              <Link className="mini go" to="/fantasy/squad" style={{ display: 'inline-flex', alignItems: 'center' }}>{tr('fan.lb.build')}</Link>
+              <Link className="mini" to="/lobby/create" style={{ display: 'inline-flex', alignItems: 'center' }}>{tr('common.createLobby')}</Link>
             </div>
           </div>
         )}
@@ -54,25 +55,25 @@ function NextEvent({ data }: { data: LeaderboardScreen }) {
       <div className={s.ctx}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 14, minWidth: 0 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
-            <span className="eyebrow">Этап {ev.round}{ev.season_rounds ? ` из ${ev.season_rounds}` : ''}</span>
-            <span className={`chip ${open ? 'green' : ''}`}>{open ? 'Составы открыты' : 'Составы закрыты'}</span>
+            <span className="eyebrow">{tr('fan.lb.round', { round: ev.round })}{ev.season_rounds ? tr('fan.lb.ofRounds', { n: ev.season_rounds }) : ''}</span>
+            <span className={`chip ${open ? 'green' : ''}`}>{open ? tr('fan.lb.open') : tr('fan.lb.closed')}</span>
           </div>
           <div className="h" style={{ fontSize: 26, letterSpacing: '-.02em' }}>{ev.name}</div>
           {open && data.lock_at && (
             <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
-              <span className="eyebrow">Дедлайн составов</span>
+              <span className="eyebrow">{tr('fan.lb.deadline')}</span>
               <Countdown to={data.lock_at} small />
             </div>
           )}
         </div>
-        <div role="group" style={{ display: 'grid', gridTemplateColumns: 'repeat(3,minmax(0,1fr))', gap: 8 }} aria-label="Прогноз погоды на уик-энд">
+        <div role="group" style={{ display: 'grid', gridTemplateColumns: 'repeat(3,minmax(0,1fr))', gap: 8 }} aria-label={tr('fan.lb.weather')}>
           {(data.weather ?? []).slice(0, 3).map((w) => (
             <div key={w.day} className={s.wx}>
               <span aria-hidden="true">{weatherIcon(w.code)}</span>
               <div>
                 <div className="eyebrow">{weekday(w.day)}</div>
                 <div className="num" style={{ fontSize: 18, fontWeight: 600, marginTop: 5 }}>
-                  {Math.round(w.t_max)}°<span className="mute" style={{ fontSize: 11, marginLeft: 6 }}>{Math.round(w.wind_max)} км/ч</span>
+                  {Math.round(w.t_max)}°<span className="mute" style={{ fontSize: 11, marginLeft: 6 }}>{tr('home.kmh', { n: Math.round(w.wind_max) })}</span>
                 </div>
               </div>
             </div>
@@ -125,7 +126,7 @@ function Table({ data, onLeague }: { data: LeaderboardScreen; onLeague: (id: str
     <>
       <div className="row">
         <div className={`card rise ${s.stat}`} style={{ ['--i' as string]: 1 }}>
-          <span className="eyebrow">Лидер лиги</span>
+          <span className="eyebrow">{tr('fan.lb.leader')}</span>
           {lead && (
             <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
               <Avatar {...avatarOf(lead)} />
@@ -135,20 +136,20 @@ function Table({ data, onLeague }: { data: LeaderboardScreen; onLeague: (id: str
           )}
         </div>
         <div className={`card rise ${s.stat}`} style={{ ['--i' as string]: 2 }}>
-          <span className="eyebrow">Лучший этап {lastRound ?? ''}</span>
+          <span className="eyebrow">{tr('fan.lb.bestRound', { round: lastRound })}</span>
           {bestRow ? (
             <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
               <Avatar {...avatarOf(bestRow)} />
               <div style={{ minWidth: 0 }}><div className="h">{name(bestRow)}</div><div className="mute" style={{ fontSize: 13, marginTop: 3 }}>{bestRow.nickname}</div></div>
               <div className="num" style={{ marginLeft: 'auto', fontSize: 26, fontWeight: 600 }}>+{pts(best!.total)}</div>
             </div>
-          ) : <span className="mute">Очков ещё нет</span>}
+          ) : <span className="mute">{tr('fan.lb.noPts')}</span>}
         </div>
         <div className={`card rise ${s.stat}`} style={{ ['--i' as string]: 3 }}>
-          <span className="eyebrow">Чипов сыграно на этапе</span>
+          <span className="eyebrow">{tr('fan.lb.chipsPlayed')}</span>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
             <span className="num" style={{ fontSize: 26, fontWeight: 600 }}>{played.length}</span>
-            <span className="mute" style={{ fontSize: 13 }}>из {table.length} команд</span>
+            <span className="mute" style={{ fontSize: 13 }}>{tr('fan.lb.ofTeams', { n: table.length })}</span>
             <span style={{ marginLeft: 'auto', display: 'flex', gap: 6 }}>{played.map((x) => <span key={x.user_id} className="code act">{chipOf(x.chip)?.code}</span>)}</span>
           </div>
         </div>
@@ -159,18 +160,18 @@ function Table({ data, onLeague }: { data: LeaderboardScreen; onLeague: (id: str
           <div style={{ display: 'flex', alignItems: 'center', gap: 14, flexWrap: 'wrap' }}>
             <span className="h">{data.league!.name}</span>
             {(data.leagues?.length ?? 0) > 1 && (
-              <select className="mini" value={data.league!.id} onChange={(e) => onLeague(e.target.value)} aria-label="Лига">
+              <select className="mini" value={data.league!.id} onChange={(e) => onLeague(e.target.value)} aria-label={tr('fan.lb.league')}>
                 {data.leagues!.map((l) => <option key={l.id} value={l.id}>{l.name}</option>)}
               </select>
             )}
-            <div className="seg" role="tablist" aria-label="Зачёт">
-              <button type="button" role="tab" className={view === 'total' ? 'on' : ''} onClick={() => setView('total')}>Общий зачёт</button>
-              <button type="button" role="tab" className={view === 'stage' ? 'on' : ''} disabled={!lastRound} onClick={() => setView('stage')}>Этап {lastRound ?? ''}</button>
+            <div className="seg" role="tablist" aria-label={tr('fan.lb.standing')}>
+              <button type="button" role="tab" className={view === 'total' ? 'on' : ''} onClick={() => setView('total')}>{tr('fan.lb.total')}</button>
+              <button type="button" role="tab" className={view === 'stage' ? 'on' : ''} disabled={!lastRound} onClick={() => setView('stage')}>{tr('fan.lb.round', { round: lastRound })}</button>
             </div>
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }} aria-label="Фильтр по чипу">
-            <span className="eyebrow" style={{ marginRight: 4 }}>Чип на этапе</span>
-            <button type="button" className={`${s.fchip} ${chip === null ? s.on : ''}`} onClick={() => setChip(null)}>Все<em>{table.length}</em></button>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }} aria-label={tr('fan.lb.chipFilter')}>
+            <span className="eyebrow" style={{ marginRight: 4 }}>{tr('fan.lb.chipRound')}</span>
+            <button type="button" className={`${s.fchip} ${chip === null ? s.on : ''}`} onClick={() => setChip(null)}>{tr('fan.lb.all')}<em>{table.length}</em></button>
             {CHIPS.filter((c) => played.some((x) => x.chip === c.id)).map((c) => (
               <button key={c.id} type="button" className={`${s.fchip} ${chip === c.id ? s.on : ''}`} aria-pressed={chip === c.id} onClick={() => setChip(c.id)}>
                 {c.code}<em>{played.filter((x) => x.chip === c.id).length}</em>
@@ -180,9 +181,9 @@ function Table({ data, onLeague }: { data: LeaderboardScreen; onLeague: (id: str
         </div>
 
         <div className={s.lbHead} aria-hidden="true">
-          <span>#</span><span>Команда</span><span>Состав этапа {lastRound ?? ''}</span>
-          <span className={s.hc}>Чип</span><span className={`${s.rt} ${s.hc}`}>Этап {lastRound ?? ''}</span>
-          <span className={s.rt}>{view === 'total' ? 'Всего' : 'Очки'}</span><span className={`${s.rt} ${s.hc}`}>Цена</span><span />
+          <span>#</span><span>{tr('fan.lb.team')}</span><span>{tr('fan.lb.squadRound', { round: lastRound })}</span>
+          <span className={s.hc}>{tr('fan.lb.chip')}</span><span className={`${s.rt} ${s.hc}`}>{tr('fan.lb.round', { round: lastRound })}</span>
+          <span className={s.rt}>{view === 'total' ? tr('fan.lb.sum') : tr('fan.lb.pts')}</span><span className={`${s.rt} ${s.hc}`}>{tr('fan.lb.price')}</span><span />
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }} aria-live="polite">
           {rows.map(({ r, sq, main }, i) => {
@@ -221,16 +222,16 @@ function Table({ data, onLeague }: { data: LeaderboardScreen; onLeague: (id: str
                           <span key={t} className={s.cc} title={teams[t]?.name}><i style={{ background: teams[t]?.color }} />{teams[t]?.code}</span>
                         ))}
                       </>
-                    ) : <span className="mute" style={{ fontSize: 13 }}>Состав появится после закрытия этапа</span>}
+                    ) : <span className="mute" style={{ fontSize: 13 }}>{tr('fan.lb.squadLater')}</span>}
                   </div>
                   <div className={s.hc}>{sq?.chip ? <span className="chip red" title={chipOf(sq.chip)?.name}>{chipOf(sq.chip)?.code}</span> : <span className="mute">—</span>}</div>
                   <div className={`${s.rt} ${s.hc} num`} style={{ fontSize: 18, fontWeight: 600 }}>
                     {sq?.total != null ? pts(sq.total) : '—'}
-                    {sq?.penalty ? <div className="mute" style={{ fontSize: 12, fontWeight: 500, marginTop: 3 }}>−{sq.penalty} замены</div> : null}
+                    {sq?.penalty ? <div className="mute" style={{ fontSize: 12, fontWeight: 500, marginTop: 3 }}>{tr('fan.lb.transfersPen', { n: sq.penalty })}</div> : null}
                   </div>
                   <div className={`${s.rt} num`} style={{ fontSize: 20, fontWeight: 600 }}>
                     {pts(main)}
-                    <div className="mute" style={{ fontSize: 12, fontWeight: 500, marginTop: 3 }}>{main === leader ? 'лидер' : `−${pts(leader - main)}`}</div>
+                    <div className="mute" style={{ fontSize: 12, fontWeight: 500, marginTop: 3 }}>{main === leader ? tr('fan.lb.leaderShort') : `−${pts(leader - main)}`}</div>
                   </div>
                   <div className={`${s.rt} ${s.hc} num`} style={{ fontSize: 15, fontWeight: 600 }}>
                     {sq ? money(sq.cost) : '—'}
@@ -249,7 +250,7 @@ function Table({ data, onLeague }: { data: LeaderboardScreen; onLeague: (id: str
                             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
                               <div style={{ minWidth: 0 }}>
                                 <div style={{ fontSize: 14, fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{d?.name}</div>
-                                {x.actual && x.actual !== x.asset && <div className="tagw" style={{ marginTop: 3 }}>вместо {drv[x.asset]?.name}</div>}
+                                {x.actual && x.actual !== x.asset && <div className="tagw" style={{ marginTop: 3 }}>{tr('fan.insteadOf', { name: drv[x.asset]?.name })}</div>}
                               </div>
                               <span className="code">{d?.code}</span>
                             </div>
@@ -265,17 +266,17 @@ function Table({ data, onLeague }: { data: LeaderboardScreen; onLeague: (id: str
                     <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
                       {(sq.details ?? []).filter((x) => x.slot === 'team').map((x) => (
                         <div key={x.asset} className="tile">
-                          <div className="mute" style={{ fontSize: 13 }}>{teams[x.asset]?.name} · конструктор</div>
+                          <div className="mute" style={{ fontSize: 13 }}>{tr('fan.lb.constructor', { name: teams[x.asset]?.name })}</div>
                           <b>{pts(x.points)}</b>
                           <div className="mute" style={{ fontSize: 12, marginTop: 6 }}>{lineText(x.lines)}</div>
                         </div>
                       ))}
-                      <div className="tile"><div className="mute" style={{ fontSize: 13 }}>Замены на этапе</div><b>{sq.transfers}</b></div>
-                      <div className="tile"><div className="mute" style={{ fontSize: 13 }}>Остаток бюджета</div><b>{money(100 - Number(sq.cost))}</b></div>
-                      <div className="tile"><div className="mute" style={{ fontSize: 13 }}>Штраф за замены</div><b>{sq.penalty ? `−${sq.penalty}` : '0'}</b></div>
-                      <div className="tile"><div className="mute" style={{ fontSize: 13 }}>Чип</div><b>{chipOf(sq.chip)?.name ?? '—'}</b></div>
+                      <div className="tile"><div className="mute" style={{ fontSize: 13 }}>{tr('fan.lb.transfers')}</div><b>{sq.transfers}</b></div>
+                      <div className="tile"><div className="mute" style={{ fontSize: 13 }}>{tr('fan.lb.budgetLeft')}</div><b>{money(100 - Number(sq.cost))}</b></div>
+                      <div className="tile"><div className="mute" style={{ fontSize: 13 }}>{tr('fan.lb.penalty')}</div><b>{sq.penalty ? `−${sq.penalty}` : '0'}</b></div>
+                      <div className="tile"><div className="mute" style={{ fontSize: 13 }}>{tr('fan.lb.chip')}</div><b>{chipOf(sq.chip)?.name ?? '—'}</b></div>
                     </div>
-                    {sq.provisional && <div className="mute" style={{ fontSize: 12.5 }}>Очки предварительные: возможны штрафы после финиша (48 часов).</div>}
+                    {sq.provisional && <div className="mute" style={{ fontSize: 12.5 }}>{tr('fan.lb.provisional')}</div>}
                   </div>
                 )}
               </div>

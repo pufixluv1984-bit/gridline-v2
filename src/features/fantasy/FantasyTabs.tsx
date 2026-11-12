@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import { PillLink, Toolbar, ToolbarDivider } from '@/ui/Page';
+import { t } from '@/i18n';
 
 /** Панель фэнтези-экранов (макеты Fantasy-*): главная кнопка слева, вкладки разделов. */
 export function FantasyTabs({ action, extra }: { action?: ReactNode; extra?: ReactNode }) {
@@ -7,12 +8,12 @@ export function FantasyTabs({ action, extra }: { action?: ReactNode; extra?: Rea
     <Toolbar>
       {action}
       {action && <ToolbarDivider />}
-      <PillLink to="/fantasy/squad">Мой состав</PillLink>
-      <PillLink to="/fantasy" end>Лидерборд</PillLink>
-      <PillLink to="/fantasy/market">Рынок</PillLink>
-      <PillLink to="/fantasy/results">Результаты этапа</PillLink>
-      <PillLink to="/fantasy/analytics">Аналитика</PillLink>
-      <PillLink to="/fantasy/rules">Правила и гайд</PillLink>
+      <PillLink to="/fantasy/squad">{t('fan.tab.squad')}</PillLink>
+      <PillLink to="/fantasy" end>{t('fan.tab.board')}</PillLink>
+      <PillLink to="/fantasy/market">{t('fan.tab.market')}</PillLink>
+      <PillLink to="/fantasy/results">{t('fan.tab.results')}</PillLink>
+      <PillLink to="/fantasy/analytics">{t('fan.tab.analytics')}</PillLink>
+      <PillLink to="/fantasy/rules">{t('fan.tab.rules')}</PillLink>
       {extra}
     </Toolbar>
   );

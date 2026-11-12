@@ -82,3 +82,6 @@ export function lapTime(ms: number): string {
   const s = ((ms % 60000) / 1000).toFixed(3);
   return m ? `${m}:${s.padStart(6, '0')}` : s;
 }
+
+/** «Гран-при Катара» → «Катара»: короткое имя этапа для списков. */
+export const gpShort = (name: string) => name.replace(/^(Гран-при|Гран-прі)\s+/, '').replace(/\s+Grand Prix$/, '');

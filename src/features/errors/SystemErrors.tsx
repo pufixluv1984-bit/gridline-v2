@@ -80,7 +80,7 @@ export class ScreenBoundary extends Component<{ children: ReactNode; resetKey: s
   }
 
   componentDidCatch(error: Error, info: ErrorInfo) {
-    console.error('Сбой экрана', error, info.componentStack);
+    console.error('Screen crash', error, info.componentStack);
   }
 
   render() {

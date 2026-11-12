@@ -2,131 +2,183 @@
  {
   "id": "baku",
   "name": "Баку",
-  "country": "Азербайджан"
+  "name_uk": "Баку",
+  "name_en": "Baku",
+  "cc": "AZ"
  },
  {
   "id": "barcelona",
   "name": "Барселона",
-  "country": "Испания"
+  "name_uk": "Барселона",
+  "name_en": "Barcelona",
+  "cc": "ES"
  },
  {
   "id": "budapest",
   "name": "Будапешт",
-  "country": "Венгрия"
+  "name_uk": "Будапешт",
+  "name_en": "Budapest",
+  "cc": "HU"
  },
  {
   "id": "zandvoort",
   "name": "Зандфорт",
-  "country": "Нидерланды"
+  "name_uk": "Зандфорт",
+  "name_en": "Zandvoort",
+  "cc": "NL"
  },
  {
   "id": "las-vegas",
   "name": "Лас-Вегас",
-  "country": "США"
+  "name_uk": "Лас-Вегас",
+  "name_en": "Las Vegas",
+  "cc": "US"
  },
  {
   "id": "mexico-city",
   "name": "Мехико",
-  "country": "Мексика"
+  "name_uk": "Мехіко",
+  "name_en": "Mexico City",
+  "cc": "MX"
  },
  {
   "id": "montreal",
   "name": "Монреаль",
-  "country": "Канада"
+  "name_uk": "Монреаль",
+  "name_en": "Montreal",
+  "cc": "CA"
  },
  {
   "id": "monte-carlo",
   "name": "Монте-Карло",
-  "country": "Монако"
+  "name_uk": "Монте-Карло",
+  "name_en": "Monte Carlo",
+  "cc": "MC"
  },
  {
   "id": "monza",
   "name": "Монца",
-  "country": "Италия"
+  "name_uk": "Монца",
+  "name_en": "Monza",
+  "cc": "IT"
  },
  {
   "id": "austin",
   "name": "Остин",
-  "country": "США"
+  "name_uk": "Остін",
+  "name_en": "Austin",
+  "cc": "US"
  },
  {
   "id": "sao-paulo",
   "name": "Сан-Паулу",
-  "country": "Бразилия"
+  "name_uk": "Сан-Паулу",
+  "name_en": "São Paulo",
+  "cc": "BR"
  },
  {
   "id": "silverstone",
   "name": "Сильверстоун",
-  "country": "Великобритания"
+  "name_uk": "Сільверстоун",
+  "name_en": "Silverstone",
+  "cc": "GB"
  },
  {
   "id": "singapore",
   "name": "Сингапур",
-  "country": "Сингапур"
+  "name_uk": "Сінгапур",
+  "name_en": "Singapore",
+  "cc": "SG"
  },
  {
   "id": "spa-francorchamps",
   "name": "Спа-Франкоршам",
-  "country": "Бельгия"
+  "name_uk": "Спа-Франкоршам",
+  "name_en": "Spa-Francorchamps",
+  "cc": "BE"
  },
  {
   "id": "spielberg",
   "name": "Шпильберг",
-  "country": "Австрия"
+  "name_uk": "Шпільберг",
+  "name_en": "Spielberg",
+  "cc": "AT"
  },
  {
   "id": "bahrain",
   "name": "Сахир",
-  "country": "Бахрейн"
+  "name_uk": "Сахір",
+  "name_en": "Sakhir",
+  "cc": "BH"
  },
  {
   "id": "jeddah",
   "name": "Джидда",
-  "country": "Саудовская Аравия"
+  "name_uk": "Джидда",
+  "name_en": "Jeddah",
+  "cc": "SA"
  },
  {
   "id": "melbourne",
   "name": "Мельбурн",
-  "country": "Австралия"
+  "name_uk": "Мельбурн",
+  "name_en": "Melbourne",
+  "cc": "AU"
  },
  {
   "id": "suzuka",
   "name": "Сузука",
-  "country": "Япония"
+  "name_uk": "Судзука",
+  "name_en": "Suzuka",
+  "cc": "JP"
  },
  {
   "id": "shanghai",
   "name": "Шанхай",
-  "country": "Китай"
+  "name_uk": "Шанхай",
+  "name_en": "Shanghai",
+  "cc": "CN"
  },
  {
   "id": "portimao",
   "name": "Портиман",
-  "country": "Португалия"
+  "name_uk": "Портімау",
+  "name_en": "Portimão",
+  "cc": "PT"
  },
  {
   "id": "madrid",
   "name": "Мадрид",
-  "country": "Испания"
+  "name_uk": "Мадрид",
+  "name_en": "Madrid",
+  "cc": "ES"
  },
  {
   "id": "istanbul",
   "name": "Стамбул",
-  "country": "Турция"
+  "name_uk": "Стамбул",
+  "name_en": "Istanbul",
+  "cc": "TR"
  },
  {
   "id": "lusail",
   "name": "Лусаил",
-  "country": "Катар"
+  "name_uk": "Лусаїл",
+  "name_en": "Lusail",
+  "cc": "QA"
  },
  {
   "id": "yas-marina",
   "name": "Яс-Марина",
-  "country": "ОАЭ"
+  "name_uk": "Яс-Марина",
+  "name_en": "Yas Marina",
+  "cc": "AE"
  },
  {
   "id": "miami",
   "name": "Майами",
-  "country": "США"
+  "name_uk": "Маямі",
+  "name_en": "Miami",
+  "cc": "US"
  }
 ]

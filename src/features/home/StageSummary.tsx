@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Modal } from '@/ui/Modal';
 import b from '@/ui/Button.module.css';
-import { intlLocale } from '@/i18n';
+import { intlLocale, t } from '@/i18n';
 
 export type Summary = {
   event_id: number;
@@ -43,7 +43,7 @@ export function StageSummary({ summary }: { summary: Summary | null | undefined 
     setSeen(String(summary.event_id));
   };
   const share = async () => {
-    const text = `Gridline · ${summary.name}: +${fmt(total)} очков${lg?.rank ? `, ${lg.rank} место в лиге «${lg.name}»` : ''}`;
+    const text = t('summary.share', { race: summary.name, pts: fmt(total) }) + (lg?.rank ? t('summary.shareLeague', { rank: lg.rank, league: lg.name }) : '');
     try {
       if (navigator.share) await navigator.share({ text });
       else {
@@ -57,13 +57,13 @@ export function StageSummary({ summary }: { summary: Summary | null | undefined 
 
   return (
     <Modal
-      title="Итоги этапа"
+      title={t('summary.title')}
       onClose={close}
       actions={
         <>
-          <button type="button" className={`${b.cta} ${b.sm} ${b.ghost}`} onClick={share}>{copied ? 'Скопировано ✓' : 'Поделиться'}</button>
+          <button type="button" className={`${b.cta} ${b.sm} ${b.ghost}`} onClick={share}>{copied ? t('summary.copied') : t('summary.share.btn')}</button>
           <button type="button" className={`${b.cta} ${b.sm}`} onClick={() => { close(); navigate(lg ? `/league/${lg.id}` : '/breakdown'); }}>
-            {lg ? 'К таблице' : 'Разбор этапа'}
+            {lg ? t('summary.toTable') : t('summary.breakdown')}
           </button>
         </>
       }
@@ -71,24 +71,24 @@ export function StageSummary({ summary }: { summary: Summary | null | undefined 
       <div className="eyebrow" style={{ marginTop: -8 }}>{summary.name}</div>
       <div style={{ display: 'flex', alignItems: 'baseline', gap: 12 }}>
         <span className="num" style={{ fontSize: 56, fontWeight: 600, lineHeight: 1 }}>+{fmt(total)}</span>
-        <span className="mute">очков</span>
+        <span className="mute">{t('common.points')}</span>
         {lg?.rank && (
           <span className={`mv ${moved && moved > 0 ? 'up' : moved && moved < 0 ? 'dn' : 'eq'}`} style={{ marginLeft: 'auto', fontSize: 14 }}>
-            {moved && moved > 0 ? '▲' : moved && moved < 0 ? '▼' : ''} {lg.prev_rank && lg.prev_rank !== lg.rank ? `${lg.prev_rank} → ` : ''}{lg.rank} место
+            {moved && moved > 0 ? '▲' : moved && moved < 0 ? '▼' : ''} {lg.prev_rank && lg.prev_rank !== lg.rank ? `${lg.prev_rank} → ` : ''}{t('summary.place', { rank: lg.rank })}
           </span>
         )}
       </div>
       <div>
         <div className="kvr" style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 0', borderTop: '1px solid var(--line)' }}>
-          <span>Прогнозы</span><b className="num">+{fmt(summary.predict)}</b>
+          <span>{t('summary.predictions')}</span><b className="num">+{fmt(summary.predict)}</b>
         </div>
         {summary.fantasy != null && (
           <div className="kvr" style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 0', borderTop: '1px solid var(--line)' }}>
-            <span>Фэнтези</span><b className="num">{Number(summary.fantasy) >= 0 ? '+' : ''}{fmt(summary.fantasy)}</b>
+            <span>{t('summary.fantasy')}</span><b className="num">{Number(summary.fantasy) >= 0 ? '+' : ''}{fmt(summary.fantasy)}</b>
           </div>
         )}
       </div>
-      {summary.provisional && <div className="mute" style={{ fontSize: 12.5 }}>Очки предварительные: 48 часов после гонки возможны штрафы.</div>}
+      {summary.provisional && <div className="mute" style={{ fontSize: 12.5 }}>{t('summary.provisional')}</div>}
     </Modal>
   );
 }

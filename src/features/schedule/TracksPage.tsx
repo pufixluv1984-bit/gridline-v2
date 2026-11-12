@@ -2,16 +2,17 @@ import { TRACKS } from '@/lib/tracks';
 import { TrackMap } from '@/ui/TrackMap';
 import { Content, PageTitle, PillLink, Toolbar } from '@/ui/Page';
 import s from './Tracks.module.css';
+import { t } from '@/i18n';
 
 /** Макет Tracks: сетка схем трасс. Каждая схема подгружается отдельным файлом. */
 export default function TracksPage() {
   return (
     <>
-      <PageTitle title="Календарь" sub="Трассы" />
+      <PageTitle title={t('common.calendar')} sub={t('common.tracks')} />
       <Toolbar>
-        <PillLink to="/schedule">Расписание</PillLink>
-        <PillLink to="/tracks">Трассы</PillLink>
-        <PillLink to="/results">Результаты</PillLink>
+        <PillLink to="/schedule">{t('common.schedule')}</PillLink>
+        <PillLink to="/tracks">{t('common.tracks')}</PillLink>
+        <PillLink to="/results">{t('common.results')}</PillLink>
       </Toolbar>
       <Content>
         <div className={s.grid}>
