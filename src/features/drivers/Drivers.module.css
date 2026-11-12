@@ -25,6 +25,17 @@
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 16px;
 }
+/* Широкая колонка контента (4K, отдаление): больше карточек в ряд вместо растянутых. */
+@container page (min-width: 1650px) {
+  .dgrid {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+}
+@container page (min-width: 2050px) {
+  .dgrid {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+  }
+}
 .dc {
   position: relative;
   display: flex;

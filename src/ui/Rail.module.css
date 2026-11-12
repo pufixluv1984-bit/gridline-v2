@@ -198,6 +198,24 @@
     display: flex;
   }
 }
+/* ───────── Широко (html[data-wide], src/lib/uiScale.ts): меню закреплено раскрытым ─────────
+   Не лежит поверх контента (Frame сдвигает контент на 240px), поэтому без тени. */
+:global(html[data-wide]) .rail {
+  --w: 240px;
+  --s: 1;
+}
+:global(html[data-wide]) .rail .label {
+  opacity: 1;
+  visibility: visible;
+}
+:global(html[data-wide]) .rail .shade,
+:global(html[data-wide]) .rail:hover .shade {
+  opacity: 0;
+}
+:global(html[data-wide]) .burger {
+  display: none;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .rail::before,
   .rail::after,

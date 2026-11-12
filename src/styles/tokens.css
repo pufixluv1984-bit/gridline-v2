@@ -60,3 +60,8 @@
 
   --ease-out: cubic-bezier(0.2, 0.7, 0.2, 1);
 }
+
+/* Режим «широко» (src/lib/uiScale.ts): 4K и сильное отдаление — колонка контента шире. */
+:root[data-wide] {
+  --content-max: 2100px;
+}

@@ -3,9 +3,13 @@
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 16px;
 }
-/* 6 колонок, когда сама раскладка шире 1800px. Окно шире 1440 увеличивается (src/lib/uiScale.ts, до ×1.4),
-   поэтому раскладка 1800px — это окно 1800 × 1.4 = 2520px. */
-@media (min-width: 2520px) {
+/* По ширине колонки контента (Frame, container page), а не окна: окно шире 1440 увеличивается. */
+@container page (min-width: 1650px) {
+  .grid {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+}
+@container page (min-width: 1900px) {
   .grid {
     grid-template-columns: repeat(6, minmax(0, 1fr));
   }
