@@ -36,6 +36,12 @@
   --neg-soft: #ffb3ac;
   --warn: #ffb800;
 
+  /* Масштаб интерфейса (ставит src/lib/uiScale.ts) и предел ширины колонки контента */
+  --ui: 1;
+  --content-max: 1760px;
+  /* Высота окна в единицах внутри body с zoom */
+  --vh-full: calc(100vh / var(--ui));
+
   /* Радиусы */
   --r-frame: 34px;
   --r-inner: 26px;

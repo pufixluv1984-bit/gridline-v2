@@ -197,7 +197,9 @@ export function CropWindow({
   };
   const onMove = (e: PointerEvent<HTMLDivElement>) => {
     const d = drag.current;
-    if (d) set({ zoom: view.zoom, x: d.x + e.clientX - d.px, y: d.y + e.clientY - d.py });
+    // clientX — в пикселях окна, сдвиг фото — в пикселях страницы с zoom (src/lib/uiScale.ts).
+    const z = (e.currentTarget as HTMLElement & { currentCSSZoom?: number }).currentCSSZoom ?? 1;
+    if (d) set({ zoom: view.zoom, x: d.x + (e.clientX - d.px) / z, y: d.y + (e.clientY - d.py) / z });
   };
   const onKey = (e: KeyboardEvent<HTMLDivElement>) => {
     const step = e.shiftKey ? 24 : 8;

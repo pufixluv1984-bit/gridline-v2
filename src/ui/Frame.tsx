@@ -22,7 +22,9 @@ export function Frame({ rail, children, boxed = false }: { rail?: ReactNode; chi
   return (
     <div className={`${s.root} ${rail ? s.withRail : ''}`}>
       {rail}
-      <div className={s.main}>{children}</div>
+      <div className={s.main}>
+        <div className={s.col}>{children}</div>
+      </div>
     </div>
   );
 }

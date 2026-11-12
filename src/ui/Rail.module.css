@@ -11,7 +11,7 @@
   left: 0;
   top: 0;
   z-index: 50;
-  height: 100vh;
+  height: var(--vh-full);
   width: var(--w);
   padding: 20px calc((var(--w) - var(--x)) / 2);
   display: flex;

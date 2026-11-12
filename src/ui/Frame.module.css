@@ -3,7 +3,7 @@
 .root {
   --rail-w: 84px;
   position: relative;
-  min-height: 100vh;
+  min-height: var(--vh-full);
   background: var(--bg-inner);
   color: var(--text);
 }
@@ -15,10 +15,21 @@
 
 .main {
   min-width: 0;
-  min-height: 100vh;
+  min-height: var(--vh-full);
   /* Свечения карточек шире экрана: clip режет их без своей прокрутки (не ломает fixed-меню и sticky). */
   overflow-x: clip;
   background: var(--bg-inner);
+  display: flex;
+  flex-direction: column;
+}
+
+/* Колонка контента: на очень широких окнах (ультраширокие мониторы, сильное отдаление) не растягивается,
+   а встаёт по центру; фон при этом на всю ширину. До ~2500px окна колонка занимает всю ширину. */
+.col {
+  flex: 1;
+  width: 100%;
+  max-width: var(--content-max);
+  margin-inline: auto;
   display: flex;
   flex-direction: column;
 }
@@ -74,17 +85,6 @@
   flex-direction: column;
 }
 
-/* Масштаб для больших экранов, как в макете (1440 → 2K) — только у экранов входа. */
-@media (min-width: 1800px) {
-  .frame {
-    zoom: 1.2;
-  }
-}
-@media (min-width: 2300px) {
-  .frame {
-    zoom: 1.4;
-  }
-}
 @media (max-width: 1100px) {
   .boxedRoot {
     padding: 10px;
