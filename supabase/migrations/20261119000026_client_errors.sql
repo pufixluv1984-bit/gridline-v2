@@ -25,6 +25,7 @@ alter table public.client_errors enable row level security;
 revoke all on public.client_errors from anon, authenticated;
 
 -- Запись: не больше 20 за час с аккаунта и 100 за час без входа (экран входа), заодно чистка старше 30 дней.
+-- Без выражений-выборов внутри тела: разбивщик команд Supabase CLI путал их с концом блока (сбой первого запуска 0026).
 create function public.log_client_error(kind text, message text, stack text default null, path text default null,
                                         release text default null, agent text default null)
 returns void
@@ -34,18 +35,26 @@ set search_path = ''
 as $$
 declare
   me uuid := auth.uid();
+  owner uuid := null;
+  cap integer := 20;
+  recent integer;
 begin
   if kind not in ('crash', 'error', 'rejection') or coalesce(btrim(message), '') = '' then
     return;
   end if;
-  if (select count(*) from public.client_errors e
-      where e.user_id is not distinct from me and e.created_at > now() - interval '1 hour')
-     >= case when me is null then 100 else 20 end then
+  if me is null then
+    cap := 100;
+  end if;
+  select count(*) into recent from public.client_errors e
+  where e.user_id is not distinct from me and e.created_at > now() - interval '1 hour';
+  if recent >= cap then
     return;
   end if;
+  if me is not null and exists (select 1 from public.profiles p where p.id = me) then
+    owner := me;
+  end if;
   insert into public.client_errors (user_id, kind, message, stack, path, release, agent)
-  values (case when exists (select 1 from public.profiles p where p.id = me) then me end,
-          kind, left(btrim(message), 500), left(stack, 4000), left(path, 200), left(release, 40), left(agent, 300));
+  values (owner, kind, left(btrim(message), 500), left(stack, 4000), left(path, 200), left(release, 40), left(agent, 300));
   delete from public.client_errors where created_at < now() - interval '30 days';
 end $$;
 revoke execute on function public.log_client_error(text, text, text, text, text, text) from public;
