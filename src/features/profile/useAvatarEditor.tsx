@@ -217,6 +217,7 @@ export function useAvatarEditor(me: Me | null | undefined) {
   /** Ошибка «Убрать» показывается рядом с кнопками. */
   const removeError = !step && save.k === 'error' ? save.message : null;
 
-  return { openPhoto, openLetters, remove, removing, removeError, element };
+  /** open — открыто одно из окон аватара (окно-родитель не должно закрываться по Esc). */
+  return { openPhoto, openLetters, remove, removing, removeError, element, open: step !== null };
 }
 

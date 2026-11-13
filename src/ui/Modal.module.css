@@ -26,6 +26,11 @@
 .w {
   max-width: 480px;
 }
+.lg {
+  max-width: 640px;
+  max-height: calc(100vh - 48px);
+  overflow-y: auto;
+}
 .hd {
   display: flex;
   align-items: flex-start;

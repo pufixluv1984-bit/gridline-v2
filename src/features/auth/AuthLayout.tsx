@@ -83,15 +83,18 @@ function NotConfigured() {
   );
 }
 
-export function AuthLayout({ children, centerFooter = false }: { children: ReactNode; centerFooter?: boolean }) {
+/** lang — переключатель языка в углу; экран входа ставит его в саму карточку, рядом с кнопками входа. */
+export function AuthLayout({ children, centerFooter = false, lang = true }: { children: ReactNode; centerFooter?: boolean; lang?: boolean }) {
   return (
     <Frame boxed>
       <div className={s.stage}>
         <BrandPanel />
         <div className={s.fside}>
-          <div className={s.lang}>
-            <LanguageSwitch compact onChange={markAnonPick} />
-          </div>
+          {lang && (
+            <div className={s.lang}>
+              <LanguageSwitch compact onChange={markAnonPick} />
+            </div>
+          )}
           <div className={`${s.fcard} rise`}>
             <NotConfigured />
             {children}

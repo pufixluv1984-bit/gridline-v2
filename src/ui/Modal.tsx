@@ -13,11 +13,13 @@ type Props = {
   busy?: boolean;
   /** Окно шире (480px, «.mdl.w» из макета) и с крестиком в заголовке. */
   wide?: boolean;
+  /** Большое окно-форма (640px) с прокруткой, если не влезает по высоте: «Добро пожаловать». */
+  large?: boolean;
   closeButton?: boolean;
 };
 
 /** Окно подтверждения (макет Overlays). Esc и клик по фону закрывают, фокус уходит внутрь окна. */
-export function Modal({ title, icon, children, actions, onClose, busy = false, wide = false, closeButton = false }: Props) {
+export function Modal({ title, icon, children, actions, onClose, busy = false, wide = false, large = false, closeButton = false }: Props) {
   const titleId = useId();
   const box = useRef<HTMLDivElement>(null);
 
@@ -43,7 +45,7 @@ export function Modal({ title, icon, children, actions, onClose, busy = false, w
         if (e.target === e.currentTarget && !busy) onClose();
       }}
     >
-      <div ref={box} className={`${s.mdl} ${wide ? s.w : ''}`} role="dialog" aria-modal="true" aria-labelledby={titleId} aria-busy={busy || undefined}>
+      <div ref={box} className={`${s.mdl} ${wide ? s.w : ''} ${large ? s.lg : ''}`} role="dialog" aria-modal="true" aria-labelledby={titleId} aria-busy={busy || undefined}>
         {icon && <span className={s.ico}>{icon}</span>}
         {closeButton ? (
           <div className={s.hd}>

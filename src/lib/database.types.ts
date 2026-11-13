@@ -14,6 +14,7 @@ export type Database = {
           avatar_path: string | null;
           avatar_text: string | null;
           locale: 'uk' | 'ru' | 'en' | null;
+          setup_done_at?: string | null;
           in_global_ranking: boolean;
           fav_driver: string | null;
           fav_team: string | null;
@@ -96,6 +97,8 @@ export type Database = {
       server_now: { Args: Record<string, never>; Returns: string };
       shares_league: { Args: { other: string }; Returns: boolean };
       delete_my_account: { Args: Record<string, never>; Returns: undefined };
+      finish_profile_setup: { Args: Record<string, never>; Returns: undefined };
+      welcome_screen: { Args: Record<string, never>; Returns: Json };
       predict_screen: { Args: { ev?: number; league?: string }; Returns: Json };
       home_screen: { Args: { league?: string }; Returns: Json };
       league_screen: { Args: { league: string }; Returns: Json };

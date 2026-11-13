@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { takeAuthError } from '@/lib/api/auth';
 import { PRIVACY_URL } from '@/ui/Footer';
+import { LanguageSwitch } from '@/ui/LanguageSwitch';
+import { markAnonPick } from '@/i18n/locale';
 import { AuthLayout } from './AuthLayout';
 import { ErrorAlert, SocialButtons } from './fields';
 import s from './Auth.module.css';
@@ -15,7 +17,7 @@ export default function LoginPage() {
   const [error, setError] = useState<string | null>(() => takeAuthError());
 
   return (
-    <AuthLayout>
+    <AuthLayout lang={false}>
       <div>
         <div className="eyebrow">{t('auth.welcome')}</div>
         <h1>{t('auth.title')}</h1>
@@ -24,6 +26,10 @@ export default function LoginPage() {
         </div>
       </div>
       {error && <ErrorAlert title={t('auth.failed')}>{error}</ErrorAlert>}
+      <div className={s.langPick}>
+        <span className="lab">{t('lang.title')}</span>
+        <LanguageSwitch compact wide onChange={markAnonPick} />
+      </div>
       <SocialButtons onError={setError} />
       <div className={s.foot}>
         {t('auth.consent')}{' '}

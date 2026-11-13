@@ -85,3 +85,21 @@ export async function updateProfile(userId: string, patch: Database['public']['T
     throw error;
   }
 }
+
+export type WelcomeData = {
+  teams: { id: string; code: string; name: string; color: string }[];
+  drivers: { id: string; code: string; name: string; team_name: string }[];
+};
+
+/** Данные окна «Добро пожаловать»: команды (с цветом) и пилоты заявки текущего сезона, один запрос. */
+export async function welcomeScreen(): Promise<WelcomeData> {
+  const { data, error } = await getSupabase().rpc('welcome_screen');
+  if (error) throw error;
+  return data as unknown as WelcomeData;
+}
+
+/** Окно настройки профиля пройдено или пропущено: больше не показывать (отметку ставит база). */
+export async function finishProfileSetup(): Promise<void> {
+  const { error } = await getSupabase().rpc('finish_profile_setup');
+  if (error) throw error;
+}

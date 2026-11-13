@@ -151,8 +151,12 @@ const en: Dict = {
   'title.best_stage': 'Best race',
   'title.survivor': 'Survivor',
   'welcome.title': 'Welcome, {name}',
-  'welcome.text': 'Pick your favourite team: it sets the colour of your profile and your tile in the table. You can change it later in your profile.',
+  'welcome.text': 'Set up your profile — this is how friends will see you in leagues. You can change everything later in settings.',
   'welcome.teamAria': 'Favourite team',
+  'welcome.nickHelp': '2–20 characters. Once changed, you can change it again in 30 days.',
+  'welcome.team': 'Favourite team',
+  'welcome.teamHelp': 'Its colour becomes your profile colour if you have no photo.',
+  'welcome.driver': 'Favourite driver',
 
   // ── Settings ──
   'settings.title': 'Profile',

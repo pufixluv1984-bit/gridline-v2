@@ -3,9 +3,9 @@
 export type Locale = 'uk' | 'ru' | 'en';
 
 export const LOCALES: { id: Locale; label: string; short: string; intl: string }[] = [
-  { id: 'uk', label: 'Українська', short: 'UA', intl: 'uk-UA' },
-  { id: 'ru', label: 'Русский', short: 'RU', intl: 'ru-RU' },
-  { id: 'en', label: 'English', short: 'EN', intl: 'en-GB' },
+  { id: 'uk', label: 'Українська', short: 'УКР', intl: 'uk-UA' },
+  { id: 'ru', label: 'Русский', short: 'РУ', intl: 'ru-RU' },
+  { id: 'en', label: 'English', short: 'ENG', intl: 'en-GB' },
 ];
 
 export const isLocale = (v: unknown): v is Locale => v === 'uk' || v === 'ru' || v === 'en';
