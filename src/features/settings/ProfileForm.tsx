@@ -9,6 +9,7 @@ import p from '@/ui/Page.module.css';
 import s from './Settings.module.css';
 import { intlLocale } from '@/i18n';
 import { t as tr } from '@/i18n';
+import { DriverIcon, Select, TeamIcon } from '@/ui/Select';
 
 const NICK_COOLDOWN_MS = 30 * 24 * 3600 * 1000;
 // Те же правила, что в базе (миграции 0001, 0015): база всё равно проверит, здесь — подсказка сразу.
@@ -175,23 +176,31 @@ export function ProfileForm({
 
           <div>
             <label className="lab" htmlFor="set-fav-team">{tr('settings.favTeam')}</label>
-            <select id="set-fav-team" className="in" value={v.fav_team} onChange={set('fav_team')}>
-              <option value="">{tr('settings.notSelectedF')}</option>
-              {(data.options?.teams ?? []).map((t) => (
-                <option key={t.id} value={t.id}>{t.name}</option>
-              ))}
-            </select>
+            <Select
+              id="set-fav-team"
+              full
+              value={v.fav_team}
+              onChange={(x) => set('fav_team')({ target: { value: x } })}
+              options={[
+                { value: '', label: tr('settings.notSelectedF') },
+                ...(data.options?.teams ?? []).map((t) => ({ value: t.id, label: t.name, icon: <TeamIcon code={t.code} /> })),
+              ]}
+            />
             <div className="help">{tr('settings.shownInProfile')}</div>
           </div>
 
           <div>
             <label className="lab" htmlFor="set-fav-driver">{tr('settings.favDriver')}</label>
-            <select id="set-fav-driver" className="in" value={v.fav_driver} onChange={set('fav_driver')}>
-              <option value="">{tr('settings.notSelectedM')}</option>
-              {(data.options?.drivers ?? []).map((d) => (
-                <option key={d.id} value={d.id}>{d.name} · {d.team_name}</option>
-              ))}
-            </select>
+            <Select
+              id="set-fav-driver"
+              full
+              value={v.fav_driver}
+              onChange={(x) => set('fav_driver')({ target: { value: x } })}
+              options={[
+                { value: '', label: tr('settings.notSelectedM') },
+                ...(data.options?.drivers ?? []).map((d) => ({ value: d.id, label: d.name, sub: d.team_name, icon: <DriverIcon code={d.code} /> })),
+              ]}
+            />
             <div className="help">{tr('settings.shownInProfile')}</div>
           </div>
         </div>

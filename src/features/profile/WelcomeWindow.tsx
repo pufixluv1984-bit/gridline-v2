@@ -11,6 +11,7 @@ import m from '@/ui/Modal.module.css';
 import w from './Welcome.module.css';
 import { t } from '@/i18n';
 import type { Locale } from '@/i18n/locale';
+import { DriverIcon, Select } from '@/ui/Select';
 
 // Те же правила, что в базе (миграции 0001, 0023): база всё равно проверит, здесь — подсказка сразу.
 const NICK_RE = /^[A-Za-zА-Яа-яЁёІіЇїЄєҐґ0-9 _.-]+$/;
@@ -153,12 +154,16 @@ export default function WelcomeWindow({ profile }: { profile: Profile }) {
 
       <div>
         <label className="lab" htmlFor="wel-driver">{t('welcome.driver')}</label>
-        <select id="wel-driver" className="in" value={driver} onChange={(e) => setDriver(e.target.value)}>
-          <option value="">{t('settings.notSelectedM')}</option>
-          {(data.data?.drivers ?? []).map((d) => (
-            <option key={d.id} value={d.id}>{d.name} · {d.team_name}</option>
-          ))}
-        </select>
+        <Select
+          id="wel-driver"
+          full
+          value={driver}
+          onChange={setDriver}
+          options={[
+            { value: '', label: t('settings.notSelectedM') },
+            ...(data.data?.drivers ?? []).map((d) => ({ value: d.id, label: d.name, sub: d.team_name, icon: <DriverIcon code={d.code} /> })),
+          ]}
+        />
       </div>
 
       {(save.error ?? data.error) && <div className="alert bad" role="alert">{(save.error ?? data.error)!.message}</div>}

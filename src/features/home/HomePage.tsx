@@ -18,6 +18,7 @@ import { Content, PageTitle, PillLink, PrimaryLink, Toolbar, ToolbarDivider } fr
 import b from '@/ui/Button.module.css';
 import { avatarOf } from '@/lib/avatar';
 import { t } from '@/i18n';
+import { Select } from '@/ui/Select';
 
 /**
  * Главная (макет Main): чемпионат мира (топ-5), следующий этап с таймером и схемой трассы, сезон,
@@ -363,9 +364,8 @@ function LeagueCard({ data, onPick }: { data: HomeScreen; onPick: (id: string) =
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
           <h2 className="h">{t('common.friendsLeague')}</h2>
           {data.leagues.length > 1 ? (
-            <select className="in" style={{ height: 36, width: 'auto', padding: '0 40px 0 14px', backgroundPosition: 'calc(100% - 22px) 15px, calc(100% - 16px) 15px' }} value={data.league_id} onChange={(e) => onPick(e.target.value)} aria-label={t('home.pickLeague')}>
-              {data.leagues.map((l) => <option key={l.id} value={l.id}>{l.name}</option>)}
-            </select>
+            <Select size="pill" value={data.league_id} onChange={onPick} aria-label={t('home.pickLeague')}
+              options={data.leagues.map((l) => ({ value: l.id, label: l.name }))} />
           ) : (
             <span className="chip">{name}</span>
           )}

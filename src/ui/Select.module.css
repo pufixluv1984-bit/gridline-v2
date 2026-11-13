@@ -1,0 +1,166 @@
+/* Выпадающий список (Select.tsx). Кнопка повторяет поле формы .in и «таблетку» .mini из kit.css. */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  max-width: 100%;
+  border: 1px solid var(--line-strong);
+  background: var(--bg-field);
+  color: var(--text);
+  font: 500 15px var(--font-text);
+  text-align: left;
+  cursor: pointer;
+  outline: 0;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.btn:hover:not(:disabled) {
+  border-color: rgba(255, 255, 255, 0.24);
+}
+.btn:focus-visible,
+.btn.open {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 4px var(--glowc);
+}
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.field {
+  height: 52px;
+  padding: 0 16px;
+  border-radius: var(--r-field);
+}
+.compact {
+  height: 40px;
+  padding: 0 14px;
+  border-radius: 14px;
+  font-size: 14px;
+}
+.pill {
+  height: 36px;
+  padding: 0 12px 0 14px;
+  border-radius: 999px;
+  border-color: rgba(255, 255, 255, 0.14);
+  background: #16161b;
+  color: var(--text-head);
+  font-size: 13px;
+  font-weight: 600;
+}
+.pill.open,
+.pill:focus-visible {
+  box-shadow: none;
+}
+.full {
+  display: flex;
+  width: 100%;
+}
+.val {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.chev {
+  flex: none;
+  color: var(--mute);
+  transition: transform 0.2s;
+}
+.open .chev {
+  transform: rotate(180deg);
+}
+
+.menu {
+  position: fixed;
+  z-index: 150;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 6px;
+  border-radius: 18px;
+  background: #121216;
+  border: 1px solid var(--line-strong);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.55);
+  animation: drop 0.16s var(--ease-out) both;
+}
+.menu.up {
+  transform: translateY(-100%);
+  animation-name: dropUp;
+}
+@keyframes drop {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+}
+@keyframes dropUp {
+  from {
+    opacity: 0;
+    transform: translateY(calc(-100% + 4px));
+  }
+}
+.opt {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 40px;
+  padding: 6px 10px;
+  border-radius: 12px;
+  font-size: 14px;
+  color: var(--text-soft);
+  cursor: pointer;
+  white-space: nowrap;
+}
+.opt.hi {
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--text);
+}
+.opt.on {
+  color: var(--text);
+  font-weight: 600;
+}
+.txt {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+.txt small {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--mute);
+}
+.check {
+  flex: none;
+  color: var(--accent);
+}
+.ico {
+  flex: none;
+  display: inline-flex;
+}
+.face {
+  width: 28px;
+  height: 28px;
+  border-radius: 9px;
+  object-fit: cover;
+  object-position: top;
+  background: #1c1c22;
+}
+.mono {
+  width: 28px;
+  height: 28px;
+  border-radius: 9px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: 700;
+  color: #fff;
+}
+.logo {
+  width: 28px;
+  height: 28px;
+  padding: 4px;
+  border-radius: 9px;
+  object-fit: contain;
+  background: #1c1c22;
+}

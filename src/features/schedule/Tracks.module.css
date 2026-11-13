@@ -19,32 +19,47 @@
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 }
+/* Карточка из слоёв: свечение (::before) — под фоном (::after), фон — под содержимым. Так свечение видно только
+   из-под нижнего края и не ложится ни на эту карточку, ни на соседние (isolation держит слои внутри карточки). */
 .card {
   position: relative;
+  isolation: isolate;
   display: flex;
   flex-direction: column;
   gap: 6px;
   padding: 18px 18px 16px;
   border-radius: 24px;
+  transition: transform 0.25s;
+}
+.card::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
   background: var(--card-grad);
   border: 1px solid var(--line);
   box-shadow: var(--shadow-card);
-  transition: border-color 0.25s, transform 0.25s;
+  transition: border-color 0.25s;
+  pointer-events: none;
 }
 /* Свечение снизу — статичный слой, появляется через opacity (правило 11). */
 .card::before {
   content: '';
   position: absolute;
-  inset: auto -20% -40% -20%;
-  height: 70%;
+  inset: auto 6% -18% 6%;
+  height: 60%;
+  z-index: -2;
   background: radial-gradient(closest-side, var(--glowc), transparent);
   opacity: 0;
   transition: opacity 0.35s;
   pointer-events: none;
 }
 .card:hover {
-  border-color: rgba(255, 255, 255, 0.16);
   transform: translateY(-2px);
+}
+.card:hover::after {
+  border-color: rgba(255, 255, 255, 0.16);
 }
 .card:hover::before {
   opacity: 0.9;

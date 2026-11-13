@@ -62,7 +62,8 @@ describe('окно «Добро пожаловать»', () => {
     await screen.findByRole('dialog');
     fireEvent.change(screen.getByLabelText('Ник'), { target: { value: 'Вова 44' } });
     fireEvent.click(await screen.findByRole('radio', { name: 'Феррари' }));
-    fireEvent.change(screen.getByLabelText('Любимый пилот'), { target: { value: 'hamilton' } });
+    fireEvent.click(screen.getByLabelText('Любимый пилот'));
+    fireEvent.click(screen.getByRole('option', { name: /Льюис Хэмилтон/ }));
     fireEvent.click(screen.getByRole('button', { name: 'Готово' }));
     await waitFor(() => expect(api.finishProfileSetup).toHaveBeenCalledOnce());
     expect(api.updateProfile).toHaveBeenCalledWith('u1', { nickname: 'Вова 44', fav_team: 'ferrari', fav_driver: 'hamilton', avatar_color: '#ED1131' });

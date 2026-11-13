@@ -14,6 +14,7 @@ import b from '@/ui/Button.module.css';
 import { LobbyTabs } from './LobbyTabs';
 import { Avatar } from '@/ui/Avatar';
 import { t, type Key } from '@/i18n';
+import { Select } from '@/ui/Select';
 
 const MODES = [
   { id: 'predict', t: 'lobby.mode.predict', help: 'lobby.mode.predictHelp' },
@@ -105,18 +106,18 @@ export default function CreateLeaguePage() {
               </div>
               <div style={{ flex: '2 1 300px' }}>
                 <label className="lab" htmlFor="lg-start">{t('lobby.startRound')}</label>
-                <select id="lg-start" className="in" value={start ? String(start.id) : ''} onChange={(e) => setStartId(e.target.value)} disabled={!upcoming.length}>
-                  {upcoming.map((e) => {
+                <Select
+                  id="lg-start"
+                  full
+                  value={start ? String(start.id) : ''}
+                  onChange={setStartId}
+                  disabled={!upcoming.length}
+                  options={upcoming.map((e) => {
                     const first = e.sessions[0]?.starts_at;
                     const last = e.sessions[e.sessions.length - 1]?.starts_at;
-                    return (
-                      <option key={e.id} value={e.id}>
-                        {e.name}
-                        {first && last ? ` · ${formatRange(first, last)}` : ''}
-                      </option>
-                    );
+                    return { value: String(e.id), label: e.name, sub: first && last ? formatRange(first, last) : undefined };
                   })}
-                </select>
+                />
                 <div className="help">{t('lobby.startHelp')}</div>
               </div>
             </div>

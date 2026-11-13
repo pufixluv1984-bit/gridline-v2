@@ -21,6 +21,7 @@ import b from '@/ui/Button.module.css';
 import pg from '@/ui/Page.module.css';
 import { FantasyTabs, IconCheckSm, IconSwap, IconX } from './FantasyTabs';
 import { t as tr } from '@/i18n';
+import { DriverIcon, Select } from '@/ui/Select';
 
 const TOUR_KEY = 'gridline.fantasy.tour.hidden';
 const readTour = () => {
@@ -425,14 +426,17 @@ function FinalFixBox({ data }: { data: SquadScreen }) {
       <span className="ic"><IconSwap /></span>
       <div style={{ flex: '1 1 260px', display: 'flex', flexWrap: 'wrap', gap: 10, alignItems: 'center' }}>
         <b style={{ width: '100%' }}>{tr('fan.sq.ffTitle')}</b>
-        <select className="in" style={{ height: 40, width: 'auto' }} value={out} onChange={(e) => setOut(e.target.value)} aria-label={tr('fan.sq.ffOut')}>
-          {s.drivers.map((id) => <option key={id} value={id}>{data.market.drivers.find((d) => d.id === id)?.name ?? id}</option>)}
-        </select>
+        <Select size="compact" value={out} onChange={setOut} aria-label={tr('fan.sq.ffOut')}
+          options={s.drivers.map((id) => {
+            const d = data.market.drivers.find((x) => x.id === id);
+            return { value: id, label: d?.name ?? id, sub: d?.team_name ?? undefined, icon: d ? <DriverIcon code={d.code} color={d.color} /> : undefined };
+          })} />
         <span className="mute">→</span>
-        <select className="in" style={{ height: 40, width: 'auto' }} value={inn} onChange={(e) => setInn(e.target.value)} aria-label={tr('fan.sq.ffIn')}>
-          <option value="">{tr('fan.sq.ffPick')}</option>
-          {candidates.map((d) => <option key={d.id} value={d.id}>{d.name} · {money(d.price)}</option>)}
-        </select>
+        <Select size="compact" value={inn} onChange={setInn} aria-label={tr('fan.sq.ffIn')}
+          options={[
+            { value: '', label: tr('fan.sq.ffPick') },
+            ...candidates.map((d) => ({ value: d.id, label: d.name, sub: money(d.price), icon: <DriverIcon code={d.code} color={d.color} /> })),
+          ]} />
         {fix.error && <div className="alert bad" style={{ width: '100%' }}>{fix.error.message}</div>}
       </div>
       <button type="button" className={`${b.cta} ${b.sm}`} disabled={!inn || fix.isPending} onClick={() => fix.mutate()}>{tr('fan.sq.ffSwap')}</button>

@@ -15,6 +15,7 @@ import s from './Fantasy.module.css';
 import { lineText } from './lines';
 import { avatarOf } from '@/lib/avatar';
 import { t as tr } from '@/i18n';
+import { Select } from '@/ui/Select';
 
 /** Макет Fantasy-Leaderboard: ближайший этап, лидер, лучший этап, таблица лиги с составами и разбором. */
 export default function LeaderboardPage() {
@@ -160,9 +161,8 @@ function Table({ data, onLeague }: { data: LeaderboardScreen; onLeague: (id: str
           <div style={{ display: 'flex', alignItems: 'center', gap: 14, flexWrap: 'wrap' }}>
             <span className="h">{data.league!.name}</span>
             {(data.leagues?.length ?? 0) > 1 && (
-              <select className="mini" value={data.league!.id} onChange={(e) => onLeague(e.target.value)} aria-label={tr('fan.lb.league')}>
-                {data.leagues!.map((l) => <option key={l.id} value={l.id}>{l.name}</option>)}
-              </select>
+              <Select size="pill" value={data.league!.id} onChange={onLeague} aria-label={tr('fan.lb.league')}
+                options={data.leagues!.map((l) => ({ value: l.id, label: l.name }))} />
             )}
             <div className="seg" role="tablist" aria-label={tr('fan.lb.standing')}>
               <button type="button" role="tab" className={view === 'total' ? 'on' : ''} onClick={() => setView('total')}>{tr('fan.lb.total')}</button>

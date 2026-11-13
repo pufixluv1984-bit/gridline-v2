@@ -8,6 +8,7 @@ import { Content, PageTitle, PillLink, Toolbar } from '@/ui/Page';
 import { avatarOf } from '@/lib/avatar';
 import { t, type Key } from '@/i18n';
 import { SESSION_NAMES } from '@/lib/time/format';
+import { Select } from '@/ui/Select';
 
 // Разбор этапа: каждое начисление — строка score_lines с причиной (docs/PRODUCT.md §2).
 // Отдельного макета нет — собран из элементов Predict и Results.
@@ -101,9 +102,8 @@ function Body({ d, onEvent }: { d: BreakdownScreen; onEvent: (id: number) => voi
           {boost && <span className="chip red">{t('bd.boost', { block: boost === 'qualy' ? t('bd.boostQualy') : boost === 'race' ? t('bd.boostRace') : t('bd.boostBonus') })}</span>}
           <div className="num" style={{ fontSize: 44, fontWeight: 600, lineHeight: 1 }}>+{total}</div>
           {d.events.length > 1 && (
-            <select className="in" style={{ height: 40, width: 'auto', padding: '0 40px 0 14px', backgroundPosition: 'calc(100% - 22px) 17px, calc(100% - 16px) 17px' }} value={d.event!.id} onChange={(e) => onEvent(Number(e.target.value))} aria-label={t('res.eventAria')}>
-              {d.events.map((e) => <option key={e.id} value={e.id}>{e.round}. {e.name}</option>)}
-            </select>
+            <Select size="compact" value={d.event!.id} onChange={onEvent} aria-label={t('res.eventAria')}
+              options={d.events.map((e) => ({ value: e.id, label: `${e.round}. ${e.name}` }))} />
           )}
         </div>
       </section>

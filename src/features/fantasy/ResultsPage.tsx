@@ -12,6 +12,7 @@ import { lineText } from './lines';
 import s from './Fantasy.module.css';
 import { avatarOf } from '@/lib/avatar';
 import { t as tr } from '@/i18n';
+import { Select } from '@/ui/Select';
 
 /** Макет Fantasy-Results: итог этапа, мой состав по слотам, команды лиги, лучшие пилоты этапа. */
 export default function ResultsPage() {
@@ -45,9 +46,8 @@ export default function ResultsPage() {
                 {best && <span className="chip red">{tr('fan.res.best', { name: best.team_name || best.nickname, pts: pts(best.total) })}</span>}
                 {data?.winner && <span className="chip">{tr('fan.res.winner', { name: data.winner.name })}</span>}
                 {(data?.events?.length ?? 0) > 1 && (
-                  <select className="mini" value={e.id} onChange={(x) => setEv(Number(x.target.value))} aria-label={tr('res.eventAria')}>
-                    {data!.events!.map((x) => <option key={x.id} value={x.id}>{tr('fan.res.option', { round: x.round, name: gpShort(x.name) })}</option>)}
-                  </select>
+                  <Select size="pill" value={e.id} onChange={setEv} aria-label={tr('res.eventAria')}
+                    options={data!.events!.map((x) => ({ value: x.id, label: tr('fan.res.option', { round: x.round, name: gpShort(x.name) }) }))} />
                 )}
               </div>
             </section>

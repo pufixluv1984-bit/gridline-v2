@@ -6,6 +6,7 @@ import { lapTime, SESSION_NAMES } from '@/lib/time/format';
 import { DriverTile, Skeleton } from '@/ui/game';
 import { Content, PageTitle, PillLink, Toolbar } from '@/ui/Page';
 import { t as tr } from '@/i18n';
+import { Select } from '@/ui/Select';
 
 const GRID = '60px 56px minmax(200px,1.2fr) minmax(160px,1fr) 170px';
 const MEDAL = ['var(--gold)', '#c9c9d0', '#d08a4a'];
@@ -80,9 +81,8 @@ export default function ResultsPage() {
                 {kind === 'race' && fastest && <span className="chip">{tr('res.fl', { name: fastest.name.split(' ').slice(-1)[0]! })}</span>}
                 {provisional && <span className="chip gold" title={tr('common.provisionalHint')}>{tr('common.provisional')}</span>}
                 {manual && <span className="chip">{tr('res.manual')}</span>}
-                <select className="in" style={{ height: 40, width: 'auto', padding: '0 40px 0 14px', backgroundPosition: 'calc(100% - 22px) 17px, calc(100% - 16px) 17px' }} value={data.event.id} onChange={(e) => navigate(`/results/${e.target.value}`)} aria-label={tr('res.eventAria')}>
-                  {data.events.map((e) => <option key={e.id} value={e.id}>{e.round}. {e.name}</option>)}
-                </select>
+                <Select size="compact" value={data.event.id} onChange={(id) => navigate(`/results/${id}`)} aria-label={tr('res.eventAria')}
+                  options={data.events.map((e) => ({ value: e.id, label: `${e.round}. ${e.name}` }))} />
               </div>
             </section>
 
