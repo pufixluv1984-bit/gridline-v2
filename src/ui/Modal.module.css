@@ -7,6 +7,9 @@
   align-items: center;
   justify-content: center;
   padding: 24px;
+  /* Если окно всё же выше экрана, прокручивается подложка, а не страница под ней. */
+  overflow-y: auto;
+  overscroll-behavior: contain;
   background: rgba(0, 0, 0, 0.6);
   animation: fade 0.2s ease-out both;
 }
@@ -21,6 +24,8 @@
   display: flex;
   flex-direction: column;
   gap: 16px;
+  /* По центру, но верх окна не уходит за край экрана, когда оно выше подложки. */
+  margin: auto;
   animation: pop 0.25s var(--ease-out) both;
 }
 .w {
@@ -28,8 +33,10 @@
 }
 .lg {
   max-width: 640px;
-  max-height: calc(100vh - 48px);
+  /* --vh-full, а не 100vh: body с zoom (экраны шире 1440) умножает vh, и окно становилось выше экрана. */
+  max-height: calc(var(--vh-full) - 48px);
   overflow-y: auto;
+  overscroll-behavior: contain;
 }
 .hd {
   display: flex;
