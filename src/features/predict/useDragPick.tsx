@@ -12,6 +12,11 @@ const THRESHOLD = 6; // px: меньше — это обычный клик, а 
  *
  * За курсором едет копия самого блока (того же размера, в той же точке, где его взяли), на старом месте —
  * пустая рамка, слот-цель (атрибут data-slot) подсвечивается. Копия двигается только через transform.
+ *
+ * Перетаскивание всегда заканчивается: встроенное перетаскивание браузера (фото пилота внутри блока) запрещено —
+ * пока оно шло, сайт не получал отпускание кнопки, и копия «прилипала» к курсору. Если отпускание всё же
+ * потерялось (кнопку отпустили за окном, окно потеряло фокус), конец распознаётся по первому движению без
+ * зажатой кнопки или по уходу из окна.
  */
 export function useDragPick({ canDrop, onDrop }: { canDrop: (src: DragSrc, to: number) => boolean; onDrop: (src: DragSrc, to: number) => void }) {
   const [drag, setDrag] = useState<DragSrc | null>(null);
@@ -27,6 +32,9 @@ export function useDragPick({ canDrop, onDrop }: { canDrop: (src: DragSrc, to: n
   const start = useCallback(
     (src: DragSrc) => (e: ReactMouseEvent<HTMLElement>) => {
       if (e.button !== 0) return;
+      stop.current?.(); // прошлое перетаскивание, если почему-то не закончилось
+      // Без встроенного перетаскивания картинок и выделения текста при зажатой кнопке (клик это не отменяет).
+      e.preventDefault();
       const node = e.currentTarget;
       const x0 = e.clientX;
       const y0 = e.clientY;
@@ -58,6 +66,11 @@ export function useDragPick({ canDrop, onDrop }: { canDrop: (src: DragSrc, to: n
       };
 
       const move = (ev: MouseEvent) => {
+        // Кнопка уже отпущена, а отпускание мы не получили: заканчиваем там, где курсор сейчас.
+        if ((ev.buttons & 1) === 0) {
+          up();
+          return;
+        }
         if (!started) {
           if (Math.hypot(ev.clientX - x0, ev.clientY - y0) < THRESHOLD) return;
           started = true;
@@ -75,6 +88,8 @@ export function useDragPick({ canDrop, onDrop }: { canDrop: (src: DragSrc, to: n
         document.removeEventListener('mousemove', move);
         document.removeEventListener('mouseup', up);
         document.removeEventListener('keydown', key);
+        document.removeEventListener('dragstart', native, true);
+        window.removeEventListener('blur', end);
         document.body.classList.remove('dragging-pick');
         ghost?.remove();
         ghost = null;
@@ -93,9 +108,12 @@ export function useDragPick({ canDrop, onDrop }: { canDrop: (src: DragSrc, to: n
       const key = (ev: KeyboardEvent) => {
         if (ev.key === 'Escape') end();
       };
+      const native = (ev: DragEvent) => ev.preventDefault();
       document.addEventListener('mousemove', move);
       document.addEventListener('mouseup', up);
       document.addEventListener('keydown', key);
+      document.addEventListener('dragstart', native, true);
+      window.addEventListener('blur', end);
       stop.current = end;
     },
     [],

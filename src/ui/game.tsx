@@ -53,9 +53,9 @@ export function DriverTile({
       className={`ph ${className}`}
       style={{ width: size, height: size, borderRadius: size <= 44 ? 12 : 20, '--c': driver.color } as CSSProperties}
     >
-      {logo && <img className="tl" src={logo} alt="" loading="lazy" decoding="async" />}
+      {logo && <img className="tl" src={logo} alt="" loading="lazy" decoding="async" draggable={false} />}
       {photo ? (
-        <img src={photo} alt={driver.name ?? driver.code} loading="lazy" decoding="async" width={size} height={size} />
+        <img src={photo} alt={driver.name ?? driver.code} loading="lazy" decoding="async" width={size} height={size} draggable={false} />
       ) : (
         <span className="npc">{driver.number ?? driver.code}</span>
       )}

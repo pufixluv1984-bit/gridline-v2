@@ -76,7 +76,7 @@ describe('PredictPage', () => {
     const target = slot('P2');
     document.elementFromPoint = () => target; // в jsdom нет раскладки
     fireEvent.mouseDown(slot('P1'), { button: 0, clientX: 10, clientY: 10 });
-    fireEvent.mouseMove(document, { clientX: 40, clientY: 60 });
+    fireEvent.mouseMove(document, { buttons: 1, clientX: 40, clientY: 60 });
     expect(target).toHaveClass('drop');
     fireEvent.mouseUp(document);
     expect(slot('P1')).toHaveTextContent('Пилот piastri');
@@ -88,10 +88,59 @@ describe('PredictPage', () => {
     await renderPage();
     const p1 = screen.getAllByText('P1', { selector: 'span.num' }).at(-1)!.closest('button')!;
     fireEvent.mouseDown(p1, { button: 0, clientX: 10, clientY: 10 });
-    fireEvent.mouseMove(document, { clientX: 12, clientY: 11 });
+    fireEvent.mouseMove(document, { buttons: 1, clientX: 12, clientY: 11 });
     fireEvent.mouseUp(document);
     fireEvent.click(p1);
     expect(p1).toHaveAttribute('aria-pressed', 'true');
     expect(p1).toHaveTextContent('Пилот norris');
+  });
+
+  describe('перетаскивание всегда заканчивается (копия не «прилипает» к курсору)', () => {
+    const lifted = () => document.querySelector('.drag-lift');
+    const setup = async () => {
+      current = screenData(false, true);
+      await renderPage();
+      const slot = (pos: string) => screen.getAllByText(pos, { selector: 'span.num' }).at(-1)!.closest('button')!;
+      const target = slot('P2');
+      document.elementFromPoint = () => target;
+      fireEvent.mouseDown(slot('P1'), { button: 0, clientX: 10, clientY: 10 });
+      fireEvent.mouseMove(document, { buttons: 1, clientX: 40, clientY: 60 });
+      expect(lifted()).not.toBeNull();
+      return slot;
+    };
+
+    it('встроенное перетаскивание браузера (фото пилота) запрещено', async () => {
+      await setup();
+      const img = document.createElement('img');
+      document.body.appendChild(img);
+      expect(fireEvent.dragStart(img)).toBe(false); // false — событие отменено
+      img.remove();
+      fireEvent.mouseUp(document);
+    });
+
+    it('отпускание потерялось: первое движение без зажатой кнопки — это отпускание', async () => {
+      const slot = await setup();
+      fireEvent.mouseMove(document, { buttons: 0, clientX: 41, clientY: 61 });
+      expect(lifted()).toBeNull();
+      expect(document.body).not.toHaveClass('dragging-pick');
+      expect(slot('P1')).toHaveTextContent('Пилот piastri');
+      // Дальнейшие движения ничего не тащат.
+      fireEvent.mouseMove(document, { buttons: 0, clientX: 90, clientY: 90 });
+      expect(lifted()).toBeNull();
+    });
+
+    it('окно потеряло фокус — перетаскивание отменяется без перестановки', async () => {
+      const slot = await setup();
+      fireEvent.blur(window);
+      expect(lifted()).toBeNull();
+      expect(slot('P1')).toHaveTextContent('Пилот norris');
+    });
+
+    it('Esc отменяет без перестановки', async () => {
+      const slot = await setup();
+      fireEvent.keyDown(document, { key: 'Escape' });
+      expect(lifted()).toBeNull();
+      expect(slot('P1')).toHaveTextContent('Пилот norris');
+    });
   });
 });
