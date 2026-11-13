@@ -311,32 +311,38 @@
 .slot[title]:not(:disabled) {
   cursor: grab;
 }
+/* Куда встанет пилот: яркая рамка и подсветка (статичные, без анимации размеров). */
 .slot.drop {
-  border: 1px solid rgba(232, 33, 26, 0.7);
-  background: rgba(232, 33, 26, 0.1);
+  border: 1px solid var(--accent);
+  background: linear-gradient(90deg, rgba(232, 33, 26, 0.22), rgba(232, 33, 26, 0.06));
+  box-shadow: 0 0 0 3px rgba(232, 33, 26, 0.18);
 }
+/* Откуда взяли: пустая пунктирная рамка, содержимое едет за курсором. */
 .slot.dragging {
-  opacity: 0.4;
+  background: transparent;
+  border: 1px dashed rgba(255, 255, 255, 0.22);
 }
-.drag-ghost {
-  position: fixed;
+.slot.dragging > * {
+  opacity: 0.2;
+}
+/* Копия блока под курсором: поверх всего, не ловит мышь, чуть приподнята. */
+.drag-lift {
+  position: fixed !important;
   left: 0;
   top: 0;
+  margin: 0;
   z-index: 200;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 8px 14px 8px 8px;
-  border-radius: 16px;
-  background: #16161b;
-  border: 1px solid rgba(232, 33, 26, 0.6);
-  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.5);
-  font-size: 14px;
   pointer-events: none;
-  white-space: nowrap;
+  transform-origin: 0 0;
+  border-color: rgba(232, 33, 26, 0.7) !important;
+  background: #18181d !important;
+  box-shadow: 0 22px 50px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(232, 33, 26, 0.25);
+  opacity: 0.9;
 }
-body:has(.drag-ghost) {
-  cursor: grabbing;
+body.dragging-pick,
+body.dragging-pick * {
+  cursor: grabbing !important;
+  user-select: none;
 }
 .slot:disabled {
   cursor: default;

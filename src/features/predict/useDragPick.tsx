@@ -1,4 +1,5 @@
-import { useCallback, useEffect, useRef, useState, type MouseEvent as ReactMouseEvent, type ReactNode } from 'react';
+import { useCallback, useEffect, useRef, useState, type MouseEvent as ReactMouseEvent } from 'react';
+import { uiZoom } from '@/lib/uiScale';
 
 /** Что тащим: пилота из слота прогноза или из списка пилотов. */
 export type DragSrc = { slot: number } | { driver: string };
@@ -9,21 +10,12 @@ const THRESHOLD = 6; // px: меньше — это обычный клик, а 
  * Перетаскивание пилотов на экране прогноза — на событиях мыши, а не на HTML drag-and-drop:
  * в Firefox кнопки (а слоты — кнопки) нативно не перетаскиваются. Сайт только для десктопа.
  *
- * Слот-цель помечается атрибутом data-slot. Пока тащим, за курсором едет плашка (только transform).
+ * За курсором едет копия самого блока (того же размера, в той же точке, где его взяли), на старом месте —
+ * пустая рамка, слот-цель (атрибут data-slot) подсвечивается. Копия двигается только через transform.
  */
-export function useDragPick({
-  canDrop,
-  onDrop,
-  ghost,
-}: {
-  canDrop: (src: DragSrc, to: number) => boolean;
-  onDrop: (src: DragSrc, to: number) => void;
-  ghost: (src: DragSrc) => ReactNode;
-}) {
-  // Где плашка появилась; дальше она двигается напрямую через style.transform, без перерисовки.
-  const [drag, setDrag] = useState<{ src: DragSrc; x: number; y: number } | null>(null);
+export function useDragPick({ canDrop, onDrop }: { canDrop: (src: DragSrc, to: number) => boolean; onDrop: (src: DragSrc, to: number) => void }) {
+  const [drag, setDrag] = useState<DragSrc | null>(null);
   const [over, setOver] = useState<number | null>(null);
-  const box = useRef<HTMLDivElement>(null);
   const justDropped = useRef(false);
   const latest = useRef({ canDrop, onDrop });
   useEffect(() => {
@@ -33,21 +25,47 @@ export function useDragPick({
   useEffect(() => () => stop.current?.(), []);
 
   const start = useCallback(
-    (src: DragSrc) => (e: ReactMouseEvent) => {
+    (src: DragSrc) => (e: ReactMouseEvent<HTMLElement>) => {
       if (e.button !== 0) return;
+      const node = e.currentTarget;
       const x0 = e.clientX;
       const y0 = e.clientY;
       let started = false;
       let target: number | null = null;
+      let ghost: HTMLElement | null = null;
+      let grab = { x: 0, y: 0 };
+      let z = 1;
+
+      const place = (x: number, y: number) => {
+        if (ghost) ghost.style.transform = `translate(${(x - grab.x) / z}px, ${(y - grab.y) / z}px) scale(1.03)`;
+      };
+      const lift = () => {
+        // Копия блока: те же классы и содержимое, без «активного» оформления и без id (не дублировать их в DOM).
+        const r = node.getBoundingClientRect();
+        z = uiZoom();
+        grab = { x: x0 - r.left, y: y0 - r.top };
+        ghost = node.cloneNode(true) as HTMLElement;
+        ghost.classList.remove('act', 'drop', 'dragging', 'empty');
+        ghost.classList.add('drag-lift');
+        ghost.removeAttribute('id');
+        ghost.querySelectorAll('[id]').forEach((x) => x.removeAttribute('id'));
+        ghost.setAttribute('aria-hidden', 'true');
+        // Номер места (P5) едет вместе с блоком и путает, когда блок уже над другим местом — прячем.
+        ghost.querySelectorAll<HTMLElement>('.num').forEach((x) => (x.style.visibility = 'hidden'));
+        ghost.style.width = `${r.width / z}px`;
+        ghost.style.height = `${r.height / z}px`;
+        document.body.appendChild(ghost);
+      };
 
       const move = (ev: MouseEvent) => {
         if (!started) {
           if (Math.hypot(ev.clientX - x0, ev.clientY - y0) < THRESHOLD) return;
           started = true;
-          document.body.style.userSelect = 'none';
-          setDrag({ src, x: ev.clientX, y: ev.clientY });
+          document.body.classList.add('dragging-pick');
+          lift();
+          setDrag(src);
         }
-        if (box.current) box.current.style.transform = `translate(${ev.clientX + 14}px, ${ev.clientY + 14}px)`;
+        place(ev.clientX, ev.clientY);
         const el = document.elementFromPoint(ev.clientX, ev.clientY)?.closest<HTMLElement>('[data-slot]');
         const i = el ? Number(el.dataset.slot) : null;
         target = i !== null && latest.current.canDrop(src, i) ? i : null;
@@ -57,7 +75,9 @@ export function useDragPick({
         document.removeEventListener('mousemove', move);
         document.removeEventListener('mouseup', up);
         document.removeEventListener('keydown', key);
-        document.body.style.userSelect = '';
+        document.body.classList.remove('dragging-pick');
+        ghost?.remove();
+        ghost = null;
         stop.current = null;
         setDrag(null);
         setOver(null);
@@ -81,16 +101,5 @@ export function useDragPick({
     [],
   );
 
-  const element = drag ? (
-    <div
-      ref={box}
-      className="drag-ghost"
-      aria-hidden="true"
-      style={{ transform: `translate(${drag.x + 14}px, ${drag.y + 14}px)` }}
-    >
-      {ghost(drag.src)}
-    </div>
-  ) : null;
-
-  return { start, drag: drag?.src ?? null, over, element, wasDrag: () => justDropped.current };
+  return { start, drag, over, wasDrag: () => justDropped.current };
 }

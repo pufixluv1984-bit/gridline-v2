@@ -47,3 +47,13 @@ export function installUiScale(): void {
   // Подстраховка: смена ширины без события resize (эмуляция устройства, панели браузера).
   if ('ResizeObserver' in window) new ResizeObserver(apply).observe(root);
 }
+
+/**
+ * Текущий масштаб body (zoom). Координаты мыши и getBoundingClientRect — в пикселях окна, а left/top/transform
+ * элементов внутри body умножаются на zoom: для плавающих элементов (меню списка, перетаскивание) делим на него.
+ */
+export function uiZoom(): number {
+  if (typeof document === 'undefined') return 1;
+  const z = parseFloat(getComputedStyle(document.body).zoom);
+  return Number.isFinite(z) && z > 0 ? z : 1;
+}

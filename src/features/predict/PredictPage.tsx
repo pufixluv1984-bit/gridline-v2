@@ -216,16 +216,6 @@ export default function PredictPage() {
         setActive(r.next);
       }
     },
-    ghost: (src) => {
-      const id = 'slot' in src ? picks[src.slot] : src.driver;
-      const d = id ? byId.get(id) ?? null : null;
-      return d ? (
-        <>
-          <DriverTile driver={d} size={32} />
-          <b>{d.name}</b>
-        </>
-      ) : null;
-    },
   });
   const slotProps = (i: number) => {
     const movable = slotOpen(i) && !!picks[i] && picks[i] !== NONE && SLOTS[i]!.block !== 'bonus';
@@ -241,10 +231,19 @@ export default function PredictPage() {
     };
   };
 
+  // Пока тащим над слотом, сетка уже показывает результат: пилот на новом месте, сосед — на освободившемся.
+  const shown: Picks =
+    dnd.drag && dnd.over !== null
+      ? 'slot' in dnd.drag
+        ? move(picks, dnd.drag.slot, dnd.over)
+        : pick(picks, dnd.over, dnd.drag.driver, slotOpen).picks
+      : picks;
   const slotView = (i: number) => {
-    const d = picks[i] && picks[i] !== NONE ? byId.get(picks[i]!) ?? null : null;
-    const none = picks[i] === NONE;
-    return { d, none, cls: `slot ${!slotOpen(i) ? '' : active === i ? 'act' : d || none ? '' : 'empty'}${dnd.over === i ? ' drop' : ''}${dnd.drag && 'slot' in dnd.drag && dnd.drag.slot === i ? ' dragging' : ''}` };
+    const d = shown[i] && shown[i] !== NONE ? byId.get(shown[i]!) ?? null : null;
+    const none = shown[i] === NONE;
+    const from = dnd.drag && 'slot' in dnd.drag && dnd.drag.slot === i;
+    const state = dnd.over === i ? ' drop' : from && (dnd.over === null || !shown[i]) ? ' dragging' : '';
+    return { d, none, cls: `slot ${!slotOpen(i) ? '' : active === i && !dnd.drag ? 'act' : d || none ? '' : 'empty'}${state}` };
   };
   const boostCls = (b: BoostBlock) => (extras.boost === b ? { borderColor: 'rgba(232,33,26,.5)', boxShadow: '0 0 34px rgba(232,33,26,.14)' } : undefined);
 
@@ -531,7 +530,6 @@ export default function PredictPage() {
       )}
       {toast === 'saved' && <Toast tone="g" title={t('predict.saved')} text={split ? t('predict.savedSplit') : t('predict.savedOld')} onDone={() => setToast(null)} />}
       {toast === 'failed' && <Toast tone="r" title={t('predict.saveFail')} text={t('predict.saveFailText')} onDone={() => setToast(null)} />}
-      {dnd.element}
     </>
   );
 }

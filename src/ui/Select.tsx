@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useId, useLayoutEffect, useRef, useState, type KeyboardEvent, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 import { driverPhoto, teamLogo, type TeamCode } from '@/lib/assets';
+import { uiZoom } from '@/lib/uiScale';
 import s from './Select.module.css';
 
 export type SelectOption<V extends string | number> = {
@@ -41,10 +42,14 @@ export function Select<V extends string | number>({ value, options, onChange, si
   const measure = useCallback(() => {
     const r = btn.current?.getBoundingClientRect();
     if (!r) return;
-    const below = window.innerHeight - r.bottom - 12;
-    const above = r.top - 12;
+    // Меню живёт в <body> с масштабом (zoom на больших экранах): пиксели окна переводим в его пиксели.
+    const z = uiZoom();
+    const vh = window.innerHeight / z;
+    const rect = { left: r.left / z, top: r.top / z, bottom: r.bottom / z, width: r.width / z };
+    const below = vh - rect.bottom - 12;
+    const above = rect.top - 12;
     const up = below < 240 && above > below;
-    setPlace({ left: r.left, top: up ? r.top - 6 : r.bottom + 6, width: r.width, up, max: Math.min(340, Math.max(160, up ? above : below)) });
+    setPlace({ left: rect.left, top: up ? rect.top - 6 : rect.bottom + 6, width: rect.width, up, max: Math.min(340, Math.max(160, up ? above : below)) });
   }, []);
 
   const show = () => {
@@ -159,7 +164,7 @@ export function Select<V extends string | number>({ value, options, onChange, si
             aria-label={aria['aria-label']}
             className={`${s.menu} ${place.up ? s.up : ''}`}
             style={{
-              left: Math.min(place.left, window.innerWidth - Math.max(place.width, 220) - 8),
+              left: Math.min(place.left, window.innerWidth / uiZoom() - Math.max(place.width, 220) - 8),
               top: place.top,
               minWidth: place.width,
               maxHeight: place.max,
