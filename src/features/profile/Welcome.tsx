@@ -1,7 +1,8 @@
-import { lazy, Suspense } from 'react';
+import { Suspense } from 'react';
+import { lazyScreen } from '@/lib/newVersion';
 import type { Profile } from '@/lib/api/profile';
 
-const WelcomeWindow = lazy(() => import('./WelcomeWindow'));
+const WelcomeWindow = lazyScreen(() => import('./WelcomeWindow'));
 
 /**
  * «Добро пожаловать» (макет Overlays, расширенный): при первом входе — аватар, ник, язык, любимые команда и пилот.

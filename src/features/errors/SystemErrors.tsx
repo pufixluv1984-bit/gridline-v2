@@ -68,11 +68,12 @@ export function CrashPage({ onRetry }: { onRetry: () => void }) {
 }
 
 /** Ловит сбой отрисовки экрана: вместо белой страницы — экран ошибки с «Повторить». */
-export class ScreenBoundary extends Component<{ children: ReactNode; resetKey: string }, { failed: boolean; key: string }> {
-  state = { failed: false, key: this.props.resetKey };
+export class ScreenBoundary extends Component<{ children: ReactNode; resetKey: string }, { failed: boolean; key: string; chunk: boolean }> {
+  state = { failed: false, key: this.props.resetKey, chunk: false };
 
-  static getDerivedStateFromError() {
-    return { failed: true };
+  static getDerivedStateFromError(error: unknown) {
+    // Не загрузился файл экрана: «Повторить» должен перезагрузить страницу — React.lazy помнит неудачу.
+    return { failed: true, chunk: isStaleChunkError(error) };
   }
 
   static getDerivedStateFromProps(props: { resetKey: string }, state: { failed: boolean; key: string }) {
@@ -87,7 +88,8 @@ export class ScreenBoundary extends Component<{ children: ReactNode; resetKey: s
   }
 
   render() {
-    if (this.state.failed) return <CrashPage onRetry={() => this.setState({ failed: false })} />;
+    if (this.state.failed)
+      return <CrashPage onRetry={() => (this.state.chunk ? window.location.reload() : this.setState({ failed: false }))} />;
     return this.props.children;
   }
 }

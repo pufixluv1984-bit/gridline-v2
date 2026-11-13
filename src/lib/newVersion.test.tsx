@@ -1,5 +1,7 @@
+import { render, screen } from '@testing-library/react';
+import { Suspense } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { isStaleChunkError, reloadForNewVersion } from './newVersion';
+import { isStaleChunkError, lazyScreen, reloadForNewVersion } from './newVersion';
 
 describe('новая версия сайта', () => {
   afterEach(() => {
@@ -20,5 +22,17 @@ describe('новая версия сайта', () => {
     expect(reloadForNewVersion()).toBe(true);
     expect(reloadForNewVersion()).toBe(false);
     expect(reload).toHaveBeenCalledOnce();
+  });
+
+  it('экран догружается, если сеть моргнула: две неудачи, потом успех', async () => {
+    let calls = 0;
+    const Screen = lazyScreen(async () => {
+      calls++;
+      if (calls < 3) throw new TypeError('Failed to fetch dynamically imported module: x.js');
+      return { default: () => <p>экран</p> };
+    });
+    render(<Suspense fallback={null}><Screen /></Suspense>);
+    expect(await screen.findByText('экран', {}, { timeout: 3000 })).toBeInTheDocument();
+    expect(calls).toBe(3);
   });
 });

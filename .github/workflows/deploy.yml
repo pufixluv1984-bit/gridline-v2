@@ -32,6 +32,28 @@ jobs:
           VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
           VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
       - run: pnpm check:bundle
+      # Файлы прошлых сборок остаются на сайте 14 дней. Иначе вкладка, открытая до выкладки, или старый
+      # index.html из кэша браузера (Pages отдаёт его с max-age=600) ссылаются на удалённые файлы экранов,
+      # и экран падает с «Failed to fetch dynamically imported module».
+      - name: Restore files of previous builds
+        uses: actions/cache/restore@v4
+        with:
+          path: old-assets
+          key: pages-assets-${{ github.run_id }}
+          restore-keys: pages-assets-
+      - name: Keep previous builds' files next to the new ones
+        run: |
+          mkdir -p old-assets
+          find old-assets -type f -mtime +14 -delete
+          cp -rpn old-assets/. dist/assets/
+          rm -rf old-assets
+          cp -rp dist/assets old-assets
+          echo "files in assets: $(ls dist/assets | wc -l)"
+      - name: Save files for the next build
+        uses: actions/cache/save@v4
+        with:
+          path: old-assets
+          key: pages-assets-${{ github.run_id }}
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:

@@ -3,6 +3,8 @@
 // imported module». Лечится перезагрузкой: страница возьмёт новую версию. Перезагружаем один раз за минуту,
 // чтобы не уйти в цикл, если файла правда нет (тогда покажется обычный экран ошибки).
 
+import { lazy, type ComponentType } from 'react';
+
 const KEY = 'gridline:reloaded-for-update';
 const WINDOW_MS = 60_000;
 
@@ -29,5 +31,27 @@ export function reloadForNewVersion(): boolean {
 export function installNewVersionReload(): void {
   window.addEventListener('vite:preloadError', (e) => {
     if (reloadForNewVersion()) e.preventDefault();
+  });
+}
+
+/**
+ * React.lazy с повторами: если файл экрана не загрузился (моргнула сеть), пробуем ещё два раза;
+ * если файла нет совсем (сайт обновился) — перезагружаем страницу на новую версию.
+ * Обычный React.lazy запоминает неудачу навсегда, и экран не открывается до перезагрузки вкладки.
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- как у самого React.lazy
+export function lazyScreen<T extends ComponentType<any>>(load: () => Promise<{ default: T }>) {
+  return lazy(async () => {
+    for (let attempt = 0; ; attempt++) {
+      try {
+        return await load();
+      } catch (e) {
+        if (attempt >= 2) {
+          if (isStaleChunkError(e)) reloadForNewVersion();
+          throw e;
+        }
+        await new Promise((r) => setTimeout(r, 500 * (attempt + 1)));
+      }
+    }
   });
 }
