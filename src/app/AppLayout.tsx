@@ -1,6 +1,6 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { useEffect } from 'react';
-import { Outlet, useLocation } from 'react-router-dom';
+import { useEffect, useLayoutEffect } from 'react';
+import { Outlet, useLocation, useNavigationType } from 'react-router-dom';
 import { NetworkErrorPage, ScreenBoundary } from '@/features/errors/SystemErrors';
 import { Welcome } from '@/features/profile/Welcome';
 import { setOffline, useSystemStatus } from '@/lib/systemStatus';
@@ -42,6 +42,11 @@ export function AppLayout() {
 
   const net = useSystemStatus();
   const { pathname } = useLocation();
+  // Новый экран открывается сверху. Кнопка «назад» (POP) — без прокрутки: браузер сам вернёт место.
+  const navType = useNavigationType();
+  useLayoutEffect(() => {
+    if (navType !== 'POP') window.scrollTo(0, 0);
+  }, [pathname, navType]);
   const retry = () => {
     setOffline(false);
     void qc.refetchQueries({ type: 'active' });

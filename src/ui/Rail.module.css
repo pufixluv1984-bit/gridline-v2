@@ -143,43 +143,44 @@
 }
 
 /* ───────── Раскрытое состояние ───────── */
+/* :not(.hush): только что нажали на пункт — меню свёрнуто, пока мышь не уйдёт (Rail.tsx). */
 .open,
-.rail:has(:focus-visible) {
+.rail:not(.hush):has(:focus-visible) {
   width: var(--open);
 }
 @media (hover: hover) {
-  .rail:hover {
+  .rail:not(.hush):hover {
     width: var(--open);
   }
-  .rail:hover::before {
+  .rail:not(.hush):hover::before {
     transform: none;
   }
-  .rail:hover::after {
+  .rail:not(.hush):hover::after {
     transform: translateX(calc(var(--open) - 1px));
   }
-  .rail:hover .shade {
+  .rail:not(.hush):hover .shade {
     opacity: 1;
   }
-  .rail:hover .label {
+  .rail:not(.hush):hover .label {
     opacity: 1;
     visibility: visible;
     transition: opacity 0.2s ease, visibility 0s;
   }
 }
 .open::before,
-.rail:has(:focus-visible)::before {
+.rail:not(.hush):has(:focus-visible)::before {
   transform: none;
 }
 .open::after,
-.rail:has(:focus-visible)::after {
+.rail:not(.hush):has(:focus-visible)::after {
   transform: translateX(calc(var(--open) - 1px));
 }
 .open .shade,
-.rail:has(:focus-visible) .shade {
+.rail:not(.hush):has(:focus-visible) .shade {
   opacity: 1;
 }
 .open .label,
-.rail:has(:focus-visible) .label {
+.rail:not(.hush):has(:focus-visible) .label {
   opacity: 1;
   visibility: visible;
   transition: opacity 0.2s ease, visibility 0s;
@@ -213,7 +214,7 @@
   visibility: visible;
 }
 :global(html[data-wide]) .rail .shade,
-:global(html[data-wide]) .rail:hover .shade {
+:global(html[data-wide]) .rail:not(.hush):hover .shade {
   opacity: 0;
 }
 :global(html[data-wide]) .burger {
