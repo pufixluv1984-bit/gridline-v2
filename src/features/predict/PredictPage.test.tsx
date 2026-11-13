@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { cleanup, render, screen } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { PredictScreen } from '@/lib/api/screens';
@@ -65,5 +65,33 @@ describe('PredictPage', () => {
     current = screenData(true, false);
     expect(await renderPage()).toBeInTheDocument();
     expect(await screen.findByText(/Спринт · топ-3/)).toBeInTheDocument();
+  });
+
+  it('пилота можно перетащить на другое место: обмен в топ-10', async () => {
+    current = screenData(false, true);
+    await renderPage();
+    // Метки P2/P3 есть и в квалификации; топ-10 гонки идёт после неё — берём последнюю.
+    const slot = (pos: string) => screen.getAllByText(pos, { selector: 'span.num' }).at(-1)!.closest('button')!;
+    expect(slot('P1')).toHaveTextContent('Пилот norris');
+    const target = slot('P2');
+    document.elementFromPoint = () => target; // в jsdom нет раскладки
+    fireEvent.mouseDown(slot('P1'), { button: 0, clientX: 10, clientY: 10 });
+    fireEvent.mouseMove(document, { clientX: 40, clientY: 60 });
+    expect(target).toHaveClass('drop');
+    fireEvent.mouseUp(document);
+    expect(slot('P1')).toHaveTextContent('Пилот piastri');
+    expect(slot('P2')).toHaveTextContent('Пилот norris');
+  });
+
+  it('короткое движение — обычный клик, а не перетаскивание', async () => {
+    current = screenData(false, true);
+    await renderPage();
+    const p1 = screen.getAllByText('P1', { selector: 'span.num' }).at(-1)!.closest('button')!;
+    fireEvent.mouseDown(p1, { button: 0, clientX: 10, clientY: 10 });
+    fireEvent.mouseMove(document, { clientX: 12, clientY: 11 });
+    fireEvent.mouseUp(document);
+    fireEvent.click(p1);
+    expect(p1).toHaveAttribute('aria-pressed', 'true');
+    expect(p1).toHaveTextContent('Пилот norris');
   });
 });

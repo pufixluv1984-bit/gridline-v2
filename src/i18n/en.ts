@@ -431,6 +431,7 @@ const en: Dict = {
   'predict.pick': 'Pick',
   'predict.pickDriver': 'Pick a driver',
   'predict.picking': 'Picking now',
+  'predict.dragHint': 'Hold and drag to another position',
   'predict.bonus': 'Bonus',
   'predict.auto': 'Scored automatically',
   'predict.nobody': 'nobody',

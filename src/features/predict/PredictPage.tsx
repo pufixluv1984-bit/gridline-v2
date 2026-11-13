@@ -11,10 +11,13 @@ import { IconTarget } from '@/ui/icons';
 import { Content, PageTitle, PillLink, Toolbar, ToolbarDivider } from '@/ui/Page';
 import p from '@/ui/Page.module.css';
 import {
+  canMove,
+  move,
   FIRST_DNF, NONE, SLOTS, blockState, clear, emptyExtras, emptyPicks, extrasFrom, filledIn, fromPrediction, isComplete, pick, sameExtras,
   samePicks, toPrediction, usedInBlock, type Block, type BoostBlock, type Extras, type Picks,
 } from './picks';
 import { BoostPicker, YesNo } from './Bonus';
+import { useDragPick } from './useDragPick';
 import { Notices, Toast } from '@/ui/Toast';
 import { Modal } from '@/ui/Modal';
 import m from '@/ui/Modal.module.css';
@@ -201,10 +204,47 @@ export default function PredictPage() {
     else setActive(i);
   };
 
+  // Перетаскивание мышью: пилот из слота в слот того же блока (обмен или переезд) или из списка пилотов в любой слот.
+  const dnd = useDragPick({
+    canDrop: (src, to) => slotOpen(to) && ('slot' in src ? slotOpen(src.slot) && canMove(picks, src.slot, to) : true),
+    onDrop: (src, to) => {
+      if ('slot' in src) {
+        setPicks((cur) => move(cur, src.slot, to));
+      } else {
+        const r = pick(picks, to, src.driver, slotOpen);
+        setPicks(r.picks);
+        setActive(r.next);
+      }
+    },
+    ghost: (src) => {
+      const id = 'slot' in src ? picks[src.slot] : src.driver;
+      const d = id ? byId.get(id) ?? null : null;
+      return d ? (
+        <>
+          <DriverTile driver={d} size={32} />
+          <b>{d.name}</b>
+        </>
+      ) : null;
+    },
+  });
+  const slotProps = (i: number) => {
+    const movable = slotOpen(i) && !!picks[i] && picks[i] !== NONE && SLOTS[i]!.block !== 'bonus';
+    return {
+      'data-slot': i,
+      onClick: () => {
+        if (!dnd.wasDrag()) tapSlot(i);
+      },
+      onMouseDown: movable ? dnd.start({ slot: i }) : undefined,
+      disabled: !slotOpen(i),
+      'aria-pressed': active === i,
+      title: movable ? t('predict.dragHint') : undefined,
+    };
+  };
+
   const slotView = (i: number) => {
     const d = picks[i] && picks[i] !== NONE ? byId.get(picks[i]!) ?? null : null;
     const none = picks[i] === NONE;
-    return { d, none, cls: `slot ${!slotOpen(i) ? '' : active === i ? 'act' : d || none ? '' : 'empty'}` };
+    return { d, none, cls: `slot ${!slotOpen(i) ? '' : active === i ? 'act' : d || none ? '' : 'empty'}${dnd.over === i ? ' drop' : ''}${dnd.drag && 'slot' in dnd.drag && dnd.drag.slot === i ? ' dragging' : ''}` };
   };
   const boostCls = (b: BoostBlock) => (extras.boost === b ? { borderColor: 'rgba(232,33,26,.5)', boxShadow: '0 0 34px rgba(232,33,26,.14)' } : undefined);
 
@@ -267,7 +307,7 @@ export default function PredictPage() {
                 {SLOTS.slice(0, 3).map((s) => {
                   const v = slotView(s.index);
                   return (
-                    <button key={s.index} type="button" className={v.cls} style={{ padding: '10px 14px', gap: 12, textAlign: 'left' }} onClick={() => tapSlot(s.index)} disabled={!slotOpen(s.index)} aria-pressed={active === s.index}>
+                    <button key={s.index} type="button" className={v.cls} style={{ padding: '10px 14px', gap: 12, textAlign: 'left' }} {...slotProps(s.index)}>
                       <span className="num" style={{ width: 44, fontSize: 15, fontWeight: 600, color: 'var(--gold)' }}>{s.label}</span>
                       <DriverTile driver={v.d} size={40} />
                       <div style={{ flex: 1, minWidth: 0 }}>
@@ -286,7 +326,7 @@ export default function PredictPage() {
                     {SLOTS.slice(15, 18).map((s) => {
                       const v = slotView(s.index);
                       return (
-                        <button key={s.index} type="button" className={v.cls} style={{ padding: '10px 14px', gap: 12, textAlign: 'left' }} onClick={() => tapSlot(s.index)} disabled={!slotOpen(s.index)} aria-pressed={active === s.index}>
+                        <button key={s.index} type="button" className={v.cls} style={{ padding: '10px 14px', gap: 12, textAlign: 'left' }} {...slotProps(s.index)}>
                           <span className="num" style={{ width: 56, fontSize: 15, fontWeight: 600, color: 'var(--gold)' }}>{s.label}</span>
                           <DriverTile driver={v.d} size={40} />
                           <div style={{ flex: 1, minWidth: 0 }}>
@@ -305,7 +345,7 @@ export default function PredictPage() {
                 {SLOTS.slice(3, 13).map((s) => {
                   const v = slotView(s.index);
                   return (
-                    <button key={s.index} type="button" className={v.cls} style={{ padding: '10px 14px', gap: 12, textAlign: 'left' }} onClick={() => tapSlot(s.index)} disabled={!slotOpen(s.index)} aria-pressed={active === s.index}>
+                    <button key={s.index} type="button" className={v.cls} style={{ padding: '10px 14px', gap: 12, textAlign: 'left' }} {...slotProps(s.index)}>
                       <span className="num" style={{ width: 36, fontSize: 18, fontWeight: 600, color: s.pos <= 3 ? 'var(--gold)' : 'var(--mute)' }}>P{s.pos}</span>
                       <DriverTile driver={v.d} size={40} />
                       <div style={{ flex: 1, minWidth: 0 }}>
@@ -326,7 +366,7 @@ export default function PredictPage() {
                   const s = SLOTS[i]!;
                   const v = slotView(i);
                   return (
-                    <button key={i} type="button" className={v.cls} style={{ flexDirection: 'column', alignItems: 'center', textAlign: 'center', padding: '16px 12px', gap: 10, ...boostCls('bonus') }} onClick={() => tapSlot(i)} disabled={!slotOpen(i)} aria-pressed={active === i}>
+                    <button key={i} type="button" className={v.cls} style={{ flexDirection: 'column', alignItems: 'center', textAlign: 'center', padding: '16px 12px', gap: 10, ...boostCls('bonus') }} {...slotProps(i)}>
                       <div className="eyebrow">{s.label}</div>
                       {v.none ? (
                         <div className="ph" style={{ width: 72, height: 72, borderRadius: 22, ['--c' as string]: '#7fe0a0' }}><span className="npc" style={{ fontSize: 15 }}>{t('predict.nobody')}</span></div>
@@ -366,7 +406,8 @@ export default function PredictPage() {
                       const used = usedInBlock(picks, active, d.id);
                       const here = picks[active] === d.id;
                       return (
-                        <button key={d.id} type="button" className={`slot ${here ? 'act' : ''}`} style={{ flexDirection: 'column', textAlign: 'center', padding: '12px 8px', gap: 6 }} onClick={() => choose(d.id)} title={d.name}>
+                        <button key={d.id} type="button" className={`slot ${here ? 'act' : ''}`} style={{ flexDirection: 'column', textAlign: 'center', padding: '12px 8px', gap: 6 }} onClick={() => { if (!dnd.wasDrag()) choose(d.id); }} title={d.name}
+                          onMouseDown={dnd.start({ driver: d.id })}>
                           <DriverTile driver={d} size={52} />
                           <div style={{ fontSize: 13, fontWeight: 600 }}>{d.code}</div>
                           <div style={{ fontSize: 10, letterSpacing: '.06em', textTransform: 'uppercase', color: '#ffb800', minHeight: 12 }}>
@@ -490,6 +531,7 @@ export default function PredictPage() {
       )}
       {toast === 'saved' && <Toast tone="g" title={t('predict.saved')} text={split ? t('predict.savedSplit') : t('predict.savedOld')} onDone={() => setToast(null)} />}
       {toast === 'failed' && <Toast tone="r" title={t('predict.saveFail')} text={t('predict.saveFailText')} onDone={() => setToast(null)} />}
+      {dnd.element}
     </>
   );
 }

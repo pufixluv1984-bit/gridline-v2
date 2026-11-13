@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { blockState, emptyExtras, emptyPicks, extrasFrom, filledIn, fromPrediction, isComplete, pick, sameExtras, toPrediction, usedInBlock } from './picks';
+import { blockState, canMove, emptyExtras, emptyPicks, extrasFrom, filledIn, fromPrediction, isComplete, move, pick, sameExtras, toPrediction, usedInBlock } from './picks';
 
 describe('picks', () => {
   it('ставит пилота и переходит к следующему пустому слоту', () => {
@@ -92,5 +92,22 @@ describe('спринт и дедлайны по блокам (фаза 5)', () =
     expect(r.next).toBe(4);
     const r2 = pick(emptyPicks(), 14, 'none', (i) => i >= 3 && i <= 14);
     expect(r2.next).toBe(3);
+  });
+
+  it('перетаскивание: на занятое место — обмен, на пустое — переезд', () => {
+    let p = pick(emptyPicks(), 3, 'max').picks; // P1
+    p = pick(p, 4, 'kimi').picks; // P2
+    expect(move(p, 3, 4).slice(3, 6)).toEqual(['kimi', 'max', null]);
+    expect(move(p, 4, 5).slice(3, 6)).toEqual(['max', null, 'kimi']);
+  });
+
+  it('перетаскивание только внутри блока и не для бонусов', () => {
+    let p = pick(emptyPicks(), 0, 'lec').picks; // поул
+    p = pick(p, 13, 'nor').picks; // быстрый круг
+    expect(canMove(p, 0, 3)).toBe(false); // квалификация → гонка
+    expect(move(p, 0, 3)).toBe(p);
+    expect(canMove(p, 13, 14)).toBe(false); // бонусы независимы
+    expect(canMove(p, 1, 2)).toBe(false); // пустой слот не тащится
+    expect(canMove(p, 0, 2)).toBe(true);
   });
 });

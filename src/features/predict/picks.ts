@@ -118,6 +118,18 @@ export function pick(
   return { picks: out, next };
 }
 
+/** Можно ли перетащить пилота из слота from в слот to: только внутри квалификации, спринта или топ-10. */
+export const canMove = (picks: Picks, from: number, to: number) =>
+  from !== to && !!picks[from] && blockOf(from) === blockOf(to) && uniqueBlock(blockOf(from));
+
+/** Перетаскивание между слотами блока: на занятое место — обмен, на пустое — переезд. */
+export function move(picks: Picks, from: number, to: number): Picks {
+  if (!canMove(picks, from, to)) return picks;
+  const out = picks.slice();
+  [out[from], out[to]] = [out[to] ?? null, out[from] ?? null];
+  return out;
+}
+
 export function clear(picks: Picks, index: number): Picks {
   const out = picks.slice();
   out[index] = null;

@@ -431,6 +431,7 @@ const ru = {
   'predict.pick': 'Выбрать',
   'predict.pickDriver': 'Выбери пилота',
   'predict.picking': 'Выбираешь сейчас',
+  'predict.dragHint': 'Зажми и перетащи на другое место',
   'predict.bonus': 'Бонус',
   'predict.auto': 'Считается автоматически',
   'predict.nobody': 'никто',

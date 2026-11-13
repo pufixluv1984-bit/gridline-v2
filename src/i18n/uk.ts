@@ -431,6 +431,7 @@ const uk: Dict = {
   'predict.pick': 'Обрати',
   'predict.pickDriver': 'Обери пілота',
   'predict.picking': 'Обираєш зараз',
+  'predict.dragHint': 'Затисни й перетягни на інше місце',
   'predict.bonus': 'Бонус',
   'predict.auto': 'Рахується автоматично',
   'predict.nobody': 'ніхто',
