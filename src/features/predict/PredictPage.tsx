@@ -23,6 +23,7 @@ import { Modal } from '@/ui/Modal';
 import m from '@/ui/Modal.module.css';
 import { avatarOf } from '@/lib/avatar';
 import { t, tn, type Key } from '@/i18n';
+import { useLeaveGuard } from '@/ui/useLeaveGuard';
 
 // Таблицы правил — ключи словаря и очки; текст берётся на языке сайта при отрисовке.
 const RACE_RULES: [Key, string][] = [
@@ -191,6 +192,9 @@ export default function PredictPage() {
       void qc.invalidateQueries({ queryKey: ['screen'] });
     },
   });
+
+  // Неотправленные изменения: предупредить перед уходом со страницы или закрытием вкладки.
+  const leaveGuard = useLeaveGuard(open && dirty && !save.isPending, t('leave.predict'));
 
   const choose = (driverId: string) => {
     if (!slotOpen(active)) return;
@@ -530,6 +534,7 @@ export default function PredictPage() {
       )}
       {toast === 'saved' && <Toast tone="g" title={t('predict.saved')} text={split ? t('predict.savedSplit') : t('predict.savedOld')} onDone={() => setToast(null)} />}
       {toast === 'failed' && <Toast tone="r" title={t('predict.saveFail')} text={t('predict.saveFailText')} onDone={() => setToast(null)} />}
+      {leaveGuard}
     </>
   );
 }

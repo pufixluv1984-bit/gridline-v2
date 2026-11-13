@@ -35,6 +35,7 @@ const ResultsPage = lazyScreen(() => import('@/features/results/ResultsPage'));
 const TracksPage = lazyScreen(() => import('@/features/schedule/TracksPage'));
 const WaitingPage = lazyScreen(() => import('@/features/lobby/WaitingPage'));
 const AdminResultsPage = lazyScreen(() => import('@/features/admin/AdminResultsPage'));
+const AdminErrorsPage = lazyScreen(() => import('@/features/admin/AdminErrorsPage'));
 const BreakdownPage = lazyScreen(() => import('@/features/breakdown/BreakdownPage'));
 const JoinByCodePage = lazyScreen(() => import('@/features/lobby/JoinPage').then((m) => ({ default: m.JoinByCodePage })));
 
@@ -109,6 +110,7 @@ export function App() {
                 {/* Правила начисления прогнозов — на экране прогноза (карточки справа). */}
                 <Route path="rules" element={<Navigate to="/predict" replace />} />
                 <Route path="admin/results" element={<AdminResultsPage />} />
+                <Route path="admin/errors" element={<AdminErrorsPage />} />
                 <Route path="fantasy" element={<FantasyLeaderboard />} />
                 <Route path="fantasy/squad" element={<FantasySquad />} />
                 <Route path="fantasy/market" element={<FantasyMarket />} />

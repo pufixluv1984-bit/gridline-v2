@@ -141,6 +141,13 @@ export default function SettingsPage() {
                 </div>
                 <Link className={`${b.cta} ${b.sm} ${b.ghost}`} to="/admin/results">{t('common.open')}</Link>
               </div>
+              <div className={s.kvr}>
+                <div>
+                  <div className={s.t}>{t('adm.errors')}</div>
+                  <div className={s.s}>{t('adm.errorsSub')}</div>
+                </div>
+                <Link className={`${b.cta} ${b.sm} ${b.ghost}`} to="/admin/errors">{t('common.open')}</Link>
+              </div>
             </Card>
           )}
           <Card i={2} className={`${s.col} ${s.danger}`}>

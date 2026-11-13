@@ -23,8 +23,8 @@ select is((select nickname from profiles where id = '11111111-1111-1111-1111-111
   'ник из формы регистрации');
 select is((select nickname from profiles where id = '33333333-3333-3333-3333-333333333333'), 'bЯнb',
   'ник из Google/Discord очищается от лишних символов');
-select is((select nickname from profiles where id = '44444444-4444-4444-4444-444444444444'), 'Игрок-4444',
-  'пустой ник заменяется на «Игрок-xxxx»');
+select is((select nickname from profiles where id = '44444444-4444-4444-4444-444444444444'), 'Player-4444',
+  'пустой ник заменяется на «Player-xxxx» (миграция 0026)');
 
 insert into seasons (year, is_current) values (2026, true) on conflict (year) do update set is_current = true;
 insert into events (season_id, round, slug, name, circuit, country)

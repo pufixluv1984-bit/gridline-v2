@@ -21,6 +21,11 @@ const en: Dict = {
   'lang.title': 'Language',
   'lang.help': 'Site language on all your devices.',
   'lang.aria': 'Site language',
+  'leave.title': 'Leave without saving?',
+  'leave.predict': 'Your prediction changes haven’t been sent and will be lost.',
+  'leave.squad': 'Your squad changes haven’t been saved and will be lost.',
+  'leave.stay': 'Stay',
+  'leave.go': 'Leave without saving',
 
   // ── Sidebar ──
   'nav.aria': 'Navigation',
@@ -1149,6 +1154,14 @@ const en: Dict = {
 
   // ── этап 2: админка ──
   'adm.title': 'Admin',
+  'adm.errors': 'Site errors',
+  'adm.errorsSub': 'Crashes players hit in the last 30 days',
+  'adm.errorsNote': 'Latest 100, kept for 30 days',
+  'adm.errorsNone': 'No errors',
+  'adm.guest': 'signed out',
+  'adm.kind.crash': 'Screen crash',
+  'adm.kind.error': 'Error',
+  'adm.kind.rejection': 'Request error',
   'adm.manual': 'Manual entry',
   'adm.manualResult': 'Manual result entry',
   'adm.only': 'Site admin only',

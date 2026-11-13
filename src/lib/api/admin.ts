@@ -25,3 +25,22 @@ export async function adminSetSafetyCar(ev: number, value: boolean) {
   if (error) throw new Error(error.code === '42501' ? t('admin.noRightsShort') : t('admin.saveFailedShort'));
   return data as number;
 }
+
+export type ClientError = {
+  id: number;
+  at: string;
+  kind: 'crash' | 'error' | 'rejection';
+  message: string;
+  stack: string | null;
+  path: string | null;
+  release: string | null;
+  agent: string | null;
+  nickname: string | null;
+};
+
+/** Журнал ошибок сайта: последние 100 сбоев (только админ сайта; проверяет база). */
+export async function clientErrors(): Promise<ClientError[]> {
+  const { data, error } = await getSupabase().rpc('client_errors_screen' as never);
+  if (error) throw error;
+  return (data ?? []) as unknown as ClientError[];
+}

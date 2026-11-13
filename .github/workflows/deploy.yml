@@ -31,6 +31,8 @@ jobs:
         env:
           VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
           VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+          # Версия сборки в журнале ошибок: по ней видно, на какой выкладке случился сбой.
+          VITE_RELEASE: ${{ github.sha }}
       - run: pnpm check:bundle
       # Файлы прошлых сборок остаются на сайте 14 дней. Иначе вкладка, открытая до выкладки, или старый
       # index.html из кэша браузера (Pages отдаёт его с max-age=600) ссылаются на удалённые файлы экранов,

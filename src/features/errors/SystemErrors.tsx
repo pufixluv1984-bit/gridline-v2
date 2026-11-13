@@ -4,6 +4,7 @@ import a from '@/features/auth/Auth.module.css';
 import s from './NotFound.module.css';
 import { t } from '@/i18n';
 import { isStaleChunkError, reloadForNewVersion } from '@/lib/newVersion';
+import { reportError } from '@/lib/errorReport';
 
 const IconWifiOff = () => (
   <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden="true">
@@ -85,6 +86,7 @@ export class ScreenBoundary extends Component<{ children: ReactNode; resetKey: s
     // Сайт обновился, пока вкладка была открыта: файла экрана старой версии уже нет — берём новую версию.
     if (isStaleChunkError(error) && reloadForNewVersion()) return;
     console.error('Screen crash', error, info.componentStack);
+    reportError('crash', error);
   }
 
   render() {

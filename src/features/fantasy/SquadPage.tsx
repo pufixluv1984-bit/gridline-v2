@@ -22,6 +22,7 @@ import pg from '@/ui/Page.module.css';
 import { FantasyTabs, IconCheckSm, IconSwap, IconX } from './FantasyTabs';
 import { t as tr } from '@/i18n';
 import { DriverIcon, Select } from '@/ui/Select';
+import { useLeaveGuard } from '@/ui/useLeaveGuard';
 
 const TOUR_KEY = 'gridline.fantasy.tour.hidden';
 const readTour = () => {
@@ -111,6 +112,8 @@ function SquadEditor({ data }: { data: SquadScreen }) {
     },
     onError: (e) => setToast({ tone: 'r', title: tr('fan.sq.notSaved'), text: (e as Error).message }),
   });
+  // Изменения в составе не сохранены: предупредить перед уходом со страницы или закрытием вкладки.
+  const leaveGuard = useLeaveGuard(!locked && JSON.stringify(draft) !== JSON.stringify(initial) && !save.isPending, tr('leave.squad'));
 
   const toggleDriver = (id: string) =>
     setDraft((d) => {
@@ -390,6 +393,7 @@ function SquadEditor({ data }: { data: SquadScreen }) {
         {data.squad?.auto && <div className="mute" style={{ fontSize: 13 }}>{tr('fan.sq.auto')}</div>}
       </Content>
       {toast && <Toast tone={toast.tone} title={toast.title} text={toast.text} onDone={() => setToast(null)} />}
+      {leaveGuard}
     </>
   );
 }
