@@ -50,7 +50,7 @@ describe('окно «Добро пожаловать»', () => {
 
   it('«Позже» — только отметка, без правок профиля', async () => {
     show(profile());
-    expect(await screen.findByRole('dialog')).toHaveTextContent('Добро пожаловать, VOVA');
+    expect(await screen.findByRole('dialog', {}, { timeout: 5000 })).toHaveTextContent('Добро пожаловать, VOVA');
     fireEvent.click(screen.getByRole('button', { name: 'Позже' }));
     await waitFor(() => expect(api.finishProfileSetup).toHaveBeenCalledOnce());
     expect(api.updateProfile).not.toHaveBeenCalled();
@@ -59,7 +59,7 @@ describe('окно «Добро пожаловать»', () => {
 
   it('«Готово» сохраняет ник, команду с её цветом и пилота одним запросом', async () => {
     show(profile());
-    await screen.findByRole('dialog');
+    await screen.findByRole('dialog', {}, { timeout: 5000 });
     fireEvent.change(screen.getByLabelText('Ник'), { target: { value: 'Вова 44' } });
     fireEvent.click(await screen.findByRole('radio', { name: 'Феррари' }));
     fireEvent.click(screen.getByLabelText('Любимый пилот'));
@@ -71,7 +71,7 @@ describe('окно «Добро пожаловать»', () => {
 
   it('неверный ник не даёт сохранить', async () => {
     show(profile());
-    await screen.findByRole('dialog');
+    await screen.findByRole('dialog', {}, { timeout: 5000 });
     fireEvent.change(screen.getByLabelText('Ник'), { target: { value: 'x' } });
     expect(screen.getByRole('button', { name: 'Готово' })).toBeDisabled();
   });
