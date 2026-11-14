@@ -4,9 +4,11 @@ import { driverPhoto, teamBadge, teamCar, teamLogo } from './assets';
 describe('assets', () => {
   it('фото пилота из webp-папки, регистр не важен', () => {
     expect(driverPhoto('ver')).toBe('/assets/webp/drivers/VER.webp');
+    // Набор 14.11.2026: появились фото Линдблада и Камары.
+    expect(driverPhoto('LIN')).toBe('/assets/webp/drivers/LIN.webp');
+    expect(driverPhoto('cam')).toBe('/assets/webp/drivers/CAM.webp');
   });
   it('нет фото — null (монограмма)', () => {
-    expect(driverPhoto('LIN')).toBeNull();
     expect(driverPhoto('XXX')).toBeNull();
   });
   it('болид и логотип по коду команды', () => {
