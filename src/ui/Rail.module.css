@@ -83,8 +83,13 @@
   border: 1px solid transparent;
   transition: background 0.25s, color 0.25s;
 }
+.item {
+  transition: background 0.2s;
+}
+/* Нажимается вся строка (иконка и подпись) — и подсвечивается вся строка, а не только квадрат иконки. */
 .item:hover {
   color: #fff;
+  background: rgba(255, 255, 255, 0.045);
 }
 .item:hover .ico {
   background: rgba(255, 255, 255, 0.06);

@@ -147,7 +147,8 @@ export default function LeaguePage() {
                 <span className="mute">{t('league.code')}</span>
                 <b className="num" style={{ letterSpacing: '.1em' }}>{league.invite_code}</b>
               </div>
-              <button type="button" className="mini go" onClick={copy}>{copied ? t('league.copied') : t('league.copy')}</button>
+              {/* Та же высота, что у плашки с кодом рядом (44px). */}
+              <button type="button" className="mini go" style={{ height: 44, padding: '0 20px', fontSize: 14 }} onClick={copy}>{copied ? t('league.copied') : t('league.copy')}</button>
             </div>
           )}
         </section>

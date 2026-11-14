@@ -1,4 +1,5 @@
-import { QueryCache, QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { MutationCache, QueryCache, QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { installTabSync } from '@/lib/tabSync';
 import { isNetworkError, setOffline } from '@/lib/systemStatus';
 import { Suspense, type ReactNode } from 'react';
 import { HashRouter, Navigate, Route, Routes } from 'react-router-dom';
@@ -47,10 +48,13 @@ const queryClient = new QueryClient({
     },
     onSuccess: () => setOffline(false),
   }),
+  // Любое успешное изменение — сигнал другим вкладкам обновить экраны лиг (src/lib/tabSync.ts).
+  mutationCache: new MutationCache({ onSuccess: () => notifyTabs() }),
   defaultOptions: {
     queries: { staleTime: 30_000, retry: 1, refetchOnWindowFocus: false },
   },
 });
+const notifyTabs = installTabSync(queryClient);
 
 // Смена языка: названия из базы в уже загруженных данных переводятся на месте, без повторных запросов.
 const retranslateCache = () => {

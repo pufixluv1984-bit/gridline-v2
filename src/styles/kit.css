@@ -4,7 +4,9 @@
 .card {
   position: relative;
   border-radius: var(--r-card);
-  background: var(--card-grad);
+  /* Градиент из макета, но не выше 560px: у высоких карточек, меняющих высоту (список пилотов ↔ конструкторов),
+     цвет фона в середине не «прыгает», ниже — ровный нижний цвет градиента. У карточек ниже 560px — как в макете. */
+  background: var(--card-grad) top / 100% min(100%, 560px) no-repeat, #0d0d10;
   border: 1px solid var(--line);
   padding: 24px;
   box-shadow: var(--shadow-card);

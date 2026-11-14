@@ -247,11 +247,11 @@ function SquadEditor({ data }: { data: SquadScreen }) {
                 const id = draft.drivers[i];
                 const d = id ? drivers.get(id) : undefined;
                 if (!d) {
-                  return <div key={`e${i}`} className="slot empty" style={{ minHeight: 82 }}><span className="mute" style={{ fontSize: 14 }}>{tr('fan.sq.emptyDriver')}</span></div>;
+                  return <div key={`e${i}`} className="slot empty" style={{ minHeight: SLOT_H.driver }}><span className="mute" style={{ fontSize: 14 }}>{tr('fan.sq.emptyDriver')}</span></div>;
                 }
                 const boosted = draft.drs === d.id;
                 return (
-                  <div key={d.id} className={`slot ${boosted ? 'boost' : ''}`}>
+                  <div key={d.id} className={`slot ${boosted ? 'boost' : ''}`} style={{ minHeight: SLOT_H.driver }}>
                     <DriverTile driver={{ code: d.code, number: d.number, color: d.color ?? '#3a3a42', team_code: d.team_code ?? '', name: d.name }} size={68} />
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <div style={{ fontSize: 16, fontWeight: 600 }}>
@@ -287,11 +287,11 @@ function SquadEditor({ data }: { data: SquadScreen }) {
                 const id = draft.teams[i];
                 const t = id ? teams.get(id) : undefined;
                 if (!t) {
-                  return <div key={`t${i}`} className="slot empty" style={{ minHeight: 82 }}><span className="mute" style={{ fontSize: 14 }}>{tr('fan.sq.emptyTeam')}</span></div>;
+                  return <div key={`t${i}`} className="slot empty" style={{ minHeight: SLOT_H.team }}><span className="mute" style={{ fontSize: 14 }}>{tr('fan.sq.emptyTeam')}</span></div>;
                 }
                 const car = teamCar(t.code as TeamCode);
                 return (
-                  <div key={t.id} className="slot">
+                  <div key={t.id} className="slot" style={{ minHeight: SLOT_H.team }}>
                     <div style={{ width: 132, flex: 'none', display: 'flex', justifyContent: 'center', filter: 'drop-shadow(0 6px 16px rgba(0,0,0,.5))' }}>
                       {car && <img src={car} alt="" style={{ width: '100%', height: 'auto' }} loading="lazy" />}
                     </div>
@@ -397,6 +397,9 @@ function SquadEditor({ data }: { data: SquadScreen }) {
     </>
   );
 }
+
+/** Высота слота состава, пустого и заполненного одинаково: «Добавить» / «Убрать» не сдвигает экран ниже. */
+const SLOT_H = { driver: 98, team: 82 } as const; // пилот: фото 68 + отступы 28 + рамка 2
 
 function Step({ n, title, text }: { n: number; title: string; text: string }) {
   return (
