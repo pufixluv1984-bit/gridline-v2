@@ -5,6 +5,15 @@ import { ITEMS, pickActive } from './railNav';
 import s from './Rail.module.css';
 import { t } from '@/i18n';
 
+const PICKED_KEY = 'gridline:nav';
+const readPicked = (): string | null => {
+  try {
+    return sessionStorage.getItem(PICKED_KEY);
+  } catch {
+    return null;
+  }
+};
+
 /**
  * Боковое меню: зафиксировано у левого края окна. В покое только иконки; при наведении мышью
  * и при фокусе с клавиатуры раскрывается поверх контента и показывает подписи. На сенсорных экранах
@@ -13,7 +22,16 @@ import { t } from '@/i18n';
 export function Rail({ avatar }: { avatar: ReactNode }) {
   const { pathname } = useLocation();
   // Пункт, по которому нажали последним: различает «Рейтинг» и «Лигу друзей» с одним адресом.
-  const [picked, setPicked] = useState<string | null>(null);
+  // Хранится до закрытия вкладки, чтобы подсветка не менялась после обновления страницы.
+  const [picked, setPickedState] = useState<string | null>(readPicked);
+  const setPicked = (to: string) => {
+    setPickedState(to);
+    try {
+      sessionStorage.setItem(PICKED_KEY, to);
+    } catch {
+      /* хранилище недоступно — помним до перезагрузки */
+    }
+  };
   const activeTo = pickActive(pathname, picked);
   const [open, setOpen] = useState(false);
   // После нажатия на пункт меню сворачивается, хотя мышь ещё над ним; снова раскроется, когда мышь уйдёт и вернётся.
