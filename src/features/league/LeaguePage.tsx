@@ -12,6 +12,7 @@ import { LeagueSettings } from './LeagueSettings';
 import { StandingsCard } from './Standings';
 import { IconWarn } from '@/ui/icons';
 import { Modal } from '@/ui/Modal';
+import { Select } from '@/ui/Select';
 import { Content, PageTitle, PillLink, Toolbar } from '@/ui/Page';
 import b from '@/ui/Button.module.css';
 import m from '@/ui/Modal.module.css';
@@ -114,6 +115,15 @@ export default function LeaguePage() {
     <>
       <PageTitle title={t('common.friendsLeague')} sub={t('league.table')} />
       <Toolbar>
+        {/* Переключатель лиг (как на главной): игрок может быть в нескольких лигах, в т.ч. хозяином. */}
+        {(data?.my_leagues?.length ?? 0) > 1 && (
+          <Select size="pill" value={id} aria-label={t('league.switch')}
+            onChange={(next) => {
+              setCurrentLeague(next);
+              navigate(`/league/${next}`);
+            }}
+            options={data!.my_leagues!.map((l) => ({ value: l.id, label: l.current ? l.name : `${l.name} · ${l.season}` }))} />
+        )}
         <PillLink to={`/league/${id}`} end>{t('league.table')}</PillLink>
         <a className={pg.pill} href="#duels" onClick={(e) => { e.preventDefault(); document.getElementById('duels')?.scrollIntoView({ behavior: 'smooth' }); }}>
           {t('league.duels')}

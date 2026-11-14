@@ -10,6 +10,7 @@ import { Content, PageTitle } from '@/ui/Page';
 import { TrackMap } from '@/ui/TrackMap';
 import b from '@/ui/Button.module.css';
 import { LobbyTabs } from './LobbyTabs';
+import { LobbyLoading, LobbyNoAccess } from './LobbyGate';
 import { avatarOf } from '@/lib/avatar';
 import { t } from '@/i18n';
 
@@ -38,14 +39,8 @@ export default function WaitingPage() {
     }
   };
 
-  if (q.error) {
-    return (
-      <>
-        <PageTitle title={t('common.friendsLeague')} sub={t('lobby.waitingSub')} />
-        <Content><div className="empty-state"><h3>{t('lobby.unavailable')}</h3><p>{t('lobby.unavailableText')}</p></div></Content>
-      </>
-    );
-  }
+  if (q.isLoading) return <LobbyLoading sub={t('lobby.waitingSub')} />;
+  if (q.error) return <LobbyNoAccess sub={t('lobby.waitingSub')} />;
 
   return (
     <>

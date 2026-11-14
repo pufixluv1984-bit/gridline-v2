@@ -161,6 +161,8 @@ export type LeagueScreen = {
   current_season?: number;
   carried_to?: string | null;
   members: { user_id: string; nickname: string; avatar_color: string; avatar_path?: string | null; avatar_text?: string | null; role: 'owner' | 'member'; joined_at: string }[];
+  /** Все лиги игрока для переключателя (миграция 0027); до миграции поля нет. */
+  my_leagues?: { id: string; name: string; season: number; current: boolean }[];
   event: EventInfo | null;
   submissions: Submission[];
 };

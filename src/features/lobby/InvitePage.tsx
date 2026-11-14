@@ -10,6 +10,7 @@ import { IconCheck } from '@/ui/icons';
 import { Content, PageTitle } from '@/ui/Page';
 import b from '@/ui/Button.module.css';
 import { LobbyTabs } from './LobbyTabs';
+import { LobbyLoading, LobbyNoAccess } from './LobbyGate';
 import { avatarOf } from '@/lib/avatar';
 import { t } from '@/i18n';
 
@@ -18,7 +19,7 @@ export default function InvitePage() {
   const { id = '' } = useParams();
   const auth = useAuth();
   const qc = useQueryClient();
-  const q = useQuery({ queryKey: screenKeys.league(id), queryFn: () => leagueScreen(id), enabled: !!id });
+  const q = useQuery({ queryKey: screenKeys.league(id), queryFn: () => leagueScreen(id), enabled: !!id, retry: false });
   const [copied, setCopied] = useState<'link' | 'code' | null>(null);
 
   const reset = useMutation({
@@ -42,16 +43,8 @@ export default function InvitePage() {
     }
   };
 
-  if (q.error) {
-    return (
-      <>
-        <PageTitle title={t('common.friendsLeague')} sub={t('lobby.inviteSub')} />
-        <Content>
-          <div className="empty-state"><h3>{t('lobby.notFound')}</h3><p>{t('lobby.notFoundText')}</p><Link className={`${b.cta} ${b.sm}`} to="/league">{t('league.toMine')}</Link></div>
-        </Content>
-      </>
-    );
-  }
+  if (q.isLoading) return <LobbyLoading sub={t('lobby.inviteSub')} />;
+  if (q.error) return <LobbyNoAccess sub={t('lobby.inviteSub')} />;
 
   return (
     <>
